@@ -54,8 +54,8 @@ const authProvider: AuthProvider = {
     return {
       success: false,
       error: {
-        message: "Login failed",
-        name: "Invalid email or password",
+        message: "Đăng nhập thất bại",
+        name: "Email hoặc mật khẩu không hợp lệ",
       },
     };
   },
@@ -89,8 +89,8 @@ const authProvider: AuthProvider = {
     return {
       success: false,
       error: {
-        message: "Register failed",
-        name: "Invalid email or password",
+        message: "Đăng ký thất bại",
+        name: "Email hoặc mật khẩu không hợp lệ",
       },
     };
   },
@@ -125,8 +125,8 @@ const authProvider: AuthProvider = {
     return {
       success: false,
       error: {
-        message: "Forgot password failed",
-        name: "Invalid email",
+        message: "Quên mật khẩu thất bại",
+        name: "Email không hợp lệ",
       },
     };
   },
@@ -158,8 +158,8 @@ const authProvider: AuthProvider = {
     return {
       success: false,
       error: {
-        message: "Update password failed",
-        name: "Invalid password",
+        message: "Cập nhật mật khẩu thất bại",
+        name: "Mật khẩu không hợp lệ",
       },
     };
   },
@@ -191,8 +191,8 @@ const authProvider: AuthProvider = {
         return {
           authenticated: false,
           error: {
-            message: "Check failed",
-            name: "Session not found",
+            message: "Kiểm tra thất bại",
+            name: "Session không tồn tại",
           },
           logout: true,
           redirectTo: "/login",
@@ -202,8 +202,8 @@ const authProvider: AuthProvider = {
       return {
         authenticated: false,
         error: error || {
-          message: "Check failed",
-          name: "Not authenticated",
+          message: "Kiểm tra thất bại",
+          name: "Không xác thực",
         },
         logout: true,
         redirectTo: "/login",

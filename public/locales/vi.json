@@ -112,7 +112,7 @@
   "documentTitle": {
     "default": "Refine",
     "suffix": " | Chicken",
-    "product-categories": {
+    "product_categories": {
       "list": "Danh mục sản phẩm | Chicken",
       "create": "Tạo danh mục sản phẩm | Chicken",
       "edit": "Sửa danh mục sản phẩm #{{id}} | Chicken",
@@ -189,7 +189,7 @@
       "show": "Chi tiết sản phẩm #{{id}} | Chicken",
       "clone": "Nhân bản sản phẩm #{{id}} | Chicken"
     },
-    "inventory-transactions": {
+    "inventory_transactions": {
       "list": "Giao dịch kho | Chicken",
       "create": "Giao dịch kho | Chicken",
       "edit": "Giao dịch kho #{{id}} | Chicken",
@@ -197,8 +197,8 @@
       "clone": "Giao dịch kho | Chicken"
     }
   },
-  "product-categories": {
-    "product-categories": "Danh mục",
+  "product_categories": {
+    "product_categories": "Danh mục",
     "titles": {
       "list": "Danh mục",
       "create": "Thêm danh mục",
@@ -287,8 +287,8 @@
       "show": "Chi tiết sản phẩm"
     }
   },
-  "inventory-transactions": {
-    "inventory-transactions": "Giao dịch kho",
+  "inventory_transactions": {
+    "inventory_transactions": "Giao dịch kho",
     "titles": {
       "list": "Giao dịch kho",
       "create": "Giao dịch kho",

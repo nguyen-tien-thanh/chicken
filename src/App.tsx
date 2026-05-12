@@ -3,15 +3,21 @@ import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 
 import {
-  AuthPage,
   ErrorComponent,
   ThemedLayout,
-  ThemedSider,
   useNotificationProvider,
 } from "@refinedev/antd";
 import "@refinedev/antd/dist/reset.css";
 import { useTranslation } from "react-i18next";
 
+import {
+  DatabaseOutlined,
+  FallOutlined,
+  ProductOutlined,
+  RiseOutlined,
+  ShopOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import routerProvider, {
   CatchAllNavigate,
   DocumentTitleHandler,
@@ -23,21 +29,21 @@ import { App as AntdApp } from "antd";
 import { BrowserRouter, Outlet, Route, Routes } from "react-router";
 import { Header } from "./components/header";
 import { ColorModeContextProvider } from "./contexts/color-mode";
-import {
-  BlogPostCreate,
-  BlogPostEdit,
-  BlogPostList,
-  BlogPostShow,
-} from "./pages/blog-posts";
-import {
-  CategoryCreate,
-  CategoryEdit,
-  CategoryList,
-  CategoryShow,
-} from "./pages/categories";
 import authProvider from "./providers/auth";
 import { dataProvider } from "./providers/data";
 import { supabaseClient } from "./providers/supabase-client";
+
+import { ShowRedirectDrawer, ThemedSider } from "./components";
+import { Customer } from "./pages/customers";
+import { ForgotPassword } from "./pages/forgotPassword";
+import { InventoryTransaction } from "./pages/inventory-transactions";
+import { Login } from "./pages/login";
+import { ProductCategory } from "./pages/product-categories";
+import { Product } from "./pages/products";
+import { Purchase } from "./pages/purchases";
+import { Register } from "./pages/register";
+import { Sale } from "./pages/sales";
+import { Supplier } from "./pages/suppliers";
 
 function App() {
   const { t } = useTranslation();
@@ -79,24 +85,49 @@ function App() {
                 i18nProvider={i18nProvider}
                 resources={[
                   {
-                    name: "blog_posts",
-                    list: "/blog-posts",
-                    create: "/blog-posts/create",
-                    edit: "/blog-posts/edit/:id",
-                    show: "/blog-posts/show/:id",
-                    meta: {
-                      canDelete: true,
-                    },
+                    name: "suppliers",
+                    list: "/suppliers",
+                    show: "/suppliers/show/:id",
+                    meta: { canDelete: true, icon: <ShopOutlined /> },
                   },
                   {
-                    name: "categories",
-                    list: "/categories",
-                    create: "/categories/create",
-                    edit: "/categories/edit/:id",
-                    show: "/categories/show/:id",
-                    meta: {
-                      canDelete: true,
-                    },
+                    name: "purchases",
+                    list: "/purchases",
+                    create: "/purchases/create",
+                    edit: "/purchases/edit/:id",
+                    show: "/purchases/show/:id",
+                    meta: { canDelete: true, icon: <FallOutlined /> },
+                  },
+                  {
+                    name: "customers",
+                    list: "/customers",
+                    show: "/customers/show/:id",
+                    meta: { canDelete: true, icon: <UserOutlined /> },
+                  },
+                  {
+                    name: "sales",
+                    list: "/sales",
+                    create: "/sales/create",
+                    edit: "/sales/edit/:id",
+                    show: "/sales/show/:id",
+                    meta: { canDelete: true, icon: <RiseOutlined /> },
+                  },
+                  {
+                    name: "product_categories",
+                    list: "/product_categories",
+                    meta: { canDelete: true },
+                  },
+                  {
+                    name: "products",
+                    list: "/products",
+                    show: "/products/show/:id",
+                    meta: { canDelete: true, icon: <ProductOutlined /> },
+                  },
+                  {
+                    name: "inventory_transactions",
+                    list: "/inventory_transactions",
+                    show: "/inventory_transactions/show/:id",
+                    meta: { icon: <DatabaseOutlined /> },
                   },
                 ]}
                 options={{
@@ -123,19 +154,47 @@ function App() {
                   >
                     <Route
                       index
-                      element={<NavigateToResource resource="blog_posts" />}
+                      element={<NavigateToResource resource="suppliers" />}
                     />
-                    <Route path="/blog-posts">
-                      <Route index element={<BlogPostList />} />
-                      <Route path="create" element={<BlogPostCreate />} />
-                      <Route path="edit/:id" element={<BlogPostEdit />} />
-                      <Route path="show/:id" element={<BlogPostShow />} />
+                    <Route path="/suppliers">
+                      <Route index element={<Supplier.List />} />
+                      <Route path="show/:id" element={<Supplier.Show />} />
                     </Route>
-                    <Route path="/categories">
-                      <Route index element={<CategoryList />} />
-                      <Route path="create" element={<CategoryCreate />} />
-                      <Route path="edit/:id" element={<CategoryEdit />} />
-                      <Route path="show/:id" element={<CategoryShow />} />
+                    <Route path="/purchases">
+                      <Route index element={<Purchase.List />} />
+                      <Route path="create" element={<Purchase.Create />} />
+                      <Route path="edit/:id" element={<Purchase.Edit />} />
+                      <Route path="show/:id" element={<Purchase.Show />} />
+                    </Route>
+                    <Route path="/sales">
+                      <Route index element={<Sale.List />} />
+                      <Route path="create" element={<Sale.Create />} />
+                      <Route path="edit/:id" element={<Sale.Edit />} />
+                      <Route path="show/:id" element={<Sale.Show />} />
+                    </Route>
+                    <Route path="/customers">
+                      <Route index element={<Customer.List />} />
+                      <Route path="show/:id" element={<Customer.Show />} />
+                    </Route>
+                    <Route path="/products">
+                      <Route index element={<Product.List />} />
+                      <Route path="show/:id" element={<Product.Show />} />
+                    </Route>
+                    <Route path="/inventory_transactions">
+                      <Route index element={<InventoryTransaction.List />} />
+                      <Route
+                        path="show/:id"
+                        element={<InventoryTransaction.Show />}
+                      />
+                    </Route>
+                    <Route path="/product_categories">
+                      <Route index element={<ProductCategory.List />} />
+                      <Route
+                        path="show/:id"
+                        element={
+                          <ShowRedirectDrawer listPath="/product_categories" />
+                        }
+                      />
                     </Route>
                     <Route path="*" element={<ErrorComponent />} />
                   </Route>
@@ -149,14 +208,11 @@ function App() {
                       </Authenticated>
                     }
                   >
-                    <Route path="/login" element={<AuthPage type="login" />} />
-                    <Route
-                      path="/register"
-                      element={<AuthPage type="register" />}
-                    />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
                     <Route
                       path="/forgot-password"
-                      element={<AuthPage type="forgotPassword" />}
+                      element={<ForgotPassword />}
                     />
                   </Route>
                 </Routes>
