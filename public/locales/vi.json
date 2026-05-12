@@ -1,0 +1,308 @@
+{
+  "pages": {
+    "login": {
+      "title": "Đăng nhập vào tài khoản",
+      "signin": "Đăng nhập",
+      "signup": "Đăng ký",
+      "divider": "hoặc",
+      "fields": {
+        "email": "Email",
+        "password": "Mật khẩu"
+      },
+      "errors": {
+        "requiredEmail": "Vui lòng nhập email",
+        "validEmail": "Email không hợp lệ",
+        "requiredPassword": "Vui lòng nhập mật khẩu"
+      },
+      "buttons": {
+        "forgotPassword": "Quên mật khẩu?",
+        "noAccount": "Chưa có tài khoản?",
+        "rememberMe": "Ghi nhớ đăng nhập",
+        "haveAccount": "Đã có tài khoản?"
+      }
+    },
+    "forgotPassword": {
+      "title": "Quên mật khẩu?",
+      "fields": {
+        "email": "Email"
+      },
+      "errors": {
+        "requiredEmail": "Vui lòng nhập email",
+        "validEmail": "Email không hợp lệ"
+      },
+      "buttons": {
+        "submit": "Gửi hướng dẫn đặt lại mật khẩu",
+        "haveAccount": "Đã có tài khoản? "
+      },
+      "signin": "Đăng nhập"
+    },
+    "register": {
+      "title": "Đăng ký tài khoản",
+      "divider": "hoặc",
+      "email": "Email",
+      "fields": {
+        "email": "Email",
+        "password": "Mật khẩu"
+      },
+      "errors": {
+        "requiredEmail": "Vui lòng nhập email",
+        "validEmail": "Email không hợp lệ",
+        "requiredPassword": "Vui lòng nhập mật khẩu"
+      },
+      "buttons": {
+        "submit": "Đăng ký",
+        "haveAccount": "Đã có tài khoản?"
+      },
+      "signin": "Đăng nhập"
+    },
+    "updatePassword": {
+      "title": "Đặt mật khẩu mới",
+      "fields": {
+        "password": "Mật khẩu mới",
+        "confirmPassword": "Xác nhận mật khẩu mới"
+      },
+      "errors": {
+        "requiredPassword": "Vui lòng nhập mật khẩu",
+        "requiredConfirmPassword": "Vui lòng xác nhận mật khẩu",
+        "confirmPasswordNotMatch": "Hai mật khẩu không khớp"
+      },
+      "buttons": {
+        "submit": "Cập nhật"
+      }
+    },
+    "error": {
+      "info": "Có thể bạn chưa thêm component {{action}} cho resource \"{{resource}}\".",
+      "404": "Trang bạn truy cập không tồn tại.",
+      "backHome": "Về trang chủ"
+    }
+  },
+  "actions": {
+    "list": "Danh sách",
+    "create": "Tạo mới",
+    "edit": "Sửa",
+    "show": "Xem",
+    "delete": "Xóa"
+  },
+  "buttons": {
+    "add": "Thêm",
+    "create": "Tạo mới",
+    "save": "Lưu",
+    "logout": "Đăng xuất",
+    "delete": "Xóa",
+    "edit": "Sửa",
+    "cancel": "Hủy",
+    "confirm": "Bạn có chắc không?",
+    "filter": "Lọc",
+    "clear": "Xóa bộ lọc",
+    "refresh": "Làm mới",
+    "show": "Xem",
+    "notAccessTitle": "Không có quyền truy cập"
+  },
+  "warnWhenUnsavedChanges": "Bạn có chắc muốn rời trang? Có thay đổi chưa được lưu.",
+  "notifications": {
+    "success": "Thành công",
+    "error": "Lỗi (mã: {{statusCode}})",
+    "createSuccess": "Đã tạo {{resource}}",
+    "createError": "Lỗi khi tạo {{resource}} (mã: {{statusCode}})",
+    "deleteSuccess": "Đã xóa {{resource}}",
+    "deleteError": "Lỗi khi xóa {{resource}} (mã: {{statusCode}})",
+    "editSuccess": "Đã cập nhật {{resource}}",
+    "editError": "Lỗi khi cập nhật {{resource}} (mã: {{statusCode}})"
+  },
+  "documentTitle": {
+    "default": "Refine",
+    "suffix": " | Chicken",
+    "product-categories": {
+      "list": "Danh mục sản phẩm | Chicken",
+      "create": "Tạo danh mục sản phẩm | Chicken",
+      "edit": "Sửa danh mục sản phẩm #{{id}} | Chicken",
+      "show": "Chi tiết danh mục sản phẩm #{{id}} | Chicken",
+      "clone": "Nhân bản danh mục sản phẩm #{{id}} | Chicken"
+    },
+    "management": {
+      "list": "Quản lý | Chicken",
+      "create": "Quản lý | Chicken",
+      "edit": "Quản lý | Chicken",
+      "show": "Quản lý | Chicken",
+      "clone": "Quản lý | Chicken"
+    },
+    "users": {
+      "list": "Người dùng | Chicken",
+      "create": "Thêm người dùng | Chicken",
+      "edit": "Sửa người dùng #{{id}} | Chicken",
+      "show": "Chi tiết người dùng #{{id}} | Chicken",
+      "clone": "Nhân bản người dùng #{{id}} | Chicken"
+    },
+    "roles": {
+      "list": "Vai trò | Chicken",
+      "create": "Thêm vai trò | Chicken",
+      "edit": "Sửa vai trò #{{id}} | Chicken",
+      "show": "Chi tiết vai trò #{{id}} | Chicken",
+      "clone": "Nhân bản vai trò #{{id}} | Chicken"
+    },
+    "permissions": {
+      "list": "Quyền | Chicken",
+      "create": "Thêm quyền | Chicken",
+      "edit": "Sửa quyền #{{id}} | Chicken",
+      "show": "Chi tiết quyền #{{id}} | Chicken",
+      "clone": "Nhân bản quyền #{{id}} | Chicken"
+    },
+    "business": {
+      "list": "Kinh doanh | Chicken",
+      "create": "Kinh doanh | Chicken",
+      "edit": "Kinh doanh | Chicken",
+      "show": "Kinh doanh | Chicken",
+      "clone": "Kinh doanh | Chicken"
+    },
+    "suppliers": {
+      "list": "Nhà cung cấp | Chicken",
+      "create": "Thêm nhà cung cấp | Chicken",
+      "edit": "Sửa nhà cung cấp #{{id}} | Chicken",
+      "show": "Chi tiết nhà cung cấp #{{id}} | Chicken",
+      "clone": "Nhân bản nhà cung cấp #{{id}} | Chicken"
+    },
+    "purchases": {
+      "list": "Phiếu nhập | Chicken",
+      "create": "Tạo phiếu nhập | Chicken",
+      "edit": "Sửa phiếu nhập #{{id}} | Chicken",
+      "show": "Chi tiết phiếu nhập #{{id}} | Chicken",
+      "clone": "Nhân bản phiếu nhập #{{id}} | Chicken"
+    },
+    "sales": {
+      "list": "Phiếu bán | Chicken",
+      "create": "Tạo phiếu bán | Chicken",
+      "edit": "Sửa phiếu bán #{{id}} | Chicken",
+      "show": "Chi tiết phiếu bán #{{id}} | Chicken",
+      "clone": "Nhân bản phiếu bán #{{id}} | Chicken"
+    },
+    "customers": {
+      "list": "Khách hàng | Chicken",
+      "create": "Thêm khách hàng | Chicken",
+      "edit": "Sửa khách hàng #{{id}} | Chicken",
+      "show": "Chi tiết khách hàng #{{id}} | Chicken",
+      "clone": "Nhân bản khách hàng #{{id}} | Chicken"
+    },
+    "products": {
+      "list": "Sản phẩm | Chicken",
+      "create": "Thêm sản phẩm | Chicken",
+      "edit": "Sửa sản phẩm #{{id}} | Chicken",
+      "show": "Chi tiết sản phẩm #{{id}} | Chicken",
+      "clone": "Nhân bản sản phẩm #{{id}} | Chicken"
+    },
+    "inventory-transactions": {
+      "list": "Giao dịch kho | Chicken",
+      "create": "Giao dịch kho | Chicken",
+      "edit": "Giao dịch kho #{{id}} | Chicken",
+      "show": "Chi tiết giao dịch kho #{{id}} | Chicken",
+      "clone": "Giao dịch kho | Chicken"
+    }
+  },
+  "product-categories": {
+    "product-categories": "Danh mục",
+    "titles": {
+      "list": "Danh mục",
+      "create": "Thêm danh mục",
+      "edit": "Sửa danh mục",
+      "show": "Chi tiết danh mục"
+    }
+  },
+  "management": {
+    "management": "Quản lý",
+    "titles": {
+      "list": "Quản lý",
+      "create": "Quản lý",
+      "edit": "Quản lý",
+      "show": "Quản lý"
+    }
+  },
+  "users": {
+    "users": "Người dùng",
+    "titles": {
+      "list": "Người dùng",
+      "create": "Thêm người dùng",
+      "edit": "Sửa người dùng",
+      "show": "Chi tiết người dùng"
+    }
+  },
+  "roles": {
+    "roles": "Vai trò",
+    "titles": {
+      "list": "Vai trò",
+      "create": "Thêm vai trò",
+      "edit": "Sửa vai trò",
+      "show": "Chi tiết vai trò"
+    }
+  },
+  "permissions": {
+    "permissions": "Quyền",
+    "titles": {
+      "list": "Quyền",
+      "create": "Thêm quyền",
+      "edit": "Sửa quyền",
+      "show": "Chi tiết quyền"
+    }
+  },
+  "business": {
+    "business": "Kinh doanh",
+    "titles": {
+      "list": "Kinh doanh",
+      "create": "Kinh doanh",
+      "edit": "Kinh doanh",
+      "show": "Kinh doanh"
+    }
+  },
+  "suppliers": {
+    "suppliers": "Nhà cung cấp",
+    "titles": {
+      "list": "Nhà cung cấp",
+      "create": "Thêm nhà cung cấp",
+      "edit": "Sửa nhà cung cấp",
+      "show": "Chi tiết nhà cung cấp"
+    }
+  },
+  "purchases": {
+    "purchases": "Phiếu nhập",
+    "titles": {
+      "list": "Phiếu nhập",
+      "create": "Tạo phiếu nhập",
+      "edit": "Sửa phiếu nhập",
+      "show": "Chi tiết phiếu nhập"
+    }
+  },
+  "customers": {
+    "customers": "Khách hàng",
+    "titles": {
+      "list": "Khách hàng",
+      "create": "Thêm khách hàng",
+      "edit": "Sửa khách hàng",
+      "show": "Chi tiết khách hàng"
+    }
+  },
+  "products": {
+    "products": "Sản phẩm",
+    "titles": {
+      "list": "Sản phẩm",
+      "create": "Thêm sản phẩm",
+      "edit": "Sửa sản phẩm",
+      "show": "Chi tiết sản phẩm"
+    }
+  },
+  "inventory-transactions": {
+    "inventory-transactions": "Giao dịch kho",
+    "titles": {
+      "list": "Giao dịch kho",
+      "create": "Giao dịch kho",
+      "edit": "Giao dịch kho",
+      "show": "Chi tiết giao dịch kho"
+    }
+  },
+  "sales": {
+    "sales": "Phiếu bán",
+    "titles": {
+      "list": "Phiếu bán",
+      "create": "Tạo phiếu bán",
+      "edit": "Sửa phiếu bán",
+      "show": "Chi tiết phiếu bán"
+    }
+  }
+}
