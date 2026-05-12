@@ -1,5 +1,6 @@
 import { RefineThemes } from "@refinedev/antd";
 import { ConfigProvider, theme } from "antd";
+import viVN from "antd/locale/vi_VN";
 import {
   type PropsWithChildren,
   createContext,
@@ -51,6 +52,7 @@ export const ColorModeContextProvider: React.FC<PropsWithChildren> = ({
       }}
     >
       <ConfigProvider
+        locale={viVN}
         // you can change the theme colors here. example: ...RefineThemes.Magenta,
         theme={{
           ...RefineThemes.Blue,
