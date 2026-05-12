@@ -1,4 +1,4 @@
-import { Authenticated, GitHubBanner, Refine } from "@refinedev/core";
+import { Authenticated, Refine } from "@refinedev/core";
 import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 
@@ -10,6 +10,7 @@ import {
   useNotificationProvider,
 } from "@refinedev/antd";
 import "@refinedev/antd/dist/reset.css";
+import { useTranslation } from "react-i18next";
 
 import routerProvider, {
   CatchAllNavigate,
@@ -39,9 +40,32 @@ import { dataProvider } from "./providers/data";
 import { supabaseClient } from "./providers/supabase-client";
 
 function App() {
+  const { t } = useTranslation();
+
+  const i18nProvider = {
+    translate: (key: string, options?: unknown, defaultMessage?: string) => {
+      if (typeof options === "string" && defaultMessage === undefined) {
+        return String(t(key, { defaultValue: options }));
+      }
+      const interpolation =
+        options && typeof options === "object" && !Array.isArray(options)
+          ? (options as Record<string, unknown>)
+          : {};
+      return String(
+        t(key, {
+          ...interpolation,
+          ...(defaultMessage !== undefined
+            ? { defaultValue: defaultMessage }
+            : {}),
+        })
+      );
+    },
+    changeLocale: () => Promise.resolve(),
+    getLocale: () => "vi",
+  };
+
   return (
     <BrowserRouter>
-      <GitHubBanner />
       <RefineKbarProvider>
         <ColorModeContextProvider>
           <AntdApp>
@@ -52,6 +76,7 @@ function App() {
                 authProvider={authProvider}
                 routerProvider={routerProvider}
                 notificationProvider={useNotificationProvider}
+                i18nProvider={i18nProvider}
                 resources={[
                   {
                     name: "blog_posts",
@@ -124,20 +149,7 @@ function App() {
                       </Authenticated>
                     }
                   >
-                    <Route
-                      path="/login"
-                      element={
-                        <AuthPage
-                          type="login"
-                          formProps={{
-                            initialValues: {
-                              email: "info@refine.dev",
-                              password: "refine-supabase",
-                            },
-                          }}
-                        />
-                      }
-                    />
+                    <Route path="/login" element={<AuthPage type="login" />} />
                     <Route
                       path="/register"
                       element={<AuthPage type="register" />}
