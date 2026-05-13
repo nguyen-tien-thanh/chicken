@@ -27,9 +27,7 @@ export const List = () => {
     syncWithLocation: true,
     resource: "sales",
     meta: {
-      include: {
-        customer: { select: { id: true, name: true, phone: true } },
-      },
+      select: "*,customer:customers(*),sale_items(*,product:products(*))",
     },
     filters: {
       ...(customer_idParam

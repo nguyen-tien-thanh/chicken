@@ -4,7 +4,13 @@ import {
   UserAddOutlined,
 } from "@ant-design/icons";
 import { Create as AntdCreate, useForm } from "@refinedev/antd";
-import { useCreate, useSelect } from "@refinedev/core";
+import {
+  useCreate,
+  useCreateMany,
+  useInvalidate,
+  useSelect,
+  useWarnAboutChange,
+} from "@refinedev/core";
 import type { FormProps } from "antd";
 import {
   App,
@@ -25,7 +31,7 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
-import { useSearchParams } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 
 import { InputMoney } from "@/components";
 import type { ICustomer, IProduct } from "@/types";
@@ -64,6 +70,7 @@ function newRow(): LineItem {
 
 export const Create = () => {
   const { notification } = App.useApp();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const customer_idFromQuery = searchParams.get("customer_id") ?? undefined;
 
@@ -71,8 +78,13 @@ export const Create = () => {
   const [createCustomerOpen, setCreateCustomerOpen] = useState(false);
   const [customerSearchText, setCustomerSearchText] = useState("");
   const [createCustomerForm] = Form.useForm();
+  const [isSaving, setIsSaving] = useState(false);
 
   const { mutate: createCustomer } = useCreate();
+  const { mutateAsync: createSale } = useCreate();
+  const { mutateAsync: createSaleItems } = useCreateMany();
+  const invalidate = useInvalidate();
+  const { setWarnWhen } = useWarnAboutChange();
 
   const { formProps, saveButtonProps, form } = useForm({
     resource: "sales",
@@ -157,15 +169,23 @@ export const Create = () => {
     }
     const discount_amount = Number(v.discount_amount ?? 0);
     const paid_amount = Number(v.paid_amount ?? 0);
-    const items = validLines.map((row) => ({
-      product_id: row.product_id!,
-      quantity: row.quantity,
-      quantity_unit: row.quantity_unit,
-      unit_price: row.unit_price,
-      amount: row.quantity * row.unit_price,
-      note: row.note ?? null,
-    }));
-    const payload = {
+    const items = validLines.map((row) => {
+      const amount = row.quantity * row.unit_price;
+      return {
+        product_id: row.product_id!,
+        quantity: row.quantity,
+        quantity_unit: row.quantity_unit,
+        unit_price: row.unit_price,
+        amount,
+        note: row.note ?? null,
+        cost_amount: 0,
+        profit_amount: amount,
+      };
+    });
+    const subtotal_amount = items.reduce((s, row) => s + row.amount, 0);
+    const final_amount = Math.max(0, subtotal_amount - discount_amount);
+    const remaining_amount = Math.max(0, final_amount - paid_amount);
+    const salePayload = {
       customer_id: v.customer_id,
       sale_date: v.sale_date
         ? dayjs(v.sale_date).toISOString()
@@ -174,9 +194,40 @@ export const Create = () => {
       discount_amount,
       paid_amount,
       status: v.status ?? "PENDING",
-      items,
+      subtotal_amount,
+      final_amount,
+      remaining_amount,
     };
-    return formProps.onFinish?.(payload as never) ?? Promise.resolve();
+    return (async () => {
+      setIsSaving(true);
+      try {
+        const { data: created } = await createSale({
+          resource: "sales",
+          values: salePayload,
+        });
+        const saleId = created?.id as string | undefined;
+        if (!saleId) {
+          throw new Error("Không lấy được id phiếu bán sau khi tạo");
+        }
+        await createSaleItems({
+          resource: "sale_items",
+          values: items.map((row) => ({ ...row, sale_id: saleId })),
+        });
+        await invalidate({ resource: "sales", invalidates: ["list"] });
+        await invalidate({ resource: "sale_items", invalidates: ["list"] });
+        notification.success({ message: "Đã tạo phiếu bán" });
+        setWarnWhen(false);
+        navigate(`/sales/show/${saleId}`);
+      } catch (e: unknown) {
+        const msg =
+          e && typeof e === "object" && "message" in e
+            ? String((e as { message: unknown }).message)
+            : "Không tạo được phiếu bán";
+        notification.error({ message: msg });
+      } finally {
+        setIsSaving(false);
+      }
+    })();
   };
 
   const columns = [
@@ -282,7 +333,13 @@ export const Create = () => {
   ];
 
   return (
-    <AntdCreate saveButtonProps={saveButtonProps}>
+    <AntdCreate
+      saveButtonProps={{
+        ...saveButtonProps,
+        loading: isSaving,
+        disabled: isSaving,
+      }}
+    >
       <Form {...formProps} layout="vertical" onFinish={onFinish}>
         <Form.Item
           label="Khách hàng"

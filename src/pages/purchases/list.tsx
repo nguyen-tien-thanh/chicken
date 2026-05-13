@@ -22,9 +22,7 @@ export const List = () => {
     syncWithLocation: true,
     resource: "purchases",
     meta: {
-      include: {
-        supplier: { select: { id: true, name: true, phone: true } },
-      },
+      select: "*,supplier:suppliers(*),purchase_items(*,product:products(*))",
     },
     filters: {
       ...(supplier_idParam

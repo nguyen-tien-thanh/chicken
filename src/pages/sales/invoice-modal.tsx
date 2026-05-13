@@ -1,5 +1,4 @@
 import { PrinterOutlined } from "@ant-design/icons";
-import { useApiUrl, useCustom } from "@refinedev/core";
 import {
   Button,
   Descriptions,
@@ -9,10 +8,12 @@ import {
   Table,
   Tag,
   Typography,
+  message,
 } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 
+import { supabaseClient } from "@/providers/supabase-client";
 import {
   SALE_STATUS_LABELS,
   type ISale,
@@ -22,7 +23,7 @@ import {
 import { formatMoney } from "@/utils";
 
 interface IInvoice extends ISale {
-  payment: {
+  payment?: {
     sale_id: string;
     amount: number;
     id: string;
@@ -42,19 +43,28 @@ interface Props {
 
 export const SaleInvoiceModal = ({ sale_id }: Props) => {
   const [open, setOpen] = useState(false);
-  const apiUrl = useApiUrl();
+  const [invoice, setInvoice] = useState<IInvoice | null>(null);
+  const [fetching, setFetching] = useState(false);
 
-  const { query: invoiceQuery } = useCustom<IInvoice>({
-    url: `${apiUrl}/sales/${sale_id}/invoice`,
-    method: "get",
-    queryOptions: { enabled: false },
-  });
+  async function handleOpen() {
+    if (!sale_id) return;
+    setFetching(true);
+    try {
+      const { data, error } = await supabaseClient
+        .from("sales")
+        .select("*,customer:customers(*),sale_items(*,product:products(*))")
+        .eq("id", sale_id)
+        .single();
 
-  const invoice = invoiceQuery.data?.data;
-  const fetching = invoiceQuery.isFetching;
-
-  function handleOpen() {
-    invoiceQuery.refetch().then(() => setOpen(true));
+      if (error) {
+        message.error(error.message);
+        return;
+      }
+      setInvoice(data as IInvoice);
+      setOpen(true);
+    } finally {
+      setFetching(false);
+    }
   }
 
   function handlePrint() {
@@ -177,7 +187,10 @@ export const SaleInvoiceModal = ({ sale_id }: Props) => {
       <Modal
         title="Hoá đơn bán hàng"
         open={open}
-        onCancel={() => setOpen(false)}
+        onCancel={() => {
+          setOpen(false);
+          setInvoice(null);
+        }}
         width={640}
         footer={
           <Button

@@ -18,9 +18,7 @@ export const Show = () => {
   const { result: record, query } = useShow<IProduct>({
     resource: "products",
     meta: {
-      include: {
-        category: { select: { id: true, name: true } },
-      },
+      select: "*,category:product_categories(*)",
     },
   });
   const { isLoading } = query;
@@ -28,7 +26,7 @@ export const Show = () => {
   const product_id = record?.id;
 
   const { tableProps: purchaseTableProps } = useTable<IPurchaseItem>({
-    resource: "purchase-items",
+    resource: "purchase_items",
     syncWithLocation: false,
     filters: {
       permanent: product_id
@@ -36,22 +34,14 @@ export const Show = () => {
         : [],
     },
     meta: {
-      include: {
-        purchase: {
-          select: {
-            id: true,
-            purchase_date: true,
-            supplier: { select: { id: true, name: true } },
-          },
-        },
-      },
+      select: "*,purchase:purchases(*,supplier:suppliers(*))",
     },
     sorters: { initial: [{ field: "created_at", order: "desc" }] },
     queryOptions: { enabled: !!product_id },
   });
 
   const { tableProps: saleTableProps } = useTable<ISaleItem>({
-    resource: "sale-items",
+    resource: "sale_items",
     syncWithLocation: false,
     filters: {
       permanent: product_id
@@ -59,15 +49,8 @@ export const Show = () => {
         : [],
     },
     meta: {
-      include: {
-        sale: {
-          select: {
-            id: true,
-            sale_date: true,
-            customer: { select: { id: true, name: true, phone: true } },
-          },
-        },
-      },
+      select:
+        "*,sale:sales(*,customer:customers(*)),purchase:purchases(*,supplier:suppliers(*))",
     },
     sorters: { initial: [{ field: "created_at", order: "desc" }] },
     queryOptions: { enabled: !!product_id },

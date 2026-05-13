@@ -1,6 +1,13 @@
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { Edit as AntdEdit, useForm } from "@refinedev/antd";
-import { useSelect } from "@refinedev/core";
+import {
+  useCreate,
+  useDelete,
+  useInvalidate,
+  useSelect,
+  useUpdate,
+  useWarnAboutChange,
+} from "@refinedev/core";
 import type { FormProps } from "antd";
 import {
   App,
@@ -60,19 +67,18 @@ function newRow(): LineItem {
 export const Edit = () => {
   const { notification } = App.useApp();
   const [lines, setLines] = useState<LineItem[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const { mutateAsync: updatePurchase } = useUpdate();
+  const { mutateAsync: createItem } = useCreate();
+  const { mutateAsync: updateItem } = useUpdate();
+  const { mutateAsync: deleteItem } = useDelete();
+  const invalidate = useInvalidate();
+  const { setWarnWhen } = useWarnAboutChange();
 
   const { formProps, saveButtonProps, query } = useForm<IPurchase>({
     resource: "purchases",
-    meta: {
-      include: {
-        supplier: { select: { id: true, name: true, phone: true } },
-        purchase_items: {
-          include: {
-            product: { select: { id: true, name: true, type: true } },
-          },
-        },
-      },
-    },
+    meta: { select: "*,supplier:suppliers(*),purchase_items(*,product:products(*))" },
   });
 
   // Sync line items khi data load xong
@@ -123,12 +129,11 @@ export const Edit = () => {
   }, 0);
 
   const onFinish: FormProps["onFinish"] = (values) => {
-    const next = { ...(values as Record<string, unknown>) };
-    delete next.purchase_items;
-    delete next.total_amount;
-    const pd = next.purchase_date;
-    if (pd != null && dayjs.isDayjs(pd)) {
-      next.purchase_date = (pd as dayjs.Dayjs).toISOString();
+    const purchase = query?.data?.data;
+    const purchaseId = purchase?.id;
+    if (!purchaseId) {
+      notification.error({ message: "Chưa có dữ liệu phiếu nhập" });
+      return Promise.resolve();
     }
     const validLines = lines.filter((row) => row.product_id);
     if (validLines.length === 0) {
@@ -137,16 +142,93 @@ export const Edit = () => {
       });
       return Promise.resolve();
     }
-    next.items = validLines.map((row) => ({
-      ...(row.id ? { id: row.id } : {}),
-      product_id: row.product_id!,
-      quantity: row.quantity,
-      quantity_unit: row.quantity_unit,
-      unit_price: row.unit_price,
-      amount: row.quantity * row.unit_price,
-      note: row.note ?? null,
-    }));
-    return formProps.onFinish?.(next as never);
+    const v = values as Record<string, unknown>;
+    const pd = v.purchase_date;
+    const purchase_date =
+      pd != null && dayjs.isDayjs(pd)
+        ? (pd as dayjs.Dayjs).toISOString()
+        : typeof pd === "string"
+          ? pd
+          : dayjs(pd as string).toISOString();
+
+    const total_amount = validLines.reduce(
+      (s, row) => s + row.quantity * row.unit_price,
+      0
+    );
+    const purchasePayload = {
+      supplier_id: v.supplier_id as string,
+      purchase_date,
+      note: (v.note as string | null | undefined) ?? null,
+      average_weight: Number(v.average_weight ?? 0),
+      cages_count: Number(v.cages_count ?? 0),
+      cages_weight: Number(v.cages_weight ?? 0),
+      total_amount,
+    };
+
+    return (async () => {
+      setIsSaving(true);
+      try {
+        await updatePurchase({
+          resource: "purchases",
+          id: purchaseId,
+          values: purchasePayload,
+        });
+
+        const existingIds = new Set(
+          (purchase.purchase_items ?? []).map((i) => i.id)
+        );
+        const nextIds = new Set(
+          validLines.map((r) => r.id).filter(Boolean) as string[]
+        );
+        for (const id of existingIds) {
+          if (!nextIds.has(id)) {
+            await deleteItem({ resource: "purchase_items", id });
+          }
+        }
+
+        for (const row of validLines) {
+          const itemValues = {
+            product_id: row.product_id!,
+            quantity: row.quantity,
+            quantity_unit: row.quantity_unit,
+            unit_price: row.unit_price,
+            amount: row.quantity * row.unit_price,
+            note: row.note ?? null,
+          };
+          if (row.id) {
+            await updateItem({
+              resource: "purchase_items",
+              id: row.id,
+              values: itemValues,
+            });
+          } else {
+            await createItem({
+              resource: "purchase_items",
+              values: { ...itemValues, purchase_id: purchaseId },
+            });
+          }
+        }
+
+        await invalidate({ resource: "purchases", invalidates: ["list"] });
+        await invalidate({ resource: "purchase_items", invalidates: ["list"] });
+        const refetched = await query?.refetch();
+        const fresh = refetched?.data?.data as IPurchase | undefined;
+        if (fresh) {
+          nextKey = 1;
+          setLines((fresh.purchase_items ?? []).map(fromExisting));
+        }
+        setWarnWhen(false);
+        notification.success({ message: "Đã cập nhật phiếu nhập" });
+      } catch (e: unknown) {
+        const msg =
+          e && typeof e === "object" && "message" in e
+            ? String((e as { message: unknown }).message)
+            : "Không cập nhật được phiếu nhập";
+        notification.error({ message: msg });
+      } finally {
+        setIsSaving(false);
+      }
+    })();
   };
 
   const columns = [
@@ -252,7 +334,13 @@ export const Edit = () => {
   ];
 
   return (
-    <AntdEdit saveButtonProps={saveButtonProps}>
+    <AntdEdit
+      saveButtonProps={{
+        ...saveButtonProps,
+        loading: isSaving,
+        disabled: isSaving,
+      }}
+    >
       <Form {...formProps} layout="vertical" onFinish={onFinish}>
         <Form.Item
           label="Nhà cung cấp"

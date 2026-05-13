@@ -1,6 +1,6 @@
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { Create as AntdCreate, useForm } from "@refinedev/antd";
-import { useSelect } from "@refinedev/core";
+import { useCreate, useCreateMany, useInvalidate, useSelect, useWarnAboutChange } from "@refinedev/core";
 import type { FormProps } from "antd";
 import {
   App,
@@ -19,7 +19,7 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
-import { useSearchParams } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 
 import { FullScreenSpin, InputMoney } from "@/components";
 import type { IProduct, ISupplier } from "@/types";
@@ -57,10 +57,17 @@ function newRow(): LineItem {
 
 export const Create = () => {
   const { notification } = App.useApp();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const supplier_idFromQuery = searchParams.get("supplier_id") ?? undefined;
 
   const [lines, setLines] = useState<LineItem[]>([newRow()]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const { mutateAsync: createPurchase } = useCreate();
+  const { mutateAsync: createPurchaseItems } = useCreateMany();
+  const invalidate = useInvalidate();
+  const { setWarnWhen } = useWarnAboutChange();
 
   const { formProps, saveButtonProps } = useForm({
     resource: "purchases",
@@ -126,7 +133,8 @@ export const Create = () => {
       amount: row.quantity * row.unit_price,
       note: row.note ?? null,
     }));
-    const payload = {
+    const total_amount = items.reduce((s, row) => s + row.amount, 0);
+    const purchasePayload = {
       supplier_id: v.supplier_id,
       purchase_date: v.purchase_date
         ? dayjs(v.purchase_date).toISOString()
@@ -135,9 +143,38 @@ export const Create = () => {
       average_weight: Number(v.average_weight ?? 0),
       cages_count: Number(v.cages_count ?? 0),
       cages_weight: Number(v.cages_weight ?? 0),
-      items,
+      total_amount,
     };
-    return formProps.onFinish?.(payload as never) ?? Promise.resolve();
+    return (async () => {
+      setIsSaving(true);
+      try {
+        const { data: created } = await createPurchase({
+          resource: "purchases",
+          values: purchasePayload,
+        });
+        const purchaseId = created?.id as string | undefined;
+        if (!purchaseId) {
+          throw new Error("Không lấy được id phiếu nhập sau khi tạo");
+        }
+        await createPurchaseItems({
+          resource: "purchase_items",
+          values: items.map((row) => ({ ...row, purchase_id: purchaseId })),
+        });
+        await invalidate({ resource: "purchases", invalidates: ["list"] });
+        await invalidate({ resource: "purchase_items", invalidates: ["list"] });
+        notification.success({ message: "Đã tạo phiếu nhập" });
+        setWarnWhen(false);
+        navigate(`/purchases/show/${purchaseId}`);
+      } catch (e: unknown) {
+        const msg =
+          e && typeof e === "object" && "message" in e
+            ? String((e as { message: unknown }).message)
+            : "Không tạo được phiếu nhập";
+        notification.error({ message: msg });
+      } finally {
+        setIsSaving(false);
+      }
+    })();
   };
 
   const columns = [
@@ -247,7 +284,13 @@ export const Create = () => {
   }
 
   return (
-    <AntdCreate saveButtonProps={saveButtonProps}>
+    <AntdCreate
+      saveButtonProps={{
+        ...saveButtonProps,
+        loading: isSaving,
+        disabled: isSaving,
+      }}
+    >
       <Form {...formProps} layout="vertical" onFinish={onFinish}>
         <Form.Item
           label="Nhà cung cấp"

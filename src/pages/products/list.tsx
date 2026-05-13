@@ -62,9 +62,7 @@ export const List = () => {
     action: "edit",
     syncWithLocation: false,
     meta: {
-      include: {
-        category: { select: { id: true, name: true } },
-      },
+      select: "*,category:product_categories(*)",
     },
   });
 
@@ -73,9 +71,7 @@ export const List = () => {
     id: showId ?? "",
     queryOptions: { enabled: !!showId },
     meta: {
-      include: {
-        category: { select: { id: true, name: true } },
-      },
+      select: "*,category:product_categories(*)",
     },
   });
 
@@ -107,9 +103,7 @@ export const List = () => {
     syncWithLocation: true,
     resource: "products",
     meta: {
-      include: {
-        category: { select: { id: true, name: true } },
-      },
+      select: "*,category:product_categories(*)",
     },
     filters: {
       initial: [

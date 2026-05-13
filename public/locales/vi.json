@@ -119,41 +119,6 @@
       "show": "Chi tiết danh mục sản phẩm #{{id}} | Chicken",
       "clone": "Nhân bản danh mục sản phẩm #{{id}} | Chicken"
     },
-    "management": {
-      "list": "Quản lý | Chicken",
-      "create": "Quản lý | Chicken",
-      "edit": "Quản lý | Chicken",
-      "show": "Quản lý | Chicken",
-      "clone": "Quản lý | Chicken"
-    },
-    "users": {
-      "list": "Người dùng | Chicken",
-      "create": "Thêm người dùng | Chicken",
-      "edit": "Sửa người dùng #{{id}} | Chicken",
-      "show": "Chi tiết người dùng #{{id}} | Chicken",
-      "clone": "Nhân bản người dùng #{{id}} | Chicken"
-    },
-    "roles": {
-      "list": "Vai trò | Chicken",
-      "create": "Thêm vai trò | Chicken",
-      "edit": "Sửa vai trò #{{id}} | Chicken",
-      "show": "Chi tiết vai trò #{{id}} | Chicken",
-      "clone": "Nhân bản vai trò #{{id}} | Chicken"
-    },
-    "permissions": {
-      "list": "Quyền | Chicken",
-      "create": "Thêm quyền | Chicken",
-      "edit": "Sửa quyền #{{id}} | Chicken",
-      "show": "Chi tiết quyền #{{id}} | Chicken",
-      "clone": "Nhân bản quyền #{{id}} | Chicken"
-    },
-    "business": {
-      "list": "Kinh doanh | Chicken",
-      "create": "Kinh doanh | Chicken",
-      "edit": "Kinh doanh | Chicken",
-      "show": "Kinh doanh | Chicken",
-      "clone": "Kinh doanh | Chicken"
-    },
     "suppliers": {
       "list": "Nhà cung cấp | Chicken",
       "create": "Thêm nhà cung cấp | Chicken",
@@ -204,51 +169,6 @@
       "create": "Thêm danh mục",
       "edit": "Sửa danh mục",
       "show": "Chi tiết danh mục"
-    }
-  },
-  "management": {
-    "management": "Quản lý",
-    "titles": {
-      "list": "Quản lý",
-      "create": "Quản lý",
-      "edit": "Quản lý",
-      "show": "Quản lý"
-    }
-  },
-  "users": {
-    "users": "Người dùng",
-    "titles": {
-      "list": "Người dùng",
-      "create": "Thêm người dùng",
-      "edit": "Sửa người dùng",
-      "show": "Chi tiết người dùng"
-    }
-  },
-  "roles": {
-    "roles": "Vai trò",
-    "titles": {
-      "list": "Vai trò",
-      "create": "Thêm vai trò",
-      "edit": "Sửa vai trò",
-      "show": "Chi tiết vai trò"
-    }
-  },
-  "permissions": {
-    "permissions": "Quyền",
-    "titles": {
-      "list": "Quyền",
-      "create": "Thêm quyền",
-      "edit": "Sửa quyền",
-      "show": "Chi tiết quyền"
-    }
-  },
-  "business": {
-    "business": "Kinh doanh",
-    "titles": {
-      "list": "Kinh doanh",
-      "create": "Kinh doanh",
-      "edit": "Kinh doanh",
-      "show": "Kinh doanh"
     }
   },
   "suppliers": {
@@ -303,6 +223,15 @@
       "create": "Tạo phiếu bán",
       "edit": "Sửa phiếu bán",
       "show": "Chi tiết phiếu bán"
+    }
+  },
+  "sale_items": {
+    "sale_items": "Chi tiết phiếu bán",
+    "titles": {
+      "list": "Chi tiết phiếu bán",
+      "create": "Thêm chi tiết phiếu bán",
+      "edit": "Sửa chi tiết phiếu bán",
+      "show": "Chi tiết chi tiết phiếu bán"
     }
   }
 }

@@ -10,16 +10,7 @@ import { formatMoney } from "@/utils";
 
 export const Show = () => {
   const { result: record, query } = useShow<IPurchase>({
-    meta: {
-      include: {
-        supplier: { select: { id: true, name: true, phone: true } },
-        purchase_items: {
-          include: {
-            product: { select: { id: true, name: true, type: true } },
-          },
-        },
-      },
-    },
+    meta: { select: "*,supplier:suppliers(*),purchase_items(*,product:products(*))" },
   });
   const { isLoading } = query;
 

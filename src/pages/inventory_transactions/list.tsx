@@ -28,7 +28,7 @@ function RefLink({
     purchase_id?: string;
     sale_id?: string;
   }>({
-    resource: isPurchase ? "purchase-items" : "sale-items",
+    resource: isPurchase ? "purchase_items" : "sale_items",
     id: ref_id,
     meta: {
       select: isPurchase ? "id,purchase_id" : "id,sale_id",
@@ -61,9 +61,7 @@ export const List = () => {
     syncWithLocation: true,
     resource: "inventory_transactions",
     meta: {
-      include: {
-        product: { select: { id: true, name: true, type: true } },
-      },
+      select: "*,product:products(*)",
     },
     filters: {
       initial: [

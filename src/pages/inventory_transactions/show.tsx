@@ -33,17 +33,17 @@ function RefDocumentButton({ record }: { record: IInventoryTransaction }) {
   const isSale = ref_type === "SALE";
 
   const purchaseItem = useOne<PurchaseItemLookup>({
-    resource: "purchase-items",
+    resource: "purchase_items",
     id: ref_id,
     queryOptions: { enabled: isPurchase },
-    meta: { select: "id,purchase_id" },
+    meta: { select: "*,purchase:purchases(*)" },
   });
 
   const saleItem = useOne<SaleItemLookup>({
-    resource: "sale-items",
+    resource: "sale_items",
     id: ref_id,
     queryOptions: { enabled: isSale },
-    meta: { select: "id,sale_id" },
+    meta: { select: "*,sale:sales(*)" },
   });
 
   if (isPurchase) {
@@ -98,9 +98,7 @@ function RefDocumentButton({ record }: { record: IInventoryTransaction }) {
 export const Show = () => {
   const { result: record, query } = useShow<IInventoryTransaction>({
     meta: {
-      include: {
-        product: { select: { id: true, name: true, type: true } },
-      },
+      select: "*,product:products(*)",
     },
   });
   const { isLoading } = query;

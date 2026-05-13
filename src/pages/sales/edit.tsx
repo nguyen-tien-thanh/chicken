@@ -1,6 +1,13 @@
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { Edit as AntdEdit, useForm } from "@refinedev/antd";
-import { useSelect } from "@refinedev/core";
+import {
+  useCreate,
+  useDelete,
+  useInvalidate,
+  useSelect,
+  useUpdate,
+  useWarnAboutChange,
+} from "@refinedev/core";
 import type { FormProps } from "antd";
 import {
   App,
@@ -22,7 +29,7 @@ import { useEffect, useState } from "react";
 
 import { InputMoney } from "@/components";
 import type { ICustomer, IProduct, ISale, ISaleItem } from "@/types";
-import { SALE_STATUS_OPTIONS } from "@/types";
+import { SALE_STATUS_OPTIONS, type SaleStatus } from "@/types";
 import { formatMoney } from "@/utils";
 
 const { Text } = Typography;
@@ -61,18 +68,19 @@ function newRow(): LineItem {
 export const Edit = () => {
   const { notification } = App.useApp();
   const [lines, setLines] = useState<LineItem[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const { mutateAsync: updateSale } = useUpdate();
+  const { mutateAsync: createItem } = useCreate();
+  const { mutateAsync: updateItem } = useUpdate();
+  const { mutateAsync: deleteItem } = useDelete();
+  const invalidate = useInvalidate();
+  const { setWarnWhen } = useWarnAboutChange();
 
   const { formProps, saveButtonProps, query } = useForm<ISale>({
     resource: "sales",
     meta: {
-      include: {
-        customer: { select: { id: true, name: true, phone: true } },
-        sale_items: {
-          include: {
-            product: { select: { id: true, name: true, type: true } },
-          },
-        },
-      },
+      select: "*,customer:customers(*),sale_items(*,product:products(*))",
     },
   });
 
@@ -125,14 +133,11 @@ export const Edit = () => {
   }, 0);
 
   const onFinish: FormProps["onFinish"] = (values) => {
-    const next = { ...(values as Record<string, unknown>) };
-    delete next.sale_items;
-    delete next.subtotal_amount;
-    delete next.final_amount;
-    delete next.remaining_amount;
-    const sd = next.sale_date;
-    if (sd != null && dayjs.isDayjs(sd)) {
-      next.sale_date = (sd as dayjs.Dayjs).toISOString();
+    const sale = query?.data?.data;
+    const saleId = sale?.id;
+    if (!saleId) {
+      notification.error({ message: "Chưa có dữ liệu phiếu bán" });
+      return Promise.resolve();
     }
     const validLines = lines.filter((row) => row.product_id);
     if (validLines.length === 0) {
@@ -141,16 +146,101 @@ export const Edit = () => {
       });
       return Promise.resolve();
     }
-    next.items = validLines.map((row) => ({
-      ...(row.id ? { id: row.id } : {}),
-      product_id: row.product_id!,
-      quantity: row.quantity,
-      quantity_unit: row.quantity_unit,
-      unit_price: row.unit_price,
-      amount: row.quantity * row.unit_price,
-      note: row.note ?? null,
-    }));
-    return formProps.onFinish?.(next as never);
+    const v = values as Record<string, unknown>;
+    const sd = v.sale_date;
+    const sale_date =
+      sd != null && dayjs.isDayjs(sd)
+        ? (sd as dayjs.Dayjs).toISOString()
+        : typeof sd === "string"
+        ? sd
+        : dayjs(sd as string).toISOString();
+
+    const discount_amount = Number(v.discount_amount ?? 0);
+    const paid_amount = Number(v.paid_amount ?? 0);
+    const subtotal_amount = validLines.reduce(
+      (s, row) => s + row.quantity * row.unit_price,
+      0
+    );
+    const final_amount = Math.max(0, subtotal_amount - discount_amount);
+    const remaining_amount = Math.max(0, final_amount - paid_amount);
+
+    const salePayload = {
+      customer_id: v.customer_id as string,
+      sale_date,
+      note: (v.note as string | null | undefined) ?? null,
+      discount_amount,
+      paid_amount,
+      status: (v.status as SaleStatus) ?? "PENDING",
+      subtotal_amount,
+      final_amount,
+      remaining_amount,
+    };
+
+    return (async () => {
+      setIsSaving(true);
+      try {
+        await updateSale({
+          resource: "sales",
+          id: saleId,
+          values: salePayload,
+        });
+
+        const existingIds = new Set((sale.sale_items ?? []).map((i) => i.id));
+        const nextIds = new Set(
+          validLines.map((r) => r.id).filter(Boolean) as string[]
+        );
+        for (const id of existingIds) {
+          if (!nextIds.has(id)) {
+            await deleteItem({ resource: "sale_items", id });
+          }
+        }
+
+        for (const row of validLines) {
+          const amount = row.quantity * row.unit_price;
+          const itemValues = {
+            product_id: row.product_id!,
+            quantity: row.quantity,
+            quantity_unit: row.quantity_unit,
+            unit_price: row.unit_price,
+            amount,
+            note: row.note ?? null,
+            cost_amount: 0,
+            profit_amount: amount,
+          };
+          if (row.id) {
+            await updateItem({
+              resource: "sale_items",
+              id: row.id,
+              values: itemValues,
+            });
+          } else {
+            await createItem({
+              resource: "sale_items",
+              values: { ...itemValues, sale_id: saleId },
+            });
+          }
+        }
+
+        await invalidate({ resource: "sales", invalidates: ["list"] });
+        await invalidate({ resource: "sale_items", invalidates: ["list"] });
+        const refetched = await query?.refetch();
+        const fresh = refetched?.data?.data as ISale | undefined;
+        if (fresh) {
+          nextKey = 1;
+          setLines((fresh.sale_items ?? []).map(fromExisting));
+        }
+        setWarnWhen(false);
+        notification.success({ message: "Đã cập nhật phiếu bán" });
+      } catch (e: unknown) {
+        const msg =
+          e && typeof e === "object" && "message" in e
+            ? String((e as { message: unknown }).message)
+            : "Không cập nhật được phiếu bán";
+        notification.error({ message: msg });
+      } finally {
+        setIsSaving(false);
+      }
+    })();
   };
 
   const columns = [
@@ -256,7 +346,13 @@ export const Edit = () => {
   ];
 
   return (
-    <AntdEdit saveButtonProps={saveButtonProps}>
+    <AntdEdit
+      saveButtonProps={{
+        ...saveButtonProps,
+        loading: isSaving,
+        disabled: isSaving,
+      }}
+    >
       <Form {...formProps} layout="vertical" onFinish={onFinish}>
         <Form.Item
           label="Khách hàng"

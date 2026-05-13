@@ -31,16 +31,7 @@ const statusColor: Record<SaleStatus, string> = {
 
 export const Show = () => {
   const { result: record, query } = useShow<ISale>({
-    meta: {
-      include: {
-        customer: { select: { id: true, name: true, phone: true } },
-        sale_items: {
-          include: {
-            product: { select: { id: true, name: true, type: true } },
-          },
-        },
-      },
-    },
+    meta: { select: "*,customer:customers(*),sale_items(*,product:products(*))" },
   });
   const { isLoading } = query;
 
