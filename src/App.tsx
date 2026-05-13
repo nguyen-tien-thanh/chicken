@@ -35,10 +35,10 @@ import { supabaseClient } from "./providers/supabase-client";
 
 import { ShowRedirectDrawer, ThemedSider } from "./components";
 import { Customer } from "./pages/customers";
-import { ForgotPassword } from "./pages/forgotPassword";
-import { InventoryTransaction } from "./pages/inventory-transactions";
+import { ForgotPassword } from "./pages/forgot_password";
+import { InventoryTransaction } from "./pages/inventory_transactions";
 import { Login } from "./pages/login";
-import { ProductCategory } from "./pages/product-categories";
+import { ProductCategory } from "./pages/product_categories";
 import { Product } from "./pages/products";
 import { Purchase } from "./pages/purchases";
 import { Register } from "./pages/register";
