@@ -12,6 +12,8 @@
     "@refinedev/kbar": "^2.0.0",
     "@refinedev/react-router": "^2.0.0",
     "@refinedev/supabase": "^6.0.0",
+    "@refinedev/ui-types": "^2.0.1",
+    "@supabase/supabase-js": "^2.105.4",
     "@uiw/react-md-editor": "^4.0.8",
     "antd": "^5.23.0",
     "antd-style": "^4.1.0",
