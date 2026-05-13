@@ -20,7 +20,7 @@ import {
   type ISaleItem,
   type SaleStatus,
 } from "@/types";
-import { formatMoney } from "@/utils";
+import { buildSaleInvoiceQrPayment, formatMoney } from "@/utils";
 
 interface IInvoice extends ISale {
   payment?: {
@@ -60,7 +60,11 @@ export const SaleInvoiceModal = ({ sale_id }: Props) => {
         message.error(error.message);
         return;
       }
-      setInvoice(data as IInvoice);
+      const sale = data as ISale;
+      setInvoice({
+        ...sale,
+        payment: buildSaleInvoiceQrPayment(sale),
+      });
       setOpen(true);
     } finally {
       setFetching(false);
