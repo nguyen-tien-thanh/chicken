@@ -1,5 +1,4 @@
 import { Authenticated, Refine } from "@refinedev/core";
-import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 
 import {
@@ -75,154 +74,148 @@ function App() {
       <RefineKbarProvider>
         <ColorModeContextProvider>
           <AntdApp>
-            <DevtoolsProvider>
-              <Refine
-                dataProvider={dataProvider}
-                liveProvider={liveProvider(supabaseClient)}
-                authProvider={authProvider}
-                routerProvider={routerProvider}
-                notificationProvider={useNotificationProvider}
-                i18nProvider={i18nProvider}
-                resources={[
-                  {
-                    name: "suppliers",
-                    list: "/suppliers",
-                    show: "/suppliers/show/:id",
-                    meta: { canDelete: true, icon: <ShopOutlined /> },
-                  },
-                  {
-                    name: "purchases",
-                    list: "/purchases",
-                    create: "/purchases/create",
-                    edit: "/purchases/edit/:id",
-                    show: "/purchases/show/:id",
-                    meta: { canDelete: true, icon: <FallOutlined /> },
-                  },
-                  {
-                    name: "customers",
-                    list: "/customers",
-                    show: "/customers/show/:id",
-                    meta: { canDelete: true, icon: <UserOutlined /> },
-                  },
-                  {
-                    name: "sales",
-                    list: "/sales",
-                    create: "/sales/create",
-                    edit: "/sales/edit/:id",
-                    show: "/sales/show/:id",
-                    meta: { canDelete: true, icon: <RiseOutlined /> },
-                  },
-                  {
-                    name: "product_categories",
-                    list: "/product_categories",
-                    meta: { canDelete: true },
-                  },
-                  {
-                    name: "products",
-                    list: "/products",
-                    show: "/products/show/:id",
-                    meta: { canDelete: true, icon: <ProductOutlined /> },
-                  },
-                  {
-                    name: "inventory_transactions",
-                    list: "/inventory_transactions",
-                    show: "/inventory_transactions/show/:id",
-                    meta: { icon: <DatabaseOutlined /> },
-                  },
-                ]}
-                options={{
-                  syncWithLocation: true,
-                  warnWhenUnsavedChanges: true,
-                  projectId: "E4hTPi-7vkrZ1-EjwW09",
-                }}
-              >
-                <Routes>
-                  <Route
-                    element={
-                      <Authenticated
-                        key="authenticated-inner"
-                        fallback={<CatchAllNavigate to="/login" />}
+            <Refine
+              dataProvider={dataProvider}
+              liveProvider={liveProvider(supabaseClient)}
+              authProvider={authProvider}
+              routerProvider={routerProvider}
+              notificationProvider={useNotificationProvider}
+              i18nProvider={i18nProvider}
+              resources={[
+                {
+                  name: "suppliers",
+                  list: "/suppliers",
+                  show: "/suppliers/show/:id",
+                  meta: { canDelete: true, icon: <ShopOutlined /> },
+                },
+                {
+                  name: "purchases",
+                  list: "/purchases",
+                  create: "/purchases/create",
+                  edit: "/purchases/edit/:id",
+                  show: "/purchases/show/:id",
+                  meta: { canDelete: true, icon: <FallOutlined /> },
+                },
+                {
+                  name: "customers",
+                  list: "/customers",
+                  show: "/customers/show/:id",
+                  meta: { canDelete: true, icon: <UserOutlined /> },
+                },
+                {
+                  name: "sales",
+                  list: "/sales",
+                  create: "/sales/create",
+                  edit: "/sales/edit/:id",
+                  show: "/sales/show/:id",
+                  meta: { canDelete: true, icon: <RiseOutlined /> },
+                },
+                {
+                  name: "product_categories",
+                  list: "/product_categories",
+                  meta: { canDelete: true },
+                },
+                {
+                  name: "products",
+                  list: "/products",
+                  show: "/products/show/:id",
+                  meta: { canDelete: true, icon: <ProductOutlined /> },
+                },
+                {
+                  name: "inventory_transactions",
+                  list: "/inventory_transactions",
+                  show: "/inventory_transactions/show/:id",
+                  meta: { icon: <DatabaseOutlined /> },
+                },
+              ]}
+              options={{
+                syncWithLocation: true,
+                warnWhenUnsavedChanges: true,
+                projectId: "E4hTPi-7vkrZ1-EjwW09",
+              }}
+            >
+              <Routes>
+                <Route
+                  element={
+                    <Authenticated
+                      key="authenticated-inner"
+                      fallback={<CatchAllNavigate to="/login" />}
+                    >
+                      <ThemedLayout
+                        Header={Header}
+                        Sider={(props) => <ThemedSider {...props} fixed />}
                       >
-                        <ThemedLayout
-                          Header={Header}
-                          Sider={(props) => <ThemedSider {...props} fixed />}
-                        >
-                          <Outlet />
-                        </ThemedLayout>
-                      </Authenticated>
-                    }
-                  >
-                    <Route
-                      index
-                      element={<NavigateToResource resource="suppliers" />}
-                    />
-                    <Route path="/suppliers">
-                      <Route index element={<Supplier.List />} />
-                      <Route path="show/:id" element={<Supplier.Show />} />
-                    </Route>
-                    <Route path="/purchases">
-                      <Route index element={<Purchase.List />} />
-                      <Route path="create" element={<Purchase.Create />} />
-                      <Route path="edit/:id" element={<Purchase.Edit />} />
-                      <Route path="show/:id" element={<Purchase.Show />} />
-                    </Route>
-                    <Route path="/sales">
-                      <Route index element={<Sale.List />} />
-                      <Route path="create" element={<Sale.Create />} />
-                      <Route path="edit/:id" element={<Sale.Edit />} />
-                      <Route path="show/:id" element={<Sale.Show />} />
-                    </Route>
-                    <Route path="/customers">
-                      <Route index element={<Customer.List />} />
-                      <Route path="show/:id" element={<Customer.Show />} />
-                    </Route>
-                    <Route path="/products">
-                      <Route index element={<Product.List />} />
-                      <Route path="show/:id" element={<Product.Show />} />
-                    </Route>
-                    <Route path="/inventory_transactions">
-                      <Route index element={<InventoryTransaction.List />} />
-                      <Route
-                        path="show/:id"
-                        element={<InventoryTransaction.Show />}
-                      />
-                    </Route>
-                    <Route path="/product_categories">
-                      <Route index element={<ProductCategory.List />} />
-                      <Route
-                        path="show/:id"
-                        element={
-                          <ShowRedirectDrawer listPath="/product_categories" />
-                        }
-                      />
-                    </Route>
-                    <Route path="*" element={<ErrorComponent />} />
+                        <Outlet />
+                      </ThemedLayout>
+                    </Authenticated>
+                  }
+                >
+                  <Route
+                    index
+                    element={<NavigateToResource resource="suppliers" />}
+                  />
+                  <Route path="/suppliers">
+                    <Route index element={<Supplier.List />} />
+                    <Route path="show/:id" element={<Supplier.Show />} />
                   </Route>
-                  <Route
-                    element={
-                      <Authenticated
-                        key="authenticated-outer"
-                        fallback={<Outlet />}
-                      >
-                        <NavigateToResource />
-                      </Authenticated>
-                    }
-                  >
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
+                  <Route path="/purchases">
+                    <Route index element={<Purchase.List />} />
+                    <Route path="create" element={<Purchase.Create />} />
+                    <Route path="edit/:id" element={<Purchase.Edit />} />
+                    <Route path="show/:id" element={<Purchase.Show />} />
+                  </Route>
+                  <Route path="/sales">
+                    <Route index element={<Sale.List />} />
+                    <Route path="create" element={<Sale.Create />} />
+                    <Route path="edit/:id" element={<Sale.Edit />} />
+                    <Route path="show/:id" element={<Sale.Show />} />
+                  </Route>
+                  <Route path="/customers">
+                    <Route index element={<Customer.List />} />
+                    <Route path="show/:id" element={<Customer.Show />} />
+                  </Route>
+                  <Route path="/products">
+                    <Route index element={<Product.List />} />
+                    <Route path="show/:id" element={<Product.Show />} />
+                  </Route>
+                  <Route path="/inventory_transactions">
+                    <Route index element={<InventoryTransaction.List />} />
                     <Route
-                      path="/forgot-password"
-                      element={<ForgotPassword />}
+                      path="show/:id"
+                      element={<InventoryTransaction.Show />}
                     />
                   </Route>
-                </Routes>
+                  <Route path="/product_categories">
+                    <Route index element={<ProductCategory.List />} />
+                    <Route
+                      path="show/:id"
+                      element={
+                        <ShowRedirectDrawer listPath="/product_categories" />
+                      }
+                    />
+                  </Route>
+                  <Route path="*" element={<ErrorComponent />} />
+                </Route>
+                <Route
+                  element={
+                    <Authenticated
+                      key="authenticated-outer"
+                      fallback={<Outlet />}
+                    >
+                      <NavigateToResource />
+                    </Authenticated>
+                  }
+                >
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                </Route>
+              </Routes>
 
-                <RefineKbar />
-                <UnsavedChangesNotifier />
-                <DocumentTitleHandler />
-              </Refine>
-              <DevtoolsPanel />
-            </DevtoolsProvider>
+              <RefineKbar />
+              <UnsavedChangesNotifier />
+              <DocumentTitleHandler />
+            </Refine>
           </AntdApp>
         </ColorModeContextProvider>
       </RefineKbarProvider>
