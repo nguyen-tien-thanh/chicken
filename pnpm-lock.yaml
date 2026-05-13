@@ -41,6 +41,9 @@ importers:
       antd-style:
         specifier: ^4.1.0
         version: 4.1.0(@types/react@18.3.28)(antd@5.29.3(react-dom@18.2.0(react@18.2.0))(react@18.2.0))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+      dayjs:
+        specifier: ^1.11.20
+        version: 1.11.20
       i18next:
         specifier: ^26.1.0
         version: 26.1.0(typescript@5.9.3)
