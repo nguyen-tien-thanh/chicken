@@ -1,5 +1,5 @@
-import type { BaseRecord } from "@refinedev/core";
-import { BankName } from "./bank-name-enum";
+import type { BaseRecord } from '@refinedev/core';
+import { BankName } from './bank-name-enum';
 
 export interface ISupplier extends BaseRecord {
   id: string;

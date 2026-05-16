@@ -2,16 +2,16 @@ import {
   MinusCircleOutlined,
   PlusOutlined,
   UserAddOutlined,
-} from "@ant-design/icons";
-import { Create as AntdCreate, useForm } from "@refinedev/antd";
+} from '@ant-design/icons';
+import { Create as AntdCreate, useForm } from '@refinedev/antd';
 import {
   useCreate,
   useCreateMany,
   useInvalidate,
   useSelect,
   useWarnAboutChange,
-} from "@refinedev/core";
-import type { FormProps } from "antd";
+} from '@refinedev/core';
+import type { FormProps } from 'antd';
 import {
   App,
   Button,
@@ -28,15 +28,15 @@ import {
   Table,
   Tooltip,
   Typography,
-} from "antd";
-import dayjs from "dayjs";
-import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+} from 'antd';
+import dayjs from 'dayjs';
+import { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router';
 
-import { InputMoney } from "@/components";
-import type { ICustomer, IProduct } from "@/types";
-import { SALE_STATUS_OPTIONS, type SaleStatus } from "@/types";
-import { formatMoney } from "@/utils";
+import { InputMoney } from '@/components';
+import type { ICustomer, IProduct } from '@/types';
+import { SALE_STATUS_OPTIONS, type SaleStatus } from '@/types';
+import { formatMoney } from '@/utils';
 
 const { Text } = Typography;
 
@@ -44,7 +44,7 @@ type LineItem = {
   key: number;
   product_id?: string;
   quantity: number;
-  quantity_unit: "kg" | "con";
+  quantity_unit: 'kg' | 'con';
   unit_price: number;
   note?: string;
 };
@@ -62,7 +62,7 @@ let nextKey = 1;
 function newRow(): LineItem {
   return {
     key: nextKey++,
-    quantity_unit: "kg",
+    quantity_unit: 'kg',
     quantity: 1,
     unit_price: 0,
   };
@@ -72,11 +72,11 @@ export const Create = () => {
   const { notification } = App.useApp();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const query_customer_id = searchParams.get("customer_id") ?? undefined;
+  const query_customer_id = searchParams.get('customer_id') ?? undefined;
 
   const [lines, setLines] = useState<LineItem[]>([newRow()]);
   const [createCustomerOpen, setCreateCustomerOpen] = useState(false);
-  const [customerSearchText, setCustomerSearchText] = useState("");
+  const [customerSearchText, setCustomerSearchText] = useState('');
   const [createCustomerForm] = Form.useForm();
   const [isSaving, setIsSaving] = useState(false);
 
@@ -87,13 +87,13 @@ export const Create = () => {
   const { setWarnWhen } = useWarnAboutChange();
 
   const { formProps, saveButtonProps, form } = useForm({
-    resource: "sales",
+    resource: 'sales',
     defaultFormValues: {
       ...(query_customer_id ? { customer_id: query_customer_id } : {}),
       sale_date: dayjs(),
       discount_amount: 0,
       paid_amount: 0,
-      status: "PENDING" as SaleStatus,
+      status: 'PENDING' as SaleStatus,
     } as never,
   });
 
@@ -102,29 +102,29 @@ export const Create = () => {
     onSearch: onSearchCustomer,
     query: customersQuery,
   } = useSelect({
-    resource: "customers",
+    resource: 'customers',
     optionLabel: (item: ICustomer) =>
       `${item.name ?? item.phone} (${item.phone})`,
     optionValue: (item: ICustomer) => item.id,
   });
 
   function handleOpenCreateCustomer() {
-    createCustomerForm.setFieldsValue({ phone: customerSearchText, name: "" });
+    createCustomerForm.setFieldsValue({ phone: customerSearchText, name: '' });
     setCreateCustomerOpen(true);
   }
 
   function handleCreateCustomer() {
-    createCustomerForm.validateFields().then((values) => {
+    createCustomerForm.validateFields().then(values => {
       createCustomer(
-        { resource: "customers", values },
+        { resource: 'customers', values },
         {
-          onSuccess: (data) => {
-            form?.setFieldValue("customer_id", data.data.id);
+          onSuccess: data => {
+            form?.setFieldValue('customer_id', data.data.id);
             customersQuery.refetch();
             setCreateCustomerOpen(false);
             createCustomerForm.resetFields();
           },
-        }
+        },
       );
     });
   }
@@ -134,7 +134,7 @@ export const Create = () => {
     onSearch: onSearchProduct,
     query: productsQuery,
   } = useSelect({
-    resource: "products",
+    resource: 'products',
     optionLabel: (item: IProduct) => item.name,
     optionValue: (item: IProduct) => item.id,
   });
@@ -142,15 +142,15 @@ export const Create = () => {
   function updateLine<K extends keyof LineItem>(
     key: number,
     field: K,
-    value: LineItem[K]
+    value: LineItem[K],
   ) {
-    setLines((prev) =>
-      prev.map((row) => (row.key === key ? { ...row, [field]: value } : row))
+    setLines(prev =>
+      prev.map(row => (row.key === key ? { ...row, [field]: value } : row)),
     );
   }
 
   function removeLine(key: number) {
-    setLines((prev) => prev.filter((row) => row.key !== key));
+    setLines(prev => prev.filter(row => row.key !== key));
   }
 
   const subtotal = lines.reduce((sum, row) => {
@@ -158,18 +158,18 @@ export const Create = () => {
     return sum + row.quantity * row.unit_price;
   }, 0);
 
-  const onFinish: FormProps["onFinish"] = (values) => {
+  const onFinish: FormProps['onFinish'] = values => {
     const v = values as FormValues;
-    const validLines = lines.filter((row) => row.product_id);
+    const validLines = lines.filter(row => row.product_id);
     if (validLines.length === 0) {
       notification.warning({
-        message: "Thêm ít nhất một dòng có chọn sản phẩm",
+        message: 'Thêm ít nhất một dòng có chọn sản phẩm',
       });
       return Promise.resolve();
     }
     const discount_amount = Number(v.discount_amount ?? 0);
     const paid_amount = Number(v.paid_amount ?? 0);
-    const items = validLines.map((row) => {
+    const items = validLines.map(row => {
       const amount = row.quantity * row.unit_price;
       return {
         product_id: row.product_id!,
@@ -193,7 +193,7 @@ export const Create = () => {
       note: v.note ?? null,
       discount_amount,
       paid_amount,
-      status: v.status ?? "PENDING",
+      status: v.status ?? 'PENDING',
       subtotal_amount,
       final_amount,
       remaining_amount,
@@ -202,27 +202,27 @@ export const Create = () => {
       setIsSaving(true);
       try {
         const { data: created } = await createSale({
-          resource: "sales",
+          resource: 'sales',
           values: salePayload,
         });
         const saleId = created?.id as string | undefined;
         if (!saleId) {
-          throw new Error("Không lấy được id phiếu bán sau khi tạo");
+          throw new Error('Không lấy được id phiếu bán sau khi tạo');
         }
         await createSaleItems({
-          resource: "sale_items",
-          values: items.map((row) => ({ ...row, sale_id: saleId })),
+          resource: 'sale_items',
+          values: items.map(row => ({ ...row, sale_id: saleId })),
         });
-        await invalidate({ resource: "sales", invalidates: ["list"] });
-        await invalidate({ resource: "sale_items", invalidates: ["list"] });
-        notification.success({ message: "Đã tạo phiếu bán" });
+        await invalidate({ resource: 'sales', invalidates: ['list'] });
+        await invalidate({ resource: 'sale_items', invalidates: ['list'] });
+        notification.success({ message: 'Đã tạo phiếu bán' });
         setWarnWhen(false);
         navigate(`/sales/show/${saleId}`);
       } catch (e: unknown) {
         const msg =
-          e && typeof e === "object" && "message" in e
+          e && typeof e === 'object' && 'message' in e
             ? String((e as { message: unknown }).message)
-            : "Không tạo được phiếu bán";
+            : 'Không tạo được phiếu bán';
         notification.error({ message: msg });
       } finally {
         setIsSaving(false);
@@ -232,14 +232,14 @@ export const Create = () => {
 
   const columns = [
     {
-      title: "#",
+      title: '#',
       width: 44,
       render: (_: unknown, _row: LineItem, index: number) => (
         <Text type="secondary">{index + 1}</Text>
       ),
     },
     {
-      title: "Sản phẩm",
+      title: 'Sản phẩm',
       width: 360,
       render: (_: unknown, row: LineItem) => (
         <Select
@@ -252,73 +252,71 @@ export const Create = () => {
           filterOption={false}
           optionFilterProp="label"
           allowClear
-          style={{ width: "100%" }}
-          onChange={(v) => updateLine(row.key, "product_id", v)}
+          style={{ width: '100%' }}
+          onChange={v => updateLine(row.key, 'product_id', v)}
         />
       ),
     },
     {
-      title: "Số lượng",
+      title: 'Số lượng',
       width: 120,
       render: (_: unknown, row: LineItem) => (
         <InputNumber
           min={0}
           step={0.1}
-          style={{ width: "100%" }}
+          style={{ width: '100%' }}
           value={row.quantity}
-          onChange={(v) => updateLine(row.key, "quantity", v ?? 0)}
+          onChange={v => updateLine(row.key, 'quantity', v ?? 0)}
         />
       ),
     },
     {
-      title: "Đơn vị",
+      title: 'Đơn vị',
       width: 110,
       render: (_: unknown, row: LineItem) => (
         <Select
           value={row.quantity_unit}
           options={[
-            { value: "kg", label: "kg" },
-            { value: "con", label: "con" },
+            { value: 'kg', label: 'kg' },
+            { value: 'con', label: 'con' },
           ]}
-          style={{ width: "100%" }}
-          onChange={(v) => updateLine(row.key, "quantity_unit", v)}
+          style={{ width: '100%' }}
+          onChange={v => updateLine(row.key, 'quantity_unit', v)}
         />
       ),
     },
     {
-      title: "Đơn giá",
+      title: 'Đơn giá',
       width: 160,
       render: (_: unknown, row: LineItem) => (
         <InputMoney
           value={row.unit_price}
-          onChange={(v) =>
-            updateLine(row.key, "unit_price", (v as number) ?? 0)
-          }
+          onChange={v => updateLine(row.key, 'unit_price', (v as number) ?? 0)}
         />
       ),
     },
     {
-      title: "Thành tiền",
+      title: 'Thành tiền',
       width: 160,
       render: (_: unknown, row: LineItem) => (
         <Text strong>{formatMoney(row.quantity * row.unit_price)}</Text>
       ),
     },
     {
-      title: "Ghi chú",
+      title: 'Ghi chú',
       width: 220,
       render: (_: unknown, row: LineItem) => (
         <Input
           placeholder="Tuỳ chọn"
           value={row.note}
-          onChange={(e) => updateLine(row.key, "note", e.target.value)}
+          onChange={e => updateLine(row.key, 'note', e.target.value)}
         />
       ),
     },
     {
-      title: "",
+      title: '',
       width: 52,
-      fixed: "right" as const,
+      fixed: 'right' as const,
       render: (_: unknown, row: LineItem) => (
         <Tooltip title="Xoá dòng">
           <Button
@@ -344,31 +342,31 @@ export const Create = () => {
         <Form.Item
           label="Khách hàng"
           name="customer_id"
-          rules={[{ required: true, message: "Chọn khách hàng" }]}
+          rules={[{ required: true, message: 'Chọn khách hàng' }]}
         >
           <Select
             options={customerOptions}
             loading={customersQuery.isFetching}
             showSearch
-            onSearch={(v) => {
+            onSearch={v => {
               setCustomerSearchText(v);
               onSearchCustomer(v);
             }}
             filterOption={false}
             optionFilterProp="label"
             placeholder="Chọn khách hàng"
-            popupRender={(menu) => (
+            popupRender={menu => (
               <>
                 {menu}
-                <Divider style={{ margin: "4px 0" }} />
+                <Divider style={{ margin: '4px 0' }} />
                 <Button
                   type="link"
                   icon={<UserAddOutlined />}
-                  style={{ width: "100%", textAlign: "left" }}
+                  style={{ width: '100%', textAlign: 'left' }}
                   onClick={handleOpenCreateCustomer}
                 >
                   Tạo khách hàng mới
-                  {customerSearchText ? ` "${customerSearchText}"` : ""}
+                  {customerSearchText ? ` "${customerSearchText}"` : ''}
                 </Button>
               </>
             )}
@@ -388,7 +386,7 @@ export const Create = () => {
             <Form.Item
               label="Số điện thoại"
               name="phone"
-              rules={[{ required: true, message: "Nhập số điện thoại" }]}
+              rules={[{ required: true, message: 'Nhập số điện thoại' }]}
             >
               <Input placeholder="0912345678" />
             </Form.Item>
@@ -406,11 +404,11 @@ export const Create = () => {
             <Form.Item
               label="Ngày bán"
               name="sale_date"
-              rules={[{ required: true, message: "Chọn ngày bán" }]}
+              rules={[{ required: true, message: 'Chọn ngày bán' }]}
             >
               <DatePicker
                 showTime
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 format="DD/MM/YYYY HH:mm"
               />
             </Form.Item>
@@ -425,12 +423,12 @@ export const Create = () => {
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item label="Giảm giá" name="discount_amount">
-              <InputMoney style={{ width: "100%" }} />
+              <InputMoney style={{ width: '100%' }} />
             </Form.Item>
           </Col>
           <Col span={12}>
             <Form.Item label="Đã thanh toán" name="paid_amount">
-              <InputMoney style={{ width: "100%" }} />
+              <InputMoney style={{ width: '100%' }} />
             </Form.Item>
           </Col>
         </Row>
@@ -442,9 +440,9 @@ export const Create = () => {
         <Form.Item label="Chi tiết hàng bán">
           <Space
             style={{
-              width: "100%",
+              width: '100%',
               marginBottom: 8,
-              justifyContent: "space-between",
+              justifyContent: 'space-between',
             }}
             wrap
           >
@@ -455,7 +453,7 @@ export const Create = () => {
               type="primary"
               icon={<PlusOutlined />}
               onClick={() =>
-                setLines((prev) => {
+                setLines(prev => {
                   const last = prev[prev.length - 1];
                   return [
                     ...prev,
@@ -486,10 +484,10 @@ export const Create = () => {
           <div
             style={{
               marginTop: 8,
-              padding: "12px 16px",
-              background: "var(--ant-color-fill-quaternary)",
+              padding: '12px 16px',
+              background: 'var(--ant-color-fill-quaternary)',
               borderRadius: 8,
-              textAlign: "right",
+              textAlign: 'right',
             }}
           >
             <Text type="secondary">Tổng thành tiền (ước tính): </Text>

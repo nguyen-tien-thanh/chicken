@@ -1,8 +1,8 @@
-import type { BaseRecord } from "@refinedev/core";
+import type { BaseRecord } from '@refinedev/core';
 
-import type { ICustomer } from "./customer";
-import type { ISaleItem } from "./sale-item";
-import type { SaleStatus } from "./sale-status";
+import type { ICustomer } from './customer';
+import type { ISaleItem } from './sale-item';
+import type { SaleStatus } from './sale-status';
 
 export interface ISale extends BaseRecord {
   id: string;
@@ -18,6 +18,6 @@ export interface ISale extends BaseRecord {
   created_at: string;
   updated_at: string;
   deleted_at?: string | null;
-  customer?: Pick<ICustomer, "id" | "name" | "phone">;
+  customer?: Pick<ICustomer, 'id' | 'name' | 'phone'>;
   sale_items?: ISaleItem[];
 }

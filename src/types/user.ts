@@ -1,6 +1,6 @@
-import type { BaseRecord } from "@refinedev/core";
+import type { BaseRecord } from '@refinedev/core';
 
-import type { IRole } from "./role";
+import type { IRole } from './role';
 
 export interface IUser extends BaseRecord {
   id: string;
@@ -11,5 +11,5 @@ export interface IUser extends BaseRecord {
   password?: string;
   created_at: string;
   updated_at: string;
-  role?: Pick<IRole, "id" | "name" | "description">;
+  role?: Pick<IRole, 'id' | 'name' | 'description'>;
 }

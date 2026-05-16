@@ -1,4 +1,4 @@
-import type { BaseRecord } from "@refinedev/core";
+import type { BaseRecord } from '@refinedev/core';
 
 export interface IProductCategory extends BaseRecord {
   id: string;

@@ -1,2 +1,2 @@
-export * from "./useMediaQuery";
-export * from "./useResponsiveDrawerWidth";
+export * from './useMediaQuery';
+export * from './useResponsiveDrawerWidth';

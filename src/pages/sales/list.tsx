@@ -4,38 +4,38 @@ import {
   EditButton,
   ShowButton,
   useTable,
-} from "@refinedev/antd";
-import { Space, Table, Tag, Typography } from "antd";
-import dayjs from "dayjs";
-import { Link, useSearchParams } from "react-router";
+} from '@refinedev/antd';
+import { Space, Table, Tag, Typography } from 'antd';
+import dayjs from 'dayjs';
+import { Link, useSearchParams } from 'react-router';
 
-import { RelativeTime } from "@/components/relative-time";
-import { SALE_STATUS_LABELS, type ISale, type SaleStatus } from "@/types";
-import { formatMoney } from "@/utils";
+import { RelativeTime } from '@/components/relative-time';
+import { SALE_STATUS_LABELS, type ISale, type SaleStatus } from '@/types';
+import { formatMoney } from '@/utils';
 
 const statusColor: Record<SaleStatus, string> = {
-  PENDING: "orange",
-  PAID: "green",
-  CANCELLED: "red",
+  PENDING: 'orange',
+  PAID: 'green',
+  CANCELLED: 'red',
 };
 
 export const List = () => {
   const [searchParams] = useSearchParams();
-  const customer_idParam = searchParams.get("customer_id");
+  const customer_idParam = searchParams.get('customer_id');
 
   const { tableProps } = useTable<ISale>({
     syncWithLocation: true,
-    resource: "sales",
+    resource: 'sales',
     meta: {
-      select: "*,customer:customers(*),sale_items(*,product:products(*))",
+      select: '*,customer:customers(*),sale_items(*,product:products(*))',
     },
     filters: {
       ...(customer_idParam
         ? {
             permanent: [
               {
-                field: "customer_id",
-                operator: "eq",
+                field: 'customer_id',
+                operator: 'eq',
                 value: customer_idParam,
               },
             ],
@@ -43,7 +43,7 @@ export const List = () => {
         : {}),
       initial: [],
     },
-    sorters: { initial: [{ field: "sale_date", order: "desc" }] },
+    sorters: { initial: [{ field: 'sale_date', order: 'desc' }] },
   });
 
   return (
@@ -55,7 +55,7 @@ export const List = () => {
           defaultSortOrder="descend"
           dataIndex="sale_date"
           render={(_, r: ISale) =>
-            r.sale_date ? dayjs(r.sale_date).format("DD/MM/YYYY") : "—"
+            r.sale_date ? dayjs(r.sale_date).format('DD/MM/YYYY') : '—'
           }
         />
         <Table.Column
@@ -67,7 +67,7 @@ export const List = () => {
                 {r.customer.name ?? r.customer.phone}
               </Link>
             ) : (
-              r.customer_id ?? "—"
+              r.customer_id ?? '—'
             )
           }
         />
@@ -107,7 +107,7 @@ export const List = () => {
         <Table.Column
           title="Ghi chú"
           dataIndex="note"
-          responsive={["xl"]}
+          responsive={['xl']}
           render={(v: string) =>
             v ? (
               <Typography.Text ellipsis style={{ maxWidth: 200 }}>
@@ -120,8 +120,8 @@ export const List = () => {
           dataIndex="created_at"
           title="Ngày tạo"
           sorter
-          responsive={["xl"]}
-          render={(v: string) => (v ? <RelativeTime value={v} /> : "—")}
+          responsive={['xl']}
+          render={(v: string) => (v ? <RelativeTime value={v} /> : '—')}
         />
         <Table.Column
           title="Thao tác"

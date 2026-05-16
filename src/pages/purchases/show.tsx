@@ -1,16 +1,18 @@
-import { Show as AntdShow } from "@refinedev/antd";
-import { useShow } from "@refinedev/core";
-import { Button, Card, Descriptions, Space, Table, Typography } from "antd";
-import dayjs from "dayjs";
-import { Link } from "react-router";
+import { Show as AntdShow } from '@refinedev/antd';
+import { useShow } from '@refinedev/core';
+import { Button, Card, Descriptions, Space, Table, Typography } from 'antd';
+import dayjs from 'dayjs';
+import { Link } from 'react-router';
 
-import { RelativeTime } from "@/components/relative-time";
-import type { IPurchase, IPurchaseItem } from "@/types";
-import { formatMoney } from "@/utils";
+import { RelativeTime } from '@/components/relative-time';
+import type { IPurchase, IPurchaseItem } from '@/types';
+import { formatMoney } from '@/utils';
 
 export const Show = () => {
   const { result: record, query } = useShow<IPurchase>({
-    meta: { select: "*,supplier:suppliers(*),purchase_items(*,product:products(*))" },
+    meta: {
+      select: '*,supplier:suppliers(*),purchase_items(*,product:products(*))',
+    },
   });
   const { isLoading } = query;
 
@@ -33,13 +35,13 @@ export const Show = () => {
         <Descriptions bordered column={2} size="small">
           <Descriptions.Item label="Mã phiếu">
             <Typography.Text copyable={!!record?.id}>
-              {record?.id ?? "—"}
+              {record?.id ?? '—'}
             </Typography.Text>
           </Descriptions.Item>
           <Descriptions.Item label="Ngày nhập">
             {record?.purchase_date
-              ? dayjs(record.purchase_date).format("DD/MM/YYYY")
-              : "—"}
+              ? dayjs(record.purchase_date).format('DD/MM/YYYY')
+              : '—'}
           </Descriptions.Item>
           <Descriptions.Item label="Nhà cung cấp" span={2}>
             {record?.supplier ? (
@@ -47,11 +49,11 @@ export const Show = () => {
                 {record.supplier.name} — {record.supplier.phone}
               </Link>
             ) : (
-              record?.supplier_id ?? "—"
+              record?.supplier_id ?? '—'
             )}
           </Descriptions.Item>
           <Descriptions.Item label="Trung bình">
-            {record?.average_weight ?? "—"} kg/con
+            {record?.average_weight ?? '—'} kg/con
           </Descriptions.Item>
           <Descriptions.Item label="Tổng tiền">
             <Typography.Text strong>
@@ -59,26 +61,26 @@ export const Show = () => {
             </Typography.Text>
           </Descriptions.Item>
           <Descriptions.Item label="Số lượng lồng">
-            {record?.cages_count ?? "—"} lồng
+            {record?.cages_count ?? '—'} lồng
           </Descriptions.Item>
           <Descriptions.Item label="Tổng trọng lượng lồng">
-            {record?.cages_weight ?? "—"} kg
+            {record?.cages_weight ?? '—'} kg
           </Descriptions.Item>
           <Descriptions.Item label="Ghi chú" span={2}>
-            {record?.note ?? "—"}
+            {record?.note ?? '—'}
           </Descriptions.Item>
           <Descriptions.Item label="Ngày tạo">
             {record?.created_at ? (
               <RelativeTime value={record.created_at} />
             ) : (
-              "—"
+              '—'
             )}
           </Descriptions.Item>
           <Descriptions.Item label="Cập nhật">
             {record?.updated_at ? (
               <RelativeTime value={record.updated_at} />
             ) : (
-              "—"
+              '—'
             )}
           </Descriptions.Item>
         </Descriptions>
@@ -95,7 +97,7 @@ export const Show = () => {
         scroll={{ x: true }}
         columns={[
           {
-            title: "Sản phẩm",
+            title: 'Sản phẩm',
             render: (_, row) =>
               row.product ? (
                 <Link to={`/products/show/${row.product.id}`}>
@@ -105,19 +107,19 @@ export const Show = () => {
                 row.product_id
               ),
           },
-          { dataIndex: "quantity", title: "Số lượng" },
-          { dataIndex: "quantity_unit", title: "Đơn vị" },
+          { dataIndex: 'quantity', title: 'Số lượng' },
+          { dataIndex: 'quantity_unit', title: 'Đơn vị' },
           {
-            dataIndex: "unit_price",
-            title: "Đơn giá",
+            dataIndex: 'unit_price',
+            title: 'Đơn giá',
             render: (n: number) => formatMoney(n),
           },
           {
-            dataIndex: "amount",
-            title: "Thành tiền",
+            dataIndex: 'amount',
+            title: 'Thành tiền',
             render: (n: number) => formatMoney(n),
           },
-          { dataIndex: "note", title: "Ghi chú", ellipsis: true },
+          { dataIndex: 'note', title: 'Ghi chú', ellipsis: true },
         ]}
       />
     </AntdShow>

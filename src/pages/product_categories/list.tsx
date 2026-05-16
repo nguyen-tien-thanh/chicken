@@ -1,13 +1,13 @@
-import { EditOutlined, EyeOutlined, PlusOutlined } from "@ant-design/icons";
+import { EditOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   List as AntdList,
   DeleteButton,
   FilterDropdown,
   useDrawerForm,
   useTable,
-} from "@refinedev/antd";
-import type { BaseRecord } from "@refinedev/core";
-import { useShow } from "@refinedev/core";
+} from '@refinedev/antd';
+import type { BaseRecord } from '@refinedev/core';
+import { useShow } from '@refinedev/core';
 import {
   Button,
   Descriptions,
@@ -18,14 +18,14 @@ import {
   Spin,
   Table,
   Tooltip,
-} from "antd";
-import dayjs from "dayjs";
-import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router";
+} from 'antd';
+import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
 
-import type { IProductCategory } from "@/types";
+import type { IProductCategory } from '@/types';
 
-const DRAWER_WIDTH = "45vw";
+const DRAWER_WIDTH = '45vw';
 
 export const List = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -38,8 +38,8 @@ export const List = () => {
     show: showCreateDrawer,
     close: closeCreateDrawer,
   } = useDrawerForm({
-    resource: "product_categories",
-    action: "create",
+    resource: 'product_categories',
+    action: 'create',
     syncWithLocation: false,
   });
 
@@ -50,36 +50,36 @@ export const List = () => {
     show: showEditDrawer,
     close: closeEditDrawer,
   } = useDrawerForm({
-    resource: "product_categories",
-    action: "edit",
+    resource: 'product_categories',
+    action: 'edit',
     syncWithLocation: false,
   });
 
   const { result: showRecord, query: showQuery } = useShow<IProductCategory>({
-    resource: "product_categories",
-    id: showId ?? "",
+    resource: 'product_categories',
+    id: showId ?? '',
     queryOptions: { enabled: !!showId },
   });
 
   useEffect(() => {
-    const id = searchParams.get("show");
+    const id = searchParams.get('show');
     if (!id) return;
     setShowId(id);
     setSearchParams(
-      (prev) => {
+      prev => {
         const next = new URLSearchParams(prev);
-        next.delete("show");
+        next.delete('show');
         return next;
       },
-      { replace: true }
+      { replace: true },
     );
   }, [searchParams, setSearchParams]);
 
   const { tableProps } = useTable<IProductCategory>({
     syncWithLocation: true,
-    resource: "product_categories",
+    resource: 'product_categories',
     filters: {
-      initial: [{ field: "name", operator: "contains", value: undefined }],
+      initial: [{ field: 'name', operator: 'contains', value: undefined }],
     },
   });
 
@@ -100,7 +100,7 @@ export const List = () => {
           dataIndex="name"
           title="Tên danh mục"
           sorter
-          filterDropdown={(props) => (
+          filterDropdown={props => (
             <FilterDropdown {...props} children={<Input.Search />} />
           )}
         />
@@ -108,14 +108,14 @@ export const List = () => {
           dataIndex="created_at"
           title="Ngày tạo"
           render={(v: string | null) =>
-            v ? dayjs(v).format("DD/MM/YYYY HH:mm") : "—"
+            v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—'
           }
         />
         <Table.Column
           dataIndex="deleted_at"
           title="Ngày xóa mềm"
           render={(v: string | null) =>
-            v ? dayjs(v).format("DD/MM/YYYY HH:mm") : "—"
+            v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—'
           }
         />
         <Table.Column
@@ -160,7 +160,7 @@ export const List = () => {
           <Form.Item
             label="Tên danh mục"
             name="name"
-            rules={[{ required: true, message: "Vui lòng nhập tên danh mục" }]}
+            rules={[{ required: true, message: 'Vui lòng nhập tên danh mục' }]}
           >
             <Input />
           </Form.Item>
@@ -184,7 +184,7 @@ export const List = () => {
           <Form.Item
             label="Tên danh mục"
             name="name"
-            rules={[{ required: true, message: "Vui lòng nhập tên danh mục" }]}
+            rules={[{ required: true, message: 'Vui lòng nhập tên danh mục' }]}
           >
             <Input />
           </Form.Item>
@@ -208,8 +208,8 @@ export const List = () => {
             </Descriptions.Item>
             <Descriptions.Item label="Ngày xóa mềm">
               {showRecord?.deleted_at
-                ? dayjs(showRecord.deleted_at).format("DD/MM/YYYY HH:mm")
-                : "—"}
+                ? dayjs(showRecord.deleted_at).format('DD/MM/YYYY HH:mm')
+                : '—'}
             </Descriptions.Item>
           </Descriptions>
         )}

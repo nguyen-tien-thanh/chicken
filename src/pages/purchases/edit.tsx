@@ -1,5 +1,5 @@
-import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
-import { Edit as AntdEdit, useForm } from "@refinedev/antd";
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import { Edit as AntdEdit, useForm } from '@refinedev/antd';
 import {
   useCreate,
   useDelete,
@@ -7,8 +7,8 @@ import {
   useSelect,
   useUpdate,
   useWarnAboutChange,
-} from "@refinedev/core";
-import type { FormProps } from "antd";
+} from '@refinedev/core';
+import type { FormProps } from 'antd';
 import {
   App,
   Button,
@@ -23,13 +23,13 @@ import {
   Table,
   Tooltip,
   Typography,
-} from "antd";
-import dayjs from "dayjs";
-import { useEffect, useState } from "react";
+} from 'antd';
+import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
 
-import { InputMoney } from "@/components";
-import type { IProduct, IPurchase, IPurchaseItem, ISupplier } from "@/types";
-import { formatMoney } from "@/utils";
+import { InputMoney } from '@/components';
+import type { IProduct, IPurchase, IPurchaseItem, ISupplier } from '@/types';
+import { formatMoney } from '@/utils';
 
 const { Text } = Typography;
 
@@ -38,7 +38,7 @@ type LineItem = {
   id?: string;
   product_id?: string;
   quantity: number;
-  quantity_unit: "kg" | "con";
+  quantity_unit: 'kg' | 'con';
   unit_price: number;
   note?: string;
 };
@@ -50,7 +50,7 @@ function fromExisting(item: IPurchaseItem): LineItem {
     id: item.id,
     product_id: item.product_id,
     quantity: item.quantity,
-    quantity_unit: item.quantity_unit as "kg" | "con",
+    quantity_unit: item.quantity_unit as 'kg' | 'con',
     unit_price: item.unit_price,
     note: item.note ?? undefined,
   };
@@ -58,7 +58,7 @@ function fromExisting(item: IPurchaseItem): LineItem {
 function newRow(): LineItem {
   return {
     key: nextKey++,
-    quantity_unit: "kg",
+    quantity_unit: 'kg',
     quantity: 1,
     unit_price: 0,
   };
@@ -77,8 +77,10 @@ export const Edit = () => {
   const { setWarnWhen } = useWarnAboutChange();
 
   const { formProps, saveButtonProps, query } = useForm<IPurchase>({
-    resource: "purchases",
-    meta: { select: "*,supplier:suppliers(*),purchase_items(*,product:products(*))" },
+    resource: 'purchases',
+    meta: {
+      select: '*,supplier:suppliers(*),purchase_items(*,product:products(*))',
+    },
   });
 
   // Sync line items khi data load xong
@@ -94,7 +96,7 @@ export const Edit = () => {
     onSearch: onSearchSupplier,
     query: suppliersQuery,
   } = useSelect({
-    resource: "suppliers",
+    resource: 'suppliers',
     optionLabel: (item: ISupplier) => `${item.name} (${item.phone})`,
     optionValue: (item: ISupplier) => item.id,
   });
@@ -104,7 +106,7 @@ export const Edit = () => {
     onSearch: onSearchProduct,
     query: productsQuery,
   } = useSelect({
-    resource: "products",
+    resource: 'products',
     optionLabel: (item: IProduct) => item.name,
     optionValue: (item: IProduct) => item.id,
   });
@@ -112,15 +114,15 @@ export const Edit = () => {
   function updateLine<K extends keyof LineItem>(
     key: number,
     field: K,
-    value: LineItem[K]
+    value: LineItem[K],
   ) {
-    setLines((prev) =>
-      prev.map((row) => (row.key === key ? { ...row, [field]: value } : row))
+    setLines(prev =>
+      prev.map(row => (row.key === key ? { ...row, [field]: value } : row)),
     );
   }
 
   function removeLine(key: number) {
-    setLines((prev) => prev.filter((row) => row.key !== key));
+    setLines(prev => prev.filter(row => row.key !== key));
   }
 
   const total = lines.reduce((sum, row) => {
@@ -128,17 +130,17 @@ export const Edit = () => {
     return sum + row.quantity * row.unit_price;
   }, 0);
 
-  const onFinish: FormProps["onFinish"] = (values) => {
+  const onFinish: FormProps['onFinish'] = values => {
     const purchase = query?.data?.data;
     const purchaseId = purchase?.id;
     if (!purchaseId) {
-      notification.error({ message: "Chưa có dữ liệu phiếu nhập" });
+      notification.error({ message: 'Chưa có dữ liệu phiếu nhập' });
       return Promise.resolve();
     }
-    const validLines = lines.filter((row) => row.product_id);
+    const validLines = lines.filter(row => row.product_id);
     if (validLines.length === 0) {
       notification.warning({
-        message: "Thêm ít nhất một dòng có chọn sản phẩm",
+        message: 'Thêm ít nhất một dòng có chọn sản phẩm',
       });
       return Promise.resolve();
     }
@@ -147,13 +149,13 @@ export const Edit = () => {
     const purchase_date =
       pd != null && dayjs.isDayjs(pd)
         ? (pd as dayjs.Dayjs).toISOString()
-        : typeof pd === "string"
-          ? pd
-          : dayjs(pd as string).toISOString();
+        : typeof pd === 'string'
+        ? pd
+        : dayjs(pd as string).toISOString();
 
     const total_amount = validLines.reduce(
       (s, row) => s + row.quantity * row.unit_price,
-      0
+      0,
     );
     const purchasePayload = {
       supplier_id: v.supplier_id as string,
@@ -169,20 +171,20 @@ export const Edit = () => {
       setIsSaving(true);
       try {
         await updatePurchase({
-          resource: "purchases",
+          resource: 'purchases',
           id: purchaseId,
           values: purchasePayload,
         });
 
         const existingIds = new Set(
-          (purchase.purchase_items ?? []).map((i) => i.id)
+          (purchase.purchase_items ?? []).map(i => i.id),
         );
         const nextIds = new Set(
-          validLines.map((r) => r.id).filter(Boolean) as string[]
+          validLines.map(r => r.id).filter(Boolean) as string[],
         );
         for (const id of existingIds) {
           if (!nextIds.has(id)) {
-            await deleteItem({ resource: "purchase_items", id });
+            await deleteItem({ resource: 'purchase_items', id });
           }
         }
 
@@ -197,20 +199,20 @@ export const Edit = () => {
           };
           if (row.id) {
             await updateItem({
-              resource: "purchase_items",
+              resource: 'purchase_items',
               id: row.id,
               values: itemValues,
             });
           } else {
             await createItem({
-              resource: "purchase_items",
+              resource: 'purchase_items',
               values: { ...itemValues, purchase_id: purchaseId },
             });
           }
         }
 
-        await invalidate({ resource: "purchases", invalidates: ["list"] });
-        await invalidate({ resource: "purchase_items", invalidates: ["list"] });
+        await invalidate({ resource: 'purchases', invalidates: ['list'] });
+        await invalidate({ resource: 'purchase_items', invalidates: ['list'] });
         const refetched = await query?.refetch();
         const fresh = refetched?.data?.data as IPurchase | undefined;
         if (fresh) {
@@ -218,12 +220,12 @@ export const Edit = () => {
           setLines((fresh.purchase_items ?? []).map(fromExisting));
         }
         setWarnWhen(false);
-        notification.success({ message: "Đã cập nhật phiếu nhập" });
+        notification.success({ message: 'Đã cập nhật phiếu nhập' });
       } catch (e: unknown) {
         const msg =
-          e && typeof e === "object" && "message" in e
+          e && typeof e === 'object' && 'message' in e
             ? String((e as { message: unknown }).message)
-            : "Không cập nhật được phiếu nhập";
+            : 'Không cập nhật được phiếu nhập';
         notification.error({ message: msg });
       } finally {
         setIsSaving(false);
@@ -233,14 +235,14 @@ export const Edit = () => {
 
   const columns = [
     {
-      title: "#",
+      title: '#',
       width: 44,
       render: (_: unknown, _row: LineItem, index: number) => (
         <Text type="secondary">{index + 1}</Text>
       ),
     },
     {
-      title: "Sản phẩm",
+      title: 'Sản phẩm',
       width: 360,
       render: (_: unknown, row: LineItem) => (
         <Select
@@ -253,73 +255,71 @@ export const Edit = () => {
           filterOption={false}
           optionFilterProp="label"
           allowClear
-          style={{ width: "100%" }}
-          onChange={(v) => updateLine(row.key, "product_id", v)}
+          style={{ width: '100%' }}
+          onChange={v => updateLine(row.key, 'product_id', v)}
         />
       ),
     },
     {
-      title: "Số lượng",
+      title: 'Số lượng',
       width: 120,
       render: (_: unknown, row: LineItem) => (
         <InputNumber
           min={0}
           step={0.1}
-          style={{ width: "100%" }}
+          style={{ width: '100%' }}
           value={row.quantity}
-          onChange={(v) => updateLine(row.key, "quantity", v ?? 0)}
+          onChange={v => updateLine(row.key, 'quantity', v ?? 0)}
         />
       ),
     },
     {
-      title: "Đơn vị",
+      title: 'Đơn vị',
       width: 110,
       render: (_: unknown, row: LineItem) => (
         <Select
           value={row.quantity_unit}
           options={[
-            { value: "kg", label: "kg" },
-            { value: "con", label: "con" },
+            { value: 'kg', label: 'kg' },
+            { value: 'con', label: 'con' },
           ]}
-          style={{ width: "100%" }}
-          onChange={(v) => updateLine(row.key, "quantity_unit", v)}
+          style={{ width: '100%' }}
+          onChange={v => updateLine(row.key, 'quantity_unit', v)}
         />
       ),
     },
     {
-      title: "Đơn giá",
+      title: 'Đơn giá',
       width: 160,
       render: (_: unknown, row: LineItem) => (
         <InputMoney
           value={row.unit_price}
-          onChange={(v) =>
-            updateLine(row.key, "unit_price", (v as number) ?? 0)
-          }
+          onChange={v => updateLine(row.key, 'unit_price', (v as number) ?? 0)}
         />
       ),
     },
     {
-      title: "Thành tiền",
+      title: 'Thành tiền',
       width: 160,
       render: (_: unknown, row: LineItem) => (
         <Text strong>{formatMoney(row.quantity * row.unit_price)}</Text>
       ),
     },
     {
-      title: "Ghi chú",
+      title: 'Ghi chú',
       width: 220,
       render: (_: unknown, row: LineItem) => (
         <Input
           placeholder="Tuỳ chọn"
           value={row.note}
-          onChange={(e) => updateLine(row.key, "note", e.target.value)}
+          onChange={e => updateLine(row.key, 'note', e.target.value)}
         />
       ),
     },
     {
-      title: "",
+      title: '',
       width: 52,
-      fixed: "right" as const,
+      fixed: 'right' as const,
       render: (_: unknown, row: LineItem) => (
         <Tooltip title="Xoá dòng">
           <Button
@@ -361,8 +361,8 @@ export const Edit = () => {
             <Form.Item
               label="Ngày nhập"
               name="purchase_date"
-              rules={[{ required: true, message: "Chọn ngày nhập" }]}
-              getValueProps={(value) => ({
+              rules={[{ required: true, message: 'Chọn ngày nhập' }]}
+              getValueProps={value => ({
                 value:
                   value && dayjs(value as string).isValid()
                     ? dayjs(value as string)
@@ -371,7 +371,7 @@ export const Edit = () => {
             >
               <DatePicker
                 showTime={false}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
                 format="DD/MM/YYYY"
               />
             </Form.Item>
@@ -386,7 +386,7 @@ export const Edit = () => {
                 suffix="kg/con"
                 min={0}
                 step={0.1}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
               />
             </Form.Item>
           </Col>
@@ -399,7 +399,7 @@ export const Edit = () => {
               name="cages_count"
               rules={[{ required: true }]}
             >
-              <InputNumber suffix="lồng" min={0} style={{ width: "100%" }} />
+              <InputNumber suffix="lồng" min={0} style={{ width: '100%' }} />
             </Form.Item>
           </Col>
           <Col span={12}>
@@ -412,7 +412,7 @@ export const Edit = () => {
                 suffix="kg"
                 min={0}
                 step={0.1}
-                style={{ width: "100%" }}
+                style={{ width: '100%' }}
               />
             </Form.Item>
           </Col>
@@ -425,9 +425,9 @@ export const Edit = () => {
         <Form.Item label="Chi tiết hàng nhập">
           <Space
             style={{
-              width: "100%",
+              width: '100%',
               marginBottom: 8,
-              justifyContent: "space-between",
+              justifyContent: 'space-between',
             }}
             wrap
           >
@@ -437,7 +437,7 @@ export const Edit = () => {
             <Button
               type="primary"
               icon={<PlusOutlined />}
-              onClick={() => setLines((prev) => [...prev, newRow()])}
+              onClick={() => setLines(prev => [...prev, newRow()])}
             >
               Thêm dòng
             </Button>
@@ -453,10 +453,10 @@ export const Edit = () => {
           <div
             style={{
               marginTop: 8,
-              padding: "12px 16px",
-              background: "var(--ant-color-fill-quaternary)",
+              padding: '12px 16px',
+              background: 'var(--ant-color-fill-quaternary)',
               borderRadius: 8,
-              textAlign: "right",
+              textAlign: 'right',
             }}
           >
             <Text type="secondary">Tổng thành tiền (ước tính): </Text>

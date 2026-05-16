@@ -1,26 +1,26 @@
-import type { CrudFilter, DataProvider } from "@refinedev/core";
+import type { CrudFilter, DataProvider } from '@refinedev/core';
 import {
   handleError,
   dataProvider as supabaseDataProvider,
-} from "@refinedev/supabase";
+} from '@refinedev/supabase';
 
-import { supabaseClient } from "./supabase-client";
+import { supabaseClient } from './supabase-client';
 
 /** Tables with `deleted_at` — delete becomes update, reads exclude non-null `deleted_at`. */
 const SOFT_DELETE_FROM = new Set([
-  "customers",
-  "suppliers",
-  "products",
-  "product_categories",
-  "sales",
-  "sale_items",
-  "purchases",
-  "purchase_items",
+  'customers',
+  'suppliers',
+  'products',
+  'product_categories',
+  'sales',
+  'sale_items',
+  'purchases',
+  'purchase_items',
 ]);
 
 const notDeletedFilter: CrudFilter = {
-  field: "deleted_at",
-  operator: "null",
+  field: 'deleted_at',
+  operator: 'null',
   value: true,
 };
 
@@ -32,7 +32,7 @@ function deletedAtNow(): string {
 
 export const dataProvider = {
   ...base,
-  getList: (params) => {
+  getList: params => {
     if (SOFT_DELETE_FROM.has(params.resource)) {
       return base.getList({
         ...params,
@@ -41,7 +41,7 @@ export const dataProvider = {
     }
     return base.getList(params);
   },
-  getMany: async (params) => {
+  getMany: async params => {
     if (!SOFT_DELETE_FROM.has(params.resource)) {
       return base.getMany(params);
     }
@@ -52,9 +52,9 @@ export const dataProvider = {
 
     const qb = client.from(resource) as any;
     const chain = qb
-      .select(meta?.select ?? "*")
-      .is("deleted_at", null)
-      .in(meta?.idColumnName ?? "id", ids);
+      .select(meta?.select ?? '*')
+      .is('deleted_at', null)
+      .in(meta?.idColumnName ?? 'id', ids);
 
     const { data, error } = await chain;
     if (error) {
@@ -64,7 +64,7 @@ export const dataProvider = {
       data: data || [],
     } as any;
   },
-  getOne: async (params) => {
+  getOne: async params => {
     if (!SOFT_DELETE_FROM.has(params.resource)) {
       return base.getOne(params);
     }
@@ -74,7 +74,7 @@ export const dataProvider = {
       : supabaseClient;
 
     const qb = client.from(resource) as any;
-    const chain = qb.select(meta?.select ?? "*").is("deleted_at", null);
+    const chain = qb.select(meta?.select ?? '*').is('deleted_at', null);
 
     if (meta?.idColumnName) {
       chain.eq(meta.idColumnName, id);
@@ -90,7 +90,7 @@ export const dataProvider = {
       data: (data || [])[0],
     } as any;
   },
-  deleteOne: async (params) => {
+  deleteOne: async params => {
     if (!SOFT_DELETE_FROM.has(params.resource)) {
       return base.deleteOne(params);
     }
@@ -102,7 +102,7 @@ export const dataProvider = {
     const qb = client.from(resource) as any;
     let chain = qb
       .update({ deleted_at: deletedAtNow() })
-      .select(meta?.select ?? "*");
+      .select(meta?.select ?? '*');
 
     if (meta?.idColumnName) {
       chain = chain.eq(meta.idColumnName, id);
@@ -118,7 +118,7 @@ export const dataProvider = {
       data: (data || [])[0],
     } as any;
   },
-  deleteMany: async (params) => {
+  deleteMany: async params => {
     if (!SOFT_DELETE_FROM.has(params.resource)) {
       return base.deleteMany(params);
     }
@@ -133,12 +133,12 @@ export const dataProvider = {
     const qb = client.from(resource) as any;
     let chain = qb
       .update({ deleted_at: deletedAtNow() })
-      .select(meta?.select ?? "*");
+      .select(meta?.select ?? '*');
 
     if (meta?.idColumnName) {
       chain = chain.in(meta.idColumnName, ids);
     } else {
-      chain = chain.in("id", ids);
+      chain = chain.in('id', ids);
     }
 
     const { data, error } = await chain;

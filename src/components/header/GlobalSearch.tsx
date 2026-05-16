@@ -1,10 +1,10 @@
-import type { ICustomer } from "@/types/customer";
-import type { IProduct } from "@/types/product";
-import type { IPurchase } from "@/types/purchase";
-import type { ISale } from "@/types/sale";
-import type { ISupplier } from "@/types/supplier";
-import { formatMoney } from "@/utils/formatMoney";
-import { normalizeVietnamese } from "@/utils/normalizeVietnamese";
+import type { ICustomer } from '@/types/customer';
+import type { IProduct } from '@/types/product';
+import type { IPurchase } from '@/types/purchase';
+import type { ISale } from '@/types/sale';
+import type { ISupplier } from '@/types/supplier';
+import { formatMoney } from '@/utils/formatMoney';
+import { normalizeVietnamese } from '@/utils/normalizeVietnamese';
 import {
   AppstoreOutlined,
   FallOutlined,
@@ -12,13 +12,13 @@ import {
   SearchOutlined,
   ShopOutlined,
   UserOutlined,
-} from "@ant-design/icons";
-import { useList } from "@refinedev/core";
-import { AutoComplete, Input, Typography } from "antd";
-import type { DefaultOptionType } from "antd/es/select";
-import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router";
-import { useStyles } from "./styled";
+} from '@ant-design/icons';
+import { useList } from '@refinedev/core';
+import { AutoComplete, Input, Typography } from 'antd';
+import type { DefaultOptionType } from 'antd/es/select';
+import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router';
+import { useStyles } from './styled';
 
 const { Text } = Typography;
 
@@ -31,7 +31,7 @@ function highlight(text: string, query: string): React.ReactNode {
   return (
     <>
       {text.slice(0, idx)}
-      <Text strong style={{ color: "inherit" }}>
+      <Text strong style={{ color: 'inherit' }}>
         {text.slice(idx, idx + query.length)}
       </Text>
       {text.slice(idx + query.length)}
@@ -47,39 +47,39 @@ interface GroupOption extends DefaultOptionType {
 export const GlobalSearch: React.FC = () => {
   const { styles } = useStyles();
   const navigate = useNavigate();
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
 
   const enabled = query.trim().length >= 1;
 
   const { result: productsData } = useList<IProduct>({
-    resource: "products",
+    resource: 'products',
     pagination: { pageSize: 3 },
     filters: enabled
-      ? [{ field: "name", operator: "contains", value: query }]
+      ? [{ field: 'name', operator: 'contains', value: query }]
       : [],
     queryOptions: { enabled },
   });
 
   const { result: customersData } = useList<ICustomer>({
-    resource: "customers",
+    resource: 'customers',
     pagination: { pageSize: 3 },
     filters: enabled
-      ? [{ field: "name", operator: "contains", value: query }]
+      ? [{ field: 'name', operator: 'contains', value: query }]
       : [],
     queryOptions: { enabled },
   });
 
   const { result: suppliersData } = useList<ISupplier>({
-    resource: "suppliers",
+    resource: 'suppliers',
     pagination: { pageSize: 3 },
     filters: enabled
       ? [
           {
-            operator: "or",
+            operator: 'or',
             value: [
-              { field: "name", operator: "contains", value: query },
-              { field: "phone", operator: "contains", value: query },
+              { field: 'name', operator: 'contains', value: query },
+              { field: 'phone', operator: 'contains', value: query },
             ],
           },
         ]
@@ -88,15 +88,15 @@ export const GlobalSearch: React.FC = () => {
   });
 
   const { result: salesData } = useList<ISale>({
-    resource: "sales",
+    resource: 'sales',
     pagination: { pageSize: 3 },
     filters: enabled
       ? [
           {
-            operator: "or",
+            operator: 'or',
             value: [
-              { field: "customer.name", operator: "contains", value: query },
-              { field: "customer.phone", operator: "contains", value: query },
+              { field: 'customer.name', operator: 'contains', value: query },
+              { field: 'customer.phone', operator: 'contains', value: query },
             ],
           },
         ]
@@ -106,10 +106,10 @@ export const GlobalSearch: React.FC = () => {
   });
 
   const { result: purchasesData } = useList<IPurchase>({
-    resource: "purchases",
+    resource: 'purchases',
     pagination: { pageSize: 3 },
     filters: enabled
-      ? [{ field: "supplier.name", operator: "contains", value: query }]
+      ? [{ field: 'supplier.name', operator: 'contains', value: query }]
       : [],
     meta: { include: { supplier: true } },
     queryOptions: { enabled },
@@ -127,10 +127,10 @@ export const GlobalSearch: React.FC = () => {
             Sản phẩm
           </span>
         ),
-        options: products.map((p) => ({
+        options: products.map(p => ({
           value: `products:${p.id}`,
           label: (
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span>{highlight(p.name, query)}</span>
               <Text type="secondary" style={{ fontSize: 12 }}>
                 {p.category?.name}
@@ -150,11 +150,11 @@ export const GlobalSearch: React.FC = () => {
             Khách hàng
           </span>
         ),
-        options: customers.map((c) => ({
+        options: customers.map(c => ({
           value: `customers:${c.id}`,
           label: (
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>{highlight(c.name ?? "", query)}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>{highlight(c.name ?? '', query)}</span>
               <Text type="secondary" style={{ fontSize: 12 }}>
                 {c.phone}
               </Text>
@@ -173,10 +173,10 @@ export const GlobalSearch: React.FC = () => {
             Nhà cung cấp
           </span>
         ),
-        options: suppliers.map((s) => ({
+        options: suppliers.map(s => ({
           value: `suppliers:${s.id}`,
           label: (
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span>{highlight(s.name, query)}</span>
               <Text type="secondary" style={{ fontSize: 12 }}>
                 {s.phone}
@@ -196,10 +196,10 @@ export const GlobalSearch: React.FC = () => {
             Phiếu xuất
           </span>
         ),
-        options: sales.map((s) => ({
+        options: sales.map(s => ({
           value: `sales:${s.id}`,
           label: (
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span>
                 {s.customer?.name
                   ? highlight(s.customer.name, query)
@@ -223,10 +223,10 @@ export const GlobalSearch: React.FC = () => {
             Phiếu nhập
           </span>
         ),
-        options: purchases.map((p) => ({
+        options: purchases.map(p => ({
           value: `purchases:${p.id}`,
           label: (
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span>
                 {p.supplier?.name
                   ? highlight(p.supplier.name, query)
@@ -252,27 +252,27 @@ export const GlobalSearch: React.FC = () => {
   ]);
 
   const handleSelect = (value: string) => {
-    const [resource, id] = value.split(":");
+    const [resource, id] = value.split(':');
     navigate(`/${resource}/show/${id}`);
-    setQuery("");
+    setQuery('');
     setOpen(false);
   };
 
   return (
     <AutoComplete
-      style={{ width: "100%", maxWidth: "550px" }}
+      style={{ width: '100%', maxWidth: '550px' }}
       options={options}
       value={query}
       open={open && enabled}
       filterOption={false}
-      onSearch={(val) => {
+      onSearch={val => {
         setQuery(val);
         setOpen(true);
       }}
       onSelect={handleSelect}
       onBlur={() => setOpen(false)}
       onFocus={() => setOpen(true)}
-      notFoundContent={enabled ? "Không tìm thấy kết quả" : null}
+      notFoundContent={enabled ? 'Không tìm thấy kết quả' : null}
     >
       <Input
         size="large"

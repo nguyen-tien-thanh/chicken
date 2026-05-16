@@ -1,5 +1,5 @@
-import { AuthProvider } from "@refinedev/core";
-import { supabaseClient } from "./supabase-client";
+import { AuthProvider } from '@refinedev/core';
+import { supabaseClient } from './supabase-client';
 
 const authProvider: AuthProvider = {
   login: async ({ email, password, providerName }) => {
@@ -20,7 +20,7 @@ const authProvider: AuthProvider = {
         if (data?.url) {
           return {
             success: true,
-            redirectTo: "/",
+            redirectTo: '/',
           };
         }
       }
@@ -41,7 +41,7 @@ const authProvider: AuthProvider = {
       if (data?.user) {
         return {
           success: true,
-          redirectTo: "/",
+          redirectTo: '/',
         };
       }
     } catch (error: any) {
@@ -54,8 +54,8 @@ const authProvider: AuthProvider = {
     return {
       success: false,
       error: {
-        message: "Đăng nhập thất bại",
-        name: "Email hoặc mật khẩu không hợp lệ",
+        message: 'Đăng nhập thất bại',
+        name: 'Email hoặc mật khẩu không hợp lệ',
       },
     };
   },
@@ -76,7 +76,7 @@ const authProvider: AuthProvider = {
       if (data) {
         return {
           success: true,
-          redirectTo: "/",
+          redirectTo: '/',
         };
       }
     } catch (error: any) {
@@ -89,8 +89,8 @@ const authProvider: AuthProvider = {
     return {
       success: false,
       error: {
-        message: "Đăng ký thất bại",
-        name: "Email hoặc mật khẩu không hợp lệ",
+        message: 'Đăng ký thất bại',
+        name: 'Email hoặc mật khẩu không hợp lệ',
       },
     };
   },
@@ -100,7 +100,7 @@ const authProvider: AuthProvider = {
         email,
         {
           redirectTo: `${window.location.origin}/update-password`,
-        }
+        },
       );
 
       if (error) {
@@ -125,8 +125,8 @@ const authProvider: AuthProvider = {
     return {
       success: false,
       error: {
-        message: "Quên mật khẩu thất bại",
-        name: "Email không hợp lệ",
+        message: 'Quên mật khẩu thất bại',
+        name: 'Email không hợp lệ',
       },
     };
   },
@@ -146,7 +146,7 @@ const authProvider: AuthProvider = {
       if (data) {
         return {
           success: true,
-          redirectTo: "/",
+          redirectTo: '/',
         };
       }
     } catch (error: any) {
@@ -158,8 +158,8 @@ const authProvider: AuthProvider = {
     return {
       success: false,
       error: {
-        message: "Cập nhật mật khẩu thất bại",
-        name: "Mật khẩu không hợp lệ",
+        message: 'Cập nhật mật khẩu thất bại',
+        name: 'Mật khẩu không hợp lệ',
       },
     };
   },
@@ -175,10 +175,10 @@ const authProvider: AuthProvider = {
 
     return {
       success: true,
-      redirectTo: "/",
+      redirectTo: '/',
     };
   },
-  onError: async (error) => {
+  onError: async error => {
     console.error(error);
     return { error };
   },
@@ -191,22 +191,22 @@ const authProvider: AuthProvider = {
         return {
           authenticated: false,
           error: {
-            message: "Kiểm tra thất bại",
-            name: "Session không tồn tại",
+            message: 'Kiểm tra thất bại',
+            name: 'Session không tồn tại',
           },
           logout: true,
-          redirectTo: "/login",
+          redirectTo: '/login',
         };
       }
     } catch (error: any) {
       return {
         authenticated: false,
         error: error || {
-          message: "Kiểm tra thất bại",
-          name: "Không xác thực",
+          message: 'Kiểm tra thất bại',
+          name: 'Không xác thực',
         },
         logout: true,
-        redirectTo: "/login",
+        redirectTo: '/login',
       };
     }
 

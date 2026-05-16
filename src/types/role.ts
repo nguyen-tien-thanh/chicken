@@ -1,7 +1,7 @@
-import type { BaseRecord } from "@refinedev/core";
+import type { BaseRecord } from '@refinedev/core';
 
-import type { IRolesPermission } from "./roles-permission";
-import type { IUser } from "./user";
+import type { IRolesPermission } from './roles-permission';
+import type { IUser } from './user';
 
 export interface IRole extends BaseRecord {
   id: string;

@@ -1,30 +1,31 @@
-import { Show as AntdShow, ShowButton, useTable } from "@refinedev/antd";
-import { useShow } from "@refinedev/core";
-import { Button, Card, Descriptions, Space, Table, Typography } from "antd";
-import dayjs from "dayjs";
-import { Link } from "react-router";
+import { Show as AntdShow, ShowButton, useTable } from '@refinedev/antd';
+import { useShow } from '@refinedev/core';
+import { Button, Card, Descriptions, Space, Table, Typography } from 'antd';
+import dayjs from 'dayjs';
+import { Link } from 'react-router';
 
-import { RelativeTime } from "@/components/relative-time";
-import type { IPurchase, ISupplier } from "@/types";
-import { formatMoney } from "@/utils";
+import { LocationShowValue } from '@/components';
+import { RelativeTime } from '@/components/relative-time';
+import type { IPurchase, ISupplier } from '@/types';
+import { formatMoney } from '@/utils';
 
 export const Show = () => {
   const { result: record, query } = useShow<ISupplier>({
-    resource: "suppliers",
+    resource: 'suppliers',
   });
   const { isLoading } = query;
 
   const supplier_id = record?.id;
 
   const { tableProps } = useTable<IPurchase>({
-    resource: "purchases",
+    resource: 'purchases',
     syncWithLocation: false,
     filters: {
       permanent: supplier_id
-        ? [{ field: "supplier_id", operator: "eq", value: supplier_id }]
+        ? [{ field: 'supplier_id', operator: 'eq', value: supplier_id }]
         : [],
     },
-    sorters: { initial: [{ field: "purchase_date", order: "desc" }] },
+    sorters: { initial: [{ field: 'purchase_date', order: 'desc' }] },
     queryOptions: { enabled: !!supplier_id },
   });
 
@@ -50,36 +51,42 @@ export const Show = () => {
         >
           <Descriptions.Item label="Mã" span={2}>
             <Typography.Text copyable={!!record?.id}>
-              {record?.id ?? "—"}
+              {record?.id ?? '—'}
             </Typography.Text>
           </Descriptions.Item>
           <Descriptions.Item label="Tên nhà cung cấp">
-            {record?.name ?? "—"}
+            {record?.name ?? '—'}
           </Descriptions.Item>
           <Descriptions.Item label="Tên ngân hàng">
-            {record?.bank_name ?? "—"}
+            {record?.bank_name ?? '—'}
           </Descriptions.Item>
           <Descriptions.Item label="Điện thoại">
-            {record?.phone ?? "—"}
+            {record?.phone ?? '—'}
           </Descriptions.Item>
           <Descriptions.Item label="Số tài khoản">
-            {record?.bank_account ?? "—"}
+            {record?.bank_account ?? '—'}
           </Descriptions.Item>
           <Descriptions.Item label="Địa chỉ" span={2}>
-            {record?.address ?? "—"}
+            {record?.address ?? '—'}
+          </Descriptions.Item>
+          <Descriptions.Item label="Vị trí" span={2}>
+            <LocationShowValue
+              latitude={record?.latitude}
+              longitude={record?.longitude}
+            />
           </Descriptions.Item>
           <Descriptions.Item label="Ngày tạo">
             {record?.created_at ? (
               <RelativeTime value={record.created_at} />
             ) : (
-              "—"
+              '—'
             )}
           </Descriptions.Item>
           <Descriptions.Item label="Cập nhật">
             {record?.updated_at ? (
               <RelativeTime value={record.updated_at} />
             ) : (
-              "—"
+              '—'
             )}
           </Descriptions.Item>
         </Descriptions>
@@ -95,45 +102,45 @@ export const Show = () => {
         scroll={{ x: true }}
         columns={[
           {
-            dataIndex: "purchase_date",
-            title: "Ngày nhập",
+            dataIndex: 'purchase_date',
+            title: 'Ngày nhập',
             sorter: true,
-            defaultSortOrder: "descend",
-            render: (v: string) => (v ? dayjs(v).format("DD/MM/YYYY") : "—"),
+            defaultSortOrder: 'descend',
+            render: (v: string) => (v ? dayjs(v).format('DD/MM/YYYY') : '—'),
           },
           {
-            dataIndex: "cages_count",
-            title: "Số lồng",
-            align: "right",
-            render: (v: number) => (v != null ? `${v} lồng` : "—"),
+            dataIndex: 'cages_count',
+            title: 'Số lồng',
+            align: 'right',
+            render: (v: number) => (v != null ? `${v} lồng` : '—'),
           },
           {
-            dataIndex: "cages_weight",
-            title: "Tổng trọng lượng lồng",
-            align: "right",
-            render: (v: number) => (v != null ? `${v} kg` : "—"),
+            dataIndex: 'cages_weight',
+            title: 'Tổng trọng lượng lồng',
+            align: 'right',
+            render: (v: number) => (v != null ? `${v} kg` : '—'),
           },
           {
-            dataIndex: "total_amount",
-            title: "Tổng tiền",
-            align: "right",
+            dataIndex: 'total_amount',
+            title: 'Tổng tiền',
+            align: 'right',
             render: (v: number) => (
               <Typography.Text strong>{formatMoney(v)}</Typography.Text>
             ),
           },
           {
-            dataIndex: "average_weight",
-            title: "TB kg/con",
-            render: (v: number) => (v != null ? `${v} kg` : "—"),
+            dataIndex: 'average_weight',
+            title: 'TB kg/con',
+            render: (v: number) => (v != null ? `${v} kg` : '—'),
           },
           {
-            dataIndex: "note",
-            title: "Ghi chú",
+            dataIndex: 'note',
+            title: 'Ghi chú',
             ellipsis: true,
           },
           {
-            title: "Thao tác",
-            fixed: "right",
+            title: 'Thao tác',
+            fixed: 'right',
             render: (_, row: IPurchase) => (
               <ShowButton resource="purchases" recordItemId={row.id} />
             ),

@@ -39,7 +39,7 @@ export const InputMoney = ({
     ? formatDisplay(value)
     : '';
 
-  const handleFocus: React.FocusEventHandler<HTMLInputElement> = (e) => {
+  const handleFocus: React.FocusEventHandler<HTMLInputElement> = e => {
     setFocused(true);
     setRaw(value != null ? String(value) : '');
     requestAnimationFrame(() => e.target.select());
@@ -51,7 +51,7 @@ export const InputMoney = ({
     setRaw(digits);
   };
 
-  const handleBlur: React.FocusEventHandler<HTMLInputElement> = (e) => {
+  const handleBlur: React.FocusEventHandler<HTMLInputElement> = e => {
     setFocused(false);
     const num = raw === '' ? null : Number(raw);
     onChange?.(num);

@@ -1,10 +1,10 @@
-import type { BaseRecord } from "@refinedev/core";
+import type { BaseRecord } from '@refinedev/core';
 
 import type {
   InventoryTransactionDirection,
   InventoryTransactionType,
-} from "./inventory-enums";
-import type { IProduct } from "./product";
+} from './inventory-enums';
+import type { IProduct } from './product';
 
 export interface IInventoryTransaction extends BaseRecord {
   id: string;
@@ -20,5 +20,5 @@ export interface IInventoryTransaction extends BaseRecord {
   product_id: string;
   created_at: string;
   updated_at: string;
-  product?: Pick<IProduct, "id" | "name" | "type">;
+  product?: Pick<IProduct, 'id' | 'name' | 'type'>;
 }

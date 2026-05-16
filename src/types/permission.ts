@@ -1,7 +1,7 @@
-import type { BaseRecord } from "@refinedev/core";
+import type { BaseRecord } from '@refinedev/core';
 
-import type { HttpMethod } from "./http-method";
-import type { IRolesPermission } from "./roles-permission";
+import type { HttpMethod } from './http-method';
+import type { IRolesPermission } from './roles-permission';
 
 export interface IPermission extends BaseRecord {
   id: string;

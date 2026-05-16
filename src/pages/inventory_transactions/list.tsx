@@ -1,18 +1,18 @@
-import { List as AntdList, ShowButton, useTable } from "@refinedev/antd";
-import { useOne } from "@refinedev/core";
-import { Button, Space, Table, Tag, Tooltip } from "antd";
-import dayjs from "dayjs";
-import { Link } from "react-router";
+import { List as AntdList, ShowButton, useTable } from '@refinedev/antd';
+import { useOne } from '@refinedev/core';
+import { Button, Space, Table, Tag, Tooltip } from 'antd';
+import dayjs from 'dayjs';
+import { Link } from 'react-router';
 
-import { RelativeTime } from "@/components/relative-time";
+import { RelativeTime } from '@/components/relative-time';
 import {
   INVENTORY_TX_DIRECTION_LABELS,
   INVENTORY_TX_TYPE_LABELS,
   type IInventoryTransaction,
   type InventoryTransactionDirection,
   type InventoryTransactionType,
-} from "@/types";
-import { formatMoney } from "@/utils";
+} from '@/types';
+import { formatMoney } from '@/utils';
 
 function RefLink({
   type,
@@ -21,17 +21,17 @@ function RefLink({
   type: InventoryTransactionType;
   ref_id: string;
 }) {
-  const isPurchase = type === "PURCHASE";
+  const isPurchase = type === 'PURCHASE';
 
   const { result, query } = useOne<{
     id: string;
     purchase_id?: string;
     sale_id?: string;
   }>({
-    resource: isPurchase ? "purchase_items" : "sale_items",
+    resource: isPurchase ? 'purchase_items' : 'sale_items',
     id: ref_id,
     meta: {
-      select: isPurchase ? "id,purchase_id" : "id,sale_id",
+      select: isPurchase ? 'id,purchase_id' : 'id,sale_id',
     },
   });
 
@@ -48,7 +48,7 @@ function RefLink({
     );
 
   return (
-    <Link to={`/${isPurchase ? "purchases" : "sales"}/show/${parent_id}`}>
+    <Link to={`/${isPurchase ? 'purchases' : 'sales'}/show/${parent_id}`}>
       <Button type="link" size="small" style={{ padding: 0 }}>
         {label}
       </Button>
@@ -59,17 +59,17 @@ function RefLink({
 export const List = () => {
   const { tableProps } = useTable<IInventoryTransaction>({
     syncWithLocation: true,
-    resource: "inventory_transactions",
+    resource: 'inventory_transactions',
     meta: {
-      select: "*,product:products(*)",
+      select: '*,product:products(*)',
     },
     filters: {
       initial: [
-        { field: "ref_type", operator: "eq", value: undefined },
-        { field: "direction", operator: "eq", value: undefined },
+        { field: 'ref_type', operator: 'eq', value: undefined },
+        { field: 'direction', operator: 'eq', value: undefined },
       ],
     },
-    sorters: { initial: [{ field: "transaction_date", order: "desc" }] },
+    sorters: { initial: [{ field: 'transaction_date', order: 'desc' }] },
   });
 
   return (
@@ -81,7 +81,7 @@ export const List = () => {
           sorter
           defaultSortOrder="descend"
           render={(v: string) =>
-            v ? dayjs(v).format("DD/MM/YYYY HH:mm") : "—"
+            v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—'
           }
         />
         <Table.Column
@@ -89,14 +89,14 @@ export const List = () => {
           title="Loại tham chiếu"
           render={(
             t: InventoryTransactionType,
-            record: IInventoryTransaction
+            record: IInventoryTransaction,
           ) => <RefLink type={t} ref_id={record.ref_id} />}
         />
         <Table.Column
           dataIndex="direction"
           title="Chiều"
           render={(d: InventoryTransactionDirection) => (
-            <Tag color={d === "IN" ? "green" : "orange"}>
+            <Tag color={d === 'IN' ? 'green' : 'orange'}>
               {INVENTORY_TX_DIRECTION_LABELS[d] ?? d}
             </Tag>
           )}
@@ -109,7 +109,7 @@ export const List = () => {
                 {r.product.name}
               </Link>
             ) : (
-              "—"
+              '—'
             )
           }
         />
@@ -119,13 +119,13 @@ export const List = () => {
           dataIndex="total_cost"
           title="Tổng giá vốn"
           align="right"
-          render={(n: number) => (n != null ? formatMoney(n) : "—")}
+          render={(n: number) => (n != null ? formatMoney(n) : '—')}
         />
         <Table.Column
           dataIndex="created_at"
           title="Ghi nhận"
           sorter
-          render={(v: string) => (v ? <RelativeTime value={v} /> : "—")}
+          render={(v: string) => (v ? <RelativeTime value={v} /> : '—')}
         />
         <Table.Column
           title="Thao tác"

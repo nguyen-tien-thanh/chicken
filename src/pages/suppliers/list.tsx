@@ -1,13 +1,17 @@
-import { EditOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  EnvironmentOutlined,
+  PlusOutlined,
+} from '@ant-design/icons';
 import {
   List as AntdList,
   DeleteButton,
   ShowButton,
   useDrawerForm,
   useTable,
-} from "@refinedev/antd";
-import type { BaseRecord } from "@refinedev/core";
-import { useShow } from "@refinedev/core";
+} from '@refinedev/antd';
+import type { BaseRecord } from '@refinedev/core';
+import { useShow } from '@refinedev/core';
 import {
   Button,
   Descriptions,
@@ -19,14 +23,16 @@ import {
   Spin,
   Table,
   Tooltip,
-} from "antd";
-import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router";
+} from 'antd';
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router';
 
-import { RelativeTime } from "@/components/relative-time";
-import { type ISupplier } from "@/types";
-import { BankNameOptions } from "@/types/bank-name-enum";
-import { useResponsiveDrawerWidth } from "@/hooks";
+import { LocationFormFields, LocationShowValue } from '@/components';
+import { googleMapsLink } from '@/components/location-picker/utils';
+import { RelativeTime } from '@/components/relative-time';
+import { useResponsiveDrawerWidth } from '@/hooks';
+import { type ISupplier } from '@/types';
+import { BankNameOptions } from '@/types/bank-name-enum';
 
 function SupplierFormFields() {
   return (
@@ -44,6 +50,7 @@ function SupplierFormFields() {
       <Form.Item label="Địa chỉ" name="address">
         <Input.TextArea rows={2} />
       </Form.Item>
+      <LocationFormFields />
       <Form.Item label="Tên ngân hàng" name="bank_name">
         <Select options={BankNameOptions} showSearch />
       </Form.Item>
@@ -66,8 +73,8 @@ export const List = () => {
     show: showCreateDrawer,
     close: closeCreateDrawer,
   } = useDrawerForm({
-    resource: "suppliers",
-    action: "create",
+    resource: 'suppliers',
+    action: 'create',
     syncWithLocation: false,
   });
 
@@ -78,41 +85,41 @@ export const List = () => {
     show: showEditDrawer,
     close: closeEditDrawer,
   } = useDrawerForm({
-    resource: "suppliers",
-    action: "edit",
+    resource: 'suppliers',
+    action: 'edit',
     syncWithLocation: false,
   });
 
   const { result: showRecord, query: showQuery } = useShow<ISupplier>({
-    resource: "suppliers",
-    id: showId ?? "",
+    resource: 'suppliers',
+    id: showId ?? '',
     queryOptions: { enabled: !!showId },
   });
 
   useEffect(() => {
-    const id = searchParams.get("show");
+    const id = searchParams.get('show');
     if (!id) return;
     setShowId(id);
     setSearchParams(
-      (prev) => {
+      prev => {
         const next = new URLSearchParams(prev);
-        next.delete("show");
+        next.delete('show');
         return next;
       },
-      { replace: true }
+      { replace: true },
     );
   }, [searchParams, setSearchParams]);
 
   const { tableProps } = useTable<ISupplier>({
     syncWithLocation: true,
-    resource: "suppliers",
+    resource: 'suppliers',
     filters: {
       initial: [
-        { field: "name", operator: "contains", value: undefined },
-        { field: "phone", operator: "contains", value: undefined },
+        { field: 'name', operator: 'contains', value: undefined },
+        { field: 'phone', operator: 'contains', value: undefined },
       ],
     },
-    sorters: { initial: [{ field: "created_at", order: "desc" }] },
+    sorters: { initial: [{ field: 'created_at', order: 'desc' }] },
   });
 
   return (
@@ -130,13 +137,38 @@ export const List = () => {
       <Table {...tableProps} rowKey="id">
         <Table.Column dataIndex="name" title="Tên nhà cung cấp" sorter />
         <Table.Column dataIndex="phone" title="Điện thoại" sorter />
-        <Table.Column dataIndex="address" title="Địa chỉ" ellipsis />
+        <Table.Column
+          dataIndex="address"
+          title="Địa chỉ"
+          ellipsis
+          render={(address: string | null, record: ISupplier) => {
+            const url = googleMapsLink(record);
+            return (
+              <Space size="small">
+                <span>{address ?? '—'}</span>
+                {url ? (
+                  <Tooltip title="Mở Google Maps">
+                    <Button
+                      type="link"
+                      size="small"
+                      icon={<EnvironmentOutlined />}
+                      href={url}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ padding: 0, flexShrink: 0 }}
+                    />
+                  </Tooltip>
+                ) : null}
+              </Space>
+            );
+          }}
+        />
         <Table.Column
           dataIndex="created_at"
           title="Ngày tạo"
           sorter
           defaultSortOrder="descend"
-          render={(v: string) => (v ? <RelativeTime value={v} /> : "—")}
+          render={(v: string) => (v ? <RelativeTime value={v} /> : '—')}
         />
         <Table.Column
           title="Nghiệp vụ"
@@ -215,7 +247,7 @@ export const List = () => {
           <>
             <Space style={{ marginBottom: 16 }} wrap>
               <Link
-                to={`/purchases/create?supplier_id=${showRecord?.id ?? ""}`}
+                to={`/purchases/create?supplier_id=${showRecord?.id ?? ''}`}
               >
                 <Button type="primary" disabled={!showRecord?.id}>
                   Tạo phiếu nhập
@@ -225,7 +257,7 @@ export const List = () => {
                 to={
                   showRecord?.id
                     ? `/purchases?supplier_id=${showRecord.id}`
-                    : "/purchases"
+                    : '/purchases'
                 }
               >
                 <Button disabled={!showRecord?.id}>Phiếu nhập của NCC</Button>
@@ -240,26 +272,32 @@ export const List = () => {
                 {showRecord?.phone}
               </Descriptions.Item>
               <Descriptions.Item label="Tên ngân hàng">
-                {showRecord?.bank_name ?? "—"}
+                {showRecord?.bank_name ?? '—'}
               </Descriptions.Item>
               <Descriptions.Item label="Số TK ngân hàng">
-                {showRecord?.bank_account ?? "—"}
+                {showRecord?.bank_account ?? '—'}
               </Descriptions.Item>
               <Descriptions.Item label="Địa chỉ">
-                {showRecord?.address ?? "—"}
+                {showRecord?.address ?? '—'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Vị trí">
+                <LocationShowValue
+                  latitude={showRecord?.latitude}
+                  longitude={showRecord?.longitude}
+                />
               </Descriptions.Item>
               <Descriptions.Item label="Ngày tạo">
                 {showRecord?.created_at ? (
                   <RelativeTime value={showRecord.created_at} />
                 ) : (
-                  "—"
+                  '—'
                 )}
               </Descriptions.Item>
               <Descriptions.Item label="Cập nhật">
                 {showRecord?.updated_at ? (
                   <RelativeTime value={showRecord.updated_at} />
                 ) : (
-                  "—"
+                  '—'
                 )}
               </Descriptions.Item>
             </Descriptions>

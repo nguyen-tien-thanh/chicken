@@ -1,6 +1,6 @@
-import type { BaseRecord } from "@refinedev/core";
+import type { BaseRecord } from '@refinedev/core';
 
-import type { IProduct } from "./product";
+import type { IProduct } from './product';
 
 export interface IPurchaseItem extends BaseRecord {
   id: string;
@@ -14,5 +14,5 @@ export interface IPurchaseItem extends BaseRecord {
   created_at: string;
   updated_at: string;
   deleted_at?: string | null;
-  product?: Pick<IProduct, "id" | "name" | "type">;
+  product?: Pick<IProduct, 'id' | 'name' | 'type'>;
 }

@@ -1,0 +1,78 @@
+/* Fullscreen modal — no transform (breaks Leaflet tiles) */
+.location-picker-modal.ant-modal-wrap,
+.location-picker-modal.ant-modal-wrap .ant-modal {
+  transform: none !important;
+}
+
+.location-picker-modal.ant-modal-wrap .ant-modal {
+  width: 100% !important;
+  max-width: 100vw;
+  margin: 0;
+  top: 0;
+  padding-bottom: 0;
+}
+
+.location-picker-modal .ant-modal-content {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-height: 100dvh;
+  border-radius: 0;
+}
+
+.location-picker-modal .ant-modal-header,
+.location-picker-modal .ant-modal-footer {
+  flex-shrink: 0;
+}
+
+.location-picker-modal .ant-modal-footer {
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+.location-picker-modal .ant-modal-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Picker body */
+.location-picker {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap: 12px;
+}
+
+.location-picker__search {
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.location-picker__hint,
+.location-picker__coords {
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.location-picker__status {
+  display: block;
+  margin-bottom: 8px;
+}
+
+/* Map — flex fill in modal */
+.location-picker__map {
+  flex: 1 1 0;
+  min-height: 240px;
+  height: 0;
+  position: relative;
+}
+
+.location-picker__map .leaflet-container {
+  height: 100%;
+  width: 100%;
+  border-radius: 8px;
+  z-index: 0;
+}
