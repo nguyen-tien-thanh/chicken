@@ -26,8 +26,7 @@ import { Link, useSearchParams } from "react-router";
 import { RelativeTime } from "@/components/relative-time";
 import { type ISupplier } from "@/types";
 import { BankNameOptions } from "@/types/bank-name-enum";
-
-const DRAWER_WIDTH = "45vw";
+import { useResponsiveDrawerWidth } from "@/hooks";
 
 function SupplierFormFields() {
   return (
@@ -56,6 +55,7 @@ function SupplierFormFields() {
 }
 
 export const List = () => {
+  const drawerWidth = useResponsiveDrawerWidth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showId, setShowId] = useState<string | undefined>(undefined);
 
@@ -168,7 +168,7 @@ export const List = () => {
 
       <Drawer
         {...createDrawerProps}
-        width={DRAWER_WIDTH}
+        width={drawerWidth}
         title="Tạo nhà cung cấp"
         extra={
           <Space>
@@ -186,7 +186,7 @@ export const List = () => {
 
       <Drawer
         {...editDrawerProps}
-        width={DRAWER_WIDTH}
+        width={drawerWidth}
         title="Sửa nhà cung cấp"
         extra={
           <Space>
@@ -204,7 +204,7 @@ export const List = () => {
 
       <Drawer
         title="Chi tiết nhà cung cấp"
-        width={DRAWER_WIDTH}
+        width={drawerWidth}
         open={!!showId}
         onClose={() => setShowId(undefined)}
         destroyOnClose

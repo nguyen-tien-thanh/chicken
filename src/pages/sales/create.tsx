@@ -72,7 +72,7 @@ export const Create = () => {
   const { notification } = App.useApp();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const customer_idFromQuery = searchParams.get("customer_id") ?? undefined;
+  const query_customer_id = searchParams.get("customer_id") ?? undefined;
 
   const [lines, setLines] = useState<LineItem[]>([newRow()]);
   const [createCustomerOpen, setCreateCustomerOpen] = useState(false);
@@ -89,7 +89,7 @@ export const Create = () => {
   const { formProps, saveButtonProps, form } = useForm({
     resource: "sales",
     defaultFormValues: {
-      ...(customer_idFromQuery ? { customer_id: customer_idFromQuery } : {}),
+      ...(query_customer_id ? { customer_id: query_customer_id } : {}),
       sale_date: dayjs(),
       discount_amount: 0,
       paid_amount: 0,

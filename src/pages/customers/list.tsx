@@ -25,8 +25,7 @@ import { useSearchParams } from "react-router";
 
 import { RelativeTime } from "@/components/relative-time";
 import type { ICustomer } from "@/types";
-
-const DRAWER_WIDTH = "45vw";
+import { useResponsiveDrawerWidth } from "@/hooks";
 
 function CustomerFormFields() {
   return (
@@ -45,6 +44,7 @@ function CustomerFormFields() {
 }
 
 export const List = () => {
+  const drawerWidth = useResponsiveDrawerWidth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showId, setShowId] = useState<string | undefined>(undefined);
 
@@ -162,7 +162,7 @@ export const List = () => {
 
       <Drawer
         {...createDrawerProps}
-        width={DRAWER_WIDTH}
+        width={drawerWidth}
         title="Tạo khách hàng"
         extra={
           <Space>
@@ -180,7 +180,7 @@ export const List = () => {
 
       <Drawer
         {...editDrawerProps}
-        width={DRAWER_WIDTH}
+        width={drawerWidth}
         title="Sửa khách hàng"
         extra={
           <Space>
@@ -198,7 +198,7 @@ export const List = () => {
 
       <Drawer
         title="Chi tiết khách hàng"
-        width={DRAWER_WIDTH}
+        width={drawerWidth}
         open={!!showId}
         onClose={() => setShowId(undefined)}
         destroyOnClose

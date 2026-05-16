@@ -6,6 +6,8 @@ export interface ISupplier extends BaseRecord {
   name: string;
   phone: string;
   address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   bank_account?: string | null;
   bank_name?: BankName | null;
   created_at: string;
