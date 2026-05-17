@@ -17,15 +17,18 @@ import {
   Select,
   Space,
   Spin,
-  Table,
   Tag,
   Tooltip,
 } from 'antd';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 
+import {
+  ResponsiveTable,
+  type ResponsiveColumnType,
+} from '@/components';
 import { RelativeTime } from '@/components/relative-time';
-import { useResponsiveDrawerWidth } from '@/hooks';
+import { MEDIA_MD_DOWN, useMediaQuery, useResponsiveDrawerWidth } from '@/hooks';
 import {
   PRODUCT_TYPE_LABELS,
   PRODUCT_TYPE_OPTIONS,
@@ -34,10 +37,9 @@ import {
   type ProductType,
 } from '@/types';
 
-const DRAWER_WIDTH = '45vw';
-
 export const List = () => {
   const formDrawerWidth = useResponsiveDrawerWidth();
+  const isMobile = useMediaQuery(MEDIA_MD_DOWN);
   const [searchParams, setSearchParams] = useSearchParams();
   const [showId, setShowId] = useState<string | undefined>(undefined);
 
@@ -104,7 +106,7 @@ export const List = () => {
     );
   }, [searchParams, setSearchParams]);
 
-  const { tableProps } = useTable<IProduct>({
+  const { tableProps, filters, sorters } = useTable<IProduct>({
     syncWithLocation: true,
     resource: 'products',
     meta: {
@@ -117,7 +119,64 @@ export const List = () => {
       ],
     },
     sorters: { initial: [{ field: 'created_at', order: 'desc' }] },
+    queryOptions: { enabled: !isMobile },
   });
+
+  const columns: ResponsiveColumnType<IProduct>[] = [
+    {
+      dataIndex: 'name',
+      title: 'Tên sản phẩm',
+      sorter: true,
+      mobileRole: 'title',
+    },
+    {
+      dataIndex: 'type',
+      title: 'Loại',
+      mobileRole: 'subtitle',
+      render: (t: ProductType) => <Tag>{PRODUCT_TYPE_LABELS[t] ?? t}</Tag>,
+    },
+    {
+      key: 'category',
+      title: 'Danh mục',
+      render: (_, r) =>
+        r.category ? (
+          <Link to={`/product_categories/show/${r.category.id}`}>
+            {r.category.name}
+          </Link>
+        ) : (
+          '—'
+        ),
+    },
+    {
+      dataIndex: 'created_at',
+      title: 'Ngày tạo',
+      sorter: true,
+      defaultSortOrder: 'descend',
+      mobileRole: 'hidden',
+      render: (v: string) => (v ? <RelativeTime value={v} /> : '—'),
+    },
+    {
+      title: 'Thao tác',
+      dataIndex: 'actions',
+      fixed: 'right',
+      mobileRole: 'actions',
+      render: (_, record: BaseRecord) => (
+        <Space>
+          <Tooltip title="Sửa">
+            <Button
+              variant="outlined"
+              icon={<EditOutlined />}
+              onClick={() => showEditDrawer(record.id)}
+            />
+          </Tooltip>
+          <Tooltip title="Xem">
+            <ShowButton hideText recordItemId={record.id} />
+          </Tooltip>
+          <DeleteButton hideText recordItemId={record.id} />
+        </Space>
+      ),
+    },
+  ];
 
   const showType = showRecord?.type as ProductType | undefined;
 
@@ -133,53 +192,15 @@ export const List = () => {
         </Button>
       }
     >
-      <Table {...tableProps} rowKey="id">
-        <Table.Column dataIndex="name" title="Tên sản phẩm" sorter />
-        <Table.Column
-          dataIndex="type"
-          title="Loại"
-          render={(t: ProductType) => <Tag>{PRODUCT_TYPE_LABELS[t] ?? t}</Tag>}
-        />
-        <Table.Column
-          title="Danh mục"
-          render={(_, r: IProduct) =>
-            r.category ? (
-              <Link to={`/product_categories/show/${r.category.id}`}>
-                {r.category.name}
-              </Link>
-            ) : (
-              '—'
-            )
-          }
-        />
-        <Table.Column
-          dataIndex="created_at"
-          title="Ngày tạo"
-          sorter
-          defaultSortOrder="descend"
-          render={(v: string) => (v ? <RelativeTime value={v} /> : '—')}
-        />
-        <Table.Column
-          title="Thao tác"
-          dataIndex="actions"
-          fixed="right"
-          render={(_, record: BaseRecord) => (
-            <Space>
-              <Tooltip title="Sửa">
-                <Button
-                  variant="outlined"
-                  icon={<EditOutlined />}
-                  onClick={() => showEditDrawer(record.id)}
-                />
-              </Tooltip>
-              <Tooltip title="Xem">
-                <ShowButton hideText recordItemId={record.id} />
-              </Tooltip>
-              <DeleteButton hideText recordItemId={record.id} />
-            </Space>
-          )}
-        />
-      </Table>
+      <ResponsiveTable
+        {...tableProps}
+        resource="products"
+        columns={columns}
+        filters={filters}
+        sorters={sorters}
+        meta={{ select: '*,category:product_categories(*)' }}
+        rowKey="id"
+      />
 
       <Drawer
         {...createDrawerProps}

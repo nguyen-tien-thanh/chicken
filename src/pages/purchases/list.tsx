@@ -6,19 +6,22 @@ import {
   ShowButton,
   useTable,
 } from '@refinedev/antd';
-import { Input, Space, Table, Typography } from 'antd';
+import { Input, Space, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { Link, useSearchParams } from 'react-router';
 
+import { ResponsiveTable, type ResponsiveColumnType } from '@/components';
 import { RelativeTime } from '@/components/relative-time';
+import { MEDIA_MD_DOWN, useMediaQuery } from '@/hooks';
 import type { IPurchase } from '@/types';
 import { formatMoney } from '@/utils';
 
 export const List = () => {
+  const isMobile = useMediaQuery(MEDIA_MD_DOWN);
   const [searchParams] = useSearchParams();
   const supplier_idParam = searchParams.get('supplier_id');
 
-  const { tableProps } = useTable<IPurchase>({
+  const { tableProps, filters, sorters } = useTable<IPurchase>({
     syncWithLocation: true,
     resource: 'purchases',
     meta: {
@@ -36,124 +39,133 @@ export const List = () => {
             ],
           }
         : {}),
-      initial: [
-        { field: 'purchase_date', operator: 'contains', value: undefined },
-        { field: 'supplier.name', operator: 'contains', value: undefined },
-        { field: 'total_amount', operator: 'contains', value: undefined },
-        { field: 'note', operator: 'contains', value: undefined },
-        { field: 'created_at', operator: 'contains', value: undefined },
-      ],
     },
     sorters: { initial: [{ field: 'purchase_date', order: 'desc' }] },
+    queryOptions: { enabled: !isMobile },
   });
+
+  const columns: ResponsiveColumnType<IPurchase>[] = [
+    {
+      dataIndex: 'purchase_date',
+      title: 'Ngày nhập',
+      sorter: true,
+      defaultSortOrder: 'descend',
+      mobileRole: 'title',
+      render: (v: string) => (v ? dayjs(v).format('DD/MM/YYYY') : '—'),
+      filterDropdown: props => (
+        <FilterDropdown {...props}>
+          <Input.Search placeholder="Tìm ngày nhập..." />
+        </FilterDropdown>
+      ),
+    },
+    {
+      title: 'Nhà cung cấp',
+      dataIndex: ['supplier', 'name'],
+      sorter: true,
+      mobileRole: 'subtitle',
+      render: (_, r) =>
+        r.supplier ? (
+          <Link to={`/suppliers/show/${r.supplier.id}`}>{r.supplier.name}</Link>
+        ) : (
+          r.supplier_id ?? '—'
+        ),
+      filterDropdown: props => (
+        <FilterDropdown {...props}>
+          <Input.Search placeholder="Tìm nhà cung cấp..." />
+        </FilterDropdown>
+      ),
+    },
+    {
+      dataIndex: 'cages_count',
+      title: 'Số lồng',
+      align: 'right',
+      sorter: true,
+      render: (v: number) => (v != null ? `${v} lồng` : '—'),
+    },
+    {
+      dataIndex: 'cages_weight',
+      title: 'Tổng trọng lượng lồng',
+      align: 'right',
+      sorter: true,
+      mobileRole: 'hidden',
+      render: (v: number) => (v != null ? `${v} kg` : '—'),
+    },
+    {
+      title: 'Tổng tiền',
+      align: 'right',
+      sorter: true,
+      dataIndex: 'total_amount',
+      render: (_, r) => (
+        <Typography.Text strong>{formatMoney(r.total_amount)}</Typography.Text>
+      ),
+      filterDropdown: props => (
+        <FilterDropdown {...props}>
+          <Input.Search placeholder="Tìm tổng tiền..." />
+        </FilterDropdown>
+      ),
+    },
+    {
+      dataIndex: 'average_weight',
+      title: 'TB kg/con',
+      align: 'right',
+      sorter: true,
+      mobileRole: 'hidden',
+      render: (v: number) => (v != null ? `${v} kg` : '—'),
+    },
+    {
+      dataIndex: 'note',
+      title: 'Ghi chú',
+      ellipsis: true,
+      sorter: true,
+      mobileRole: 'hidden',
+      filterDropdown: props => (
+        <FilterDropdown {...props}>
+          <Input.Search placeholder="Tìm ghi chú..." />
+        </FilterDropdown>
+      ),
+    },
+    {
+      dataIndex: 'created_at',
+      title: 'Ngày tạo',
+      sorter: true,
+      responsive: ['xl'],
+      mobileRole: 'hidden',
+      render: (v: string) => (v ? <RelativeTime value={v} /> : '—'),
+      filterDropdown: props => (
+        <FilterDropdown {...props}>
+          <Input.Search placeholder="Tìm ngày tạo..." />
+        </FilterDropdown>
+      ),
+    },
+    {
+      title: 'Thao tác',
+      dataIndex: 'actions',
+      fixed: 'right',
+      mobileRole: 'actions',
+      render: (_, record) => (
+        <Space>
+          <EditButton hideText recordItemId={record.id} />
+          <ShowButton hideText recordItemId={record.id} />
+          <DeleteButton hideText recordItemId={record.id} />
+        </Space>
+      ),
+    },
+  ];
 
   return (
     <AntdList>
-      <Table {...tableProps} rowKey="id">
-        <Table.Column
-          dataIndex="purchase_date"
-          title="Ngày nhập"
-          sorter
-          defaultSortOrder="descend"
-          render={(v: string) => (v ? dayjs(v).format('DD/MM/YYYY') : '—')}
-          filterDropdown={props => (
-            <FilterDropdown {...props}>
-              <Input.Search placeholder="Tìm ngày nhập..." />
-            </FilterDropdown>
-          )}
-        />
-        <Table.Column
-          title="Nhà cung cấp"
-          dataIndex={['supplier', 'name']}
-          sorter
-          render={(_, r: IPurchase) =>
-            r.supplier ? (
-              <Link to={`/suppliers/show/${r.supplier.id}`}>
-                {r.supplier.name}
-              </Link>
-            ) : (
-              r.supplier_id ?? '—'
-            )
-          }
-          filterDropdown={props => (
-            <FilterDropdown {...props}>
-              <Input.Search placeholder="Tìm nhà cung cấp..." />
-            </FilterDropdown>
-          )}
-        />
-        <Table.Column
-          dataIndex="cages_count"
-          title="Số lồng"
-          align="right"
-          sorter
-          render={(v: number) => (v != null ? `${v} lồng` : '—')}
-        />
-        <Table.Column
-          dataIndex="cages_weight"
-          title="Tổng trọng lượng lồng"
-          align="right"
-          sorter
-          render={(v: number) => (v != null ? `${v} kg` : '—')}
-        />
-        <Table.Column
-          title="Tổng tiền"
-          align="right"
-          sorter
-          dataIndex="total_amount"
-          render={(_, r: IPurchase) => (
-            <Typography.Text strong>
-              {formatMoney(r.total_amount)}
-            </Typography.Text>
-          )}
-          filterDropdown={props => (
-            <FilterDropdown {...props}>
-              <Input.Search placeholder="Tìm tổng tiền..." />
-            </FilterDropdown>
-          )}
-        />
-        <Table.Column
-          dataIndex="average_weight"
-          title="TB kg/con"
-          align="right"
-          sorter
-          render={(v: number) => (v != null ? `${v} kg` : '—')}
-        />
-        <Table.Column
-          dataIndex="note"
-          title="Ghi chú"
-          ellipsis
-          sorter
-          filterDropdown={props => (
-            <FilterDropdown {...props}>
-              <Input.Search placeholder="Tìm ghi chú..." />
-            </FilterDropdown>
-          )}
-        />
-        <Table.Column
-          dataIndex="created_at"
-          title="Ngày tạo"
-          sorter
-          responsive={['xl']}
-          render={(v: string) => (v ? <RelativeTime value={v} /> : '—')}
-          filterDropdown={props => (
-            <FilterDropdown {...props}>
-              <Input.Search placeholder="Tìm ngày tạo..." />
-            </FilterDropdown>
-          )}
-        />
-        <Table.Column
-          title="Thao tác"
-          dataIndex="actions"
-          fixed="right"
-          render={(_, record) => (
-            <Space>
-              <EditButton hideText recordItemId={record.id} />
-              <ShowButton hideText recordItemId={record.id} />
-              <DeleteButton hideText recordItemId={record.id} />
-            </Space>
-          )}
-        />
-      </Table>
+      <ResponsiveTable
+        {...tableProps}
+        resource="purchases"
+        columns={columns}
+        filters={filters}
+        sorters={sorters}
+        meta={{
+          select:
+            '*,supplier:suppliers(*),purchase_items(*,product:products(*))',
+        }}
+        rowKey="id"
+      />
     </AntdList>
   );
 };

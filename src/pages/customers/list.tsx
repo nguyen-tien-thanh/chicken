@@ -1,37 +1,27 @@
-import {
-  EditOutlined,
-  EnvironmentOutlined,
-  PlusOutlined,
-} from '@ant-design/icons';
+import { EditOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   List as AntdList,
   DeleteButton,
-  FilterDropdown,
   ShowButton,
   useDrawerForm,
   useTable,
 } from '@refinedev/antd';
 import type { BaseRecord } from '@refinedev/core';
-import { useShow } from '@refinedev/core';
-import {
-  Button,
-  Descriptions,
-  Drawer,
-  Form,
-  Input,
-  Space,
-  Spin,
-  Table,
-  Tooltip,
-} from 'antd';
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { Button, Drawer, Form, Input, Space, Tooltip } from 'antd';
 
-import { LocationFormFields, LocationShowValue } from '@/components';
-import { googleMapsLink } from '@/components/location-picker/utils';
+import {
+  LocationFormFields,
+  ResponsiveTable,
+  type ResponsiveColumnType,
+} from '@/components';
 import { RelativeTime } from '@/components/relative-time';
-import { useResponsiveDrawerWidth } from '@/hooks';
+import {
+  MEDIA_MD_DOWN,
+  useMediaQuery,
+  useResponsiveDrawerWidth,
+} from '@/hooks';
 import type { ICustomer } from '@/types';
+import { Link } from 'react-router';
 
 function CustomerFormFields() {
   return (
@@ -52,8 +42,7 @@ function CustomerFormFields() {
 
 export const List = () => {
   const drawerWidth = useResponsiveDrawerWidth();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [showId, setShowId] = useState<string | undefined>(undefined);
+  const isMobile = useMediaQuery(MEDIA_MD_DOWN);
 
   const {
     drawerProps: createDrawerProps,
@@ -79,37 +68,63 @@ export const List = () => {
     syncWithLocation: false,
   });
 
-  const { result: showRecord, query: showQuery } = useShow<ICustomer>({
+  const { tableProps, filters, sorters, setFilters } = useTable<ICustomer>({
     resource: 'customers',
-    id: showId ?? '',
-    queryOptions: { enabled: !!showId },
-  });
-
-  useEffect(() => {
-    const id = searchParams.get('show');
-    if (!id) return;
-    setShowId(id);
-    setSearchParams(
-      prev => {
-        const next = new URLSearchParams(prev);
-        next.delete('show');
-        return next;
-      },
-      { replace: true },
-    );
-  }, [searchParams, setSearchParams]);
-
-  const { tableProps } = useTable<ICustomer>({
     syncWithLocation: true,
-    resource: 'customers',
-    filters: {
-      initial: [
-        { field: 'name', operator: 'contains', value: undefined },
-        { field: 'phone', operator: 'contains', value: undefined },
-      ],
-    },
     sorters: { initial: [{ field: 'name', order: 'asc' }] },
+    queryOptions: { enabled: !isMobile },
   });
+
+  const columns: ResponsiveColumnType<ICustomer>[] = [
+    {
+      title: 'Tên',
+      dataIndex: 'name',
+      sorter: true,
+      defaultSortOrder: 'ascend',
+      mobileRole: 'title',
+    },
+    {
+      title: 'Điện thoại',
+      dataIndex: 'phone',
+      sorter: true,
+      mobileRole: 'subtitle',
+      render: (phone: string) => <Link to={`tel:${phone}`}>{phone}</Link>,
+    },
+    {
+      title: 'Địa chỉ',
+      dataIndex: 'address',
+      ellipsis: true,
+      render: (address: string | null) => (
+        <Space size="small">{address ?? '—'}</Space>
+      ),
+    },
+    {
+      title: 'Ngày tạo',
+      dataIndex: 'created_at',
+      sorter: true,
+      mobileRole: 'hidden',
+      render: (v: string) => (v ? <RelativeTime value={v} /> : '—'),
+    },
+    {
+      title: 'Thao tác',
+      dataIndex: 'actions',
+      fixed: 'right',
+      mobileRole: 'actions',
+      render: (_, record: BaseRecord) => (
+        <Space>
+          <Tooltip title="Sửa">
+            <Button
+              variant="outlined"
+              icon={<EditOutlined />}
+              onClick={() => showEditDrawer(record.id)}
+            />
+          </Tooltip>
+          <ShowButton hideText recordItemId={record.id} />
+          <DeleteButton hideText recordItemId={record.id} />
+        </Space>
+      ),
+    },
+  ];
 
   return (
     <AntdList
@@ -123,74 +138,37 @@ export const List = () => {
         </Button>
       }
     >
-      <Table {...tableProps} rowKey="id">
-        <Table.Column
-          dataIndex="name"
-          title="Tên"
-          sorter
-          defaultSortOrder="ascend"
-        />
-        <Table.Column
-          dataIndex="phone"
-          title="Điện thoại"
-          sorter
-          filterDropdown={props => (
-            <FilterDropdown {...props} children={<Input.Search />} />
-          )}
-        />
-        <Table.Column
-          dataIndex="address"
-          title="Địa chỉ"
-          ellipsis
-          render={(address: string | null, record: ICustomer) => {
-            const url = googleMapsLink(record);
-            return (
-              <Space size="small">
-                <span>{address ?? '—'}</span>
-                {url ? (
-                  <Tooltip title="Mở Google Maps">
-                    <Button
-                      type="link"
-                      size="small"
-                      icon={<EnvironmentOutlined />}
-                      href={url}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{ padding: 0, flexShrink: 0 }}
-                    />
-                  </Tooltip>
-                ) : null}
-              </Space>
-            );
-          }}
-        />
-        <Table.Column
-          dataIndex="created_at"
-          title="Ngày tạo"
-          sorter
-          render={(v: string) => (v ? <RelativeTime value={v} /> : '—')}
-        />
-        <Table.Column
-          title="Thao tác"
-          dataIndex="actions"
-          fixed="right"
-          render={(_, record: BaseRecord) => (
-            <Space>
-              <Tooltip title="Sửa">
-                <Button
-                  variant="outlined"
-                  icon={<EditOutlined />}
-                  onClick={() => showEditDrawer(record.id)}
-                />
-              </Tooltip>
-              <Tooltip title="Xem">
-                <ShowButton hideText recordItemId={record.id} />
-              </Tooltip>
-              <DeleteButton hideText recordItemId={record.id} />
-            </Space>
-          )}
-        />
-      </Table>
+      <Input.Search
+        allowClear
+        placeholder="Tìm tên hoặc SĐT..."
+        style={{ marginBottom: 16, maxWidth: 480 }}
+        onSearch={value => {
+          const q = value.trim();
+          setFilters(
+            q
+              ? [
+                  {
+                    operator: 'or',
+                    value: [
+                      { field: 'name', operator: 'contains', value: q },
+                      { field: 'phone', operator: 'contains', value: q },
+                    ],
+                  },
+                ]
+              : [],
+            'replace',
+          );
+        }}
+      />
+
+      <ResponsiveTable
+        {...tableProps}
+        resource="customers"
+        columns={columns}
+        filters={filters}
+        sorters={sorters}
+        rowKey="id"
+      />
 
       <Drawer
         {...createDrawerProps}
@@ -226,51 +204,6 @@ export const List = () => {
         <Form {...editFormProps} layout="vertical">
           <CustomerFormFields />
         </Form>
-      </Drawer>
-
-      <Drawer
-        title="Chi tiết khách hàng"
-        width={drawerWidth}
-        open={!!showId}
-        onClose={() => setShowId(undefined)}
-        destroyOnHidden
-      >
-        {showQuery.isLoading ? (
-          <Spin />
-        ) : (
-          <Descriptions column={1} bordered size="small">
-            <Descriptions.Item label="Mã">{showRecord?.id}</Descriptions.Item>
-            <Descriptions.Item label="Tên">
-              {showRecord?.name ?? '—'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Điện thoại">
-              {showRecord?.phone}
-            </Descriptions.Item>
-            <Descriptions.Item label="Địa chỉ">
-              {showRecord?.address ?? '—'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Vị trí">
-              <LocationShowValue
-                latitude={showRecord?.latitude}
-                longitude={showRecord?.longitude}
-              />
-            </Descriptions.Item>
-            <Descriptions.Item label="Ngày tạo">
-              {showRecord?.created_at ? (
-                <RelativeTime value={showRecord.created_at} />
-              ) : (
-                '—'
-              )}
-            </Descriptions.Item>
-            <Descriptions.Item label="Cập nhật">
-              {showRecord?.updated_at ? (
-                <RelativeTime value={showRecord.updated_at} />
-              ) : (
-                '—'
-              )}
-            </Descriptions.Item>
-          </Descriptions>
-        )}
       </Drawer>
     </AntdList>
   );

@@ -1,8 +1,4 @@
-import {
-  EditOutlined,
-  EnvironmentOutlined,
-  PlusOutlined,
-} from '@ant-design/icons';
+import { EditOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   List as AntdList,
   DeleteButton,
@@ -21,16 +17,19 @@ import {
   Select,
   Space,
   Spin,
-  Table,
   Tooltip,
 } from 'antd';
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 
-import { LocationFormFields, LocationShowValue } from '@/components';
-import { googleMapsLink } from '@/components/location-picker/utils';
+import {
+  LocationFormFields,
+  LocationShowValue,
+  ResponsiveTable,
+  type ResponsiveColumnType,
+} from '@/components';
 import { RelativeTime } from '@/components/relative-time';
-import { useResponsiveDrawerWidth } from '@/hooks';
+import { MEDIA_MD_DOWN, useMediaQuery, useResponsiveDrawerWidth } from '@/hooks';
 import { type ISupplier } from '@/types';
 import { BankNameOptions } from '@/types/bank-name-enum';
 
@@ -63,6 +62,7 @@ function SupplierFormFields() {
 
 export const List = () => {
   const drawerWidth = useResponsiveDrawerWidth();
+  const isMobile = useMediaQuery(MEDIA_MD_DOWN);
   const [searchParams, setSearchParams] = useSearchParams();
   const [showId, setShowId] = useState<string | undefined>(undefined);
 
@@ -110,17 +110,64 @@ export const List = () => {
     );
   }, [searchParams, setSearchParams]);
 
-  const { tableProps } = useTable<ISupplier>({
+  const { tableProps, filters, sorters } = useTable<ISupplier>({
     syncWithLocation: true,
     resource: 'suppliers',
-    filters: {
-      initial: [
-        { field: 'name', operator: 'contains', value: undefined },
-        { field: 'phone', operator: 'contains', value: undefined },
-      ],
-    },
     sorters: { initial: [{ field: 'created_at', order: 'desc' }] },
+    queryOptions: { enabled: !isMobile },
   });
+
+  const columns: ResponsiveColumnType<ISupplier>[] = [
+    {
+      title: 'Tên nhà cung cấp',
+      dataIndex: 'name',
+      sorter: true,
+      defaultSortOrder: 'ascend',
+      mobileRole: 'title',
+    },
+    {
+      title: 'Điện thoại',
+      dataIndex: 'phone',
+      sorter: true,
+      mobileRole: 'subtitle',
+    },
+    {
+      title: 'Địa chỉ',
+      dataIndex: 'address',
+      ellipsis: true,
+      render: (address: string | null) => (
+        <Space size="small">{address ?? '—'}</Space>
+      ),
+    },
+    {
+      title: 'Ngày tạo',
+      dataIndex: 'created_at',
+      sorter: true,
+      mobileRole: 'hidden',
+      render: (v: string) => (v ? <RelativeTime value={v} /> : '—'),
+    },
+    {
+      title: 'Thao tác',
+      dataIndex: 'actions',
+      fixed: 'right',
+      mobileRole: 'actions',
+      render: (_, record: BaseRecord) => (
+        <Space>
+          <Tooltip title="Sửa">
+            <Button
+              variant="outlined"
+              icon={<EditOutlined />}
+              onClick={() => showEditDrawer(record.id)}
+            />
+          </Tooltip>
+          <Tooltip title="Xem">
+            <ShowButton hideText recordItemId={record.id} />
+          </Tooltip>
+          <DeleteButton hideText recordItemId={record.id} />
+        </Space>
+      ),
+    },
+  ];
 
   return (
     <AntdList
@@ -134,69 +181,14 @@ export const List = () => {
         </Button>
       }
     >
-      <Table {...tableProps} rowKey="id">
-        <Table.Column dataIndex="name" title="Tên nhà cung cấp" sorter />
-        <Table.Column dataIndex="phone" title="Điện thoại" sorter />
-        <Table.Column
-          dataIndex="address"
-          title="Địa chỉ"
-          ellipsis
-          render={(address: string | null, record: ISupplier) => {
-            const url = googleMapsLink(record);
-            return (
-              <Space size="small">
-                <span>{address ?? '—'}</span>
-                {url ? (
-                  <Tooltip title="Mở Google Maps">
-                    <Button
-                      type="link"
-                      size="small"
-                      icon={<EnvironmentOutlined />}
-                      href={url}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{ padding: 0, flexShrink: 0 }}
-                    />
-                  </Tooltip>
-                ) : null}
-              </Space>
-            );
-          }}
-        />
-        <Table.Column
-          dataIndex="created_at"
-          title="Ngày tạo"
-          sorter
-          defaultSortOrder="descend"
-          render={(v: string) => (v ? <RelativeTime value={v} /> : '—')}
-        />
-        <Table.Column
-          title="Nghiệp vụ"
-          render={(_, r: ISupplier) => (
-            <Link to={`/purchases/create?supplier_id=${r.id}`}>Nhập hàng</Link>
-          )}
-        />
-        <Table.Column
-          title="Thao tác"
-          dataIndex="actions"
-          fixed="right"
-          render={(_, record: BaseRecord) => (
-            <Space>
-              <Tooltip title="Sửa">
-                <Button
-                  variant="outlined"
-                  icon={<EditOutlined />}
-                  onClick={() => showEditDrawer(record.id)}
-                />
-              </Tooltip>
-              <Tooltip title="Xem">
-                <ShowButton hideText recordItemId={record.id} />
-              </Tooltip>
-              <DeleteButton hideText recordItemId={record.id} />
-            </Space>
-          )}
-        />
-      </Table>
+      <ResponsiveTable
+        {...tableProps}
+        resource="suppliers"
+        columns={columns}
+        filters={filters}
+        sorters={sorters}
+        rowKey="id"
+      />
 
       <Drawer
         {...createDrawerProps}

@@ -2,7 +2,6 @@ import { EditOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
 import {
   List as AntdList,
   DeleteButton,
-  FilterDropdown,
   useDrawerForm,
   useTable,
 } from '@refinedev/antd';
@@ -16,20 +15,25 @@ import {
   Input,
   Space,
   Spin,
-  Table,
   Tooltip,
 } from 'antd';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
-import { useResponsiveDrawerWidth } from '@/hooks';
+import { ResponsiveTable, type ResponsiveColumnType } from '@/components';
+import {
+  MEDIA_MD_DOWN,
+  useMediaQuery,
+  useResponsiveDrawerWidth,
+} from '@/hooks';
 import type { IProductCategory } from '@/types';
 
 const DRAWER_WIDTH = '45vw';
 
 export const List = () => {
   const formDrawerWidth = useResponsiveDrawerWidth();
+  const isMobile = useMediaQuery(MEDIA_MD_DOWN);
   const [searchParams, setSearchParams] = useSearchParams();
   const [showId, setShowId] = useState<string | undefined>(undefined);
 
@@ -77,13 +81,60 @@ export const List = () => {
     );
   }, [searchParams, setSearchParams]);
 
-  const { tableProps } = useTable<IProductCategory>({
+  const { tableProps, filters, sorters } = useTable<IProductCategory>({
     syncWithLocation: true,
     resource: 'product_categories',
     filters: {
-      initial: [{ field: 'name', operator: 'contains', value: undefined }],
+      initial: [{ field: 'name', operator: 'contains', value: '' }],
     },
+    queryOptions: { enabled: !isMobile },
   });
+
+  const columns: ResponsiveColumnType<IProductCategory>[] = [
+    {
+      dataIndex: 'name',
+      title: 'Tên danh mục',
+      sorter: true,
+      mobileRole: 'title',
+    },
+    {
+      dataIndex: 'created_at',
+      title: 'Ngày tạo',
+      render: (v: string | null) =>
+        v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—',
+    },
+    {
+      dataIndex: 'deleted_at',
+      title: 'Ngày xóa mềm',
+      mobileRole: 'hidden',
+      render: (v: string | null) =>
+        v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—',
+    },
+    {
+      title: 'Thao tác',
+      dataIndex: 'actions',
+      mobileRole: 'actions',
+      render: (_, record: BaseRecord) => (
+        <Space>
+          <Tooltip title="Sửa">
+            <Button
+              variant="outlined"
+              icon={<EditOutlined />}
+              onClick={() => showEditDrawer(record.id)}
+            />
+          </Tooltip>
+          <Tooltip title="Xem">
+            <Button
+              variant="outlined"
+              icon={<EyeOutlined />}
+              onClick={() => setShowId(String(record.id))}
+            />
+          </Tooltip>
+          <DeleteButton hideText recordItemId={record.id} />
+        </Space>
+      ),
+    },
+  ];
 
   return (
     <AntdList
@@ -97,53 +148,14 @@ export const List = () => {
         </Button>
       }
     >
-      <Table {...tableProps} rowKey="id">
-        <Table.Column
-          dataIndex="name"
-          title="Tên danh mục"
-          sorter
-          filterDropdown={props => (
-            <FilterDropdown {...props} children={<Input.Search />} />
-          )}
-        />
-        <Table.Column
-          dataIndex="created_at"
-          title="Ngày tạo"
-          render={(v: string | null) =>
-            v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—'
-          }
-        />
-        <Table.Column
-          dataIndex="deleted_at"
-          title="Ngày xóa mềm"
-          render={(v: string | null) =>
-            v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—'
-          }
-        />
-        <Table.Column
-          title="Thao tác"
-          dataIndex="actions"
-          render={(_, record: BaseRecord) => (
-            <Space>
-              <Tooltip title="Sửa">
-                <Button
-                  variant="outlined"
-                  icon={<EditOutlined />}
-                  onClick={() => showEditDrawer(record.id)}
-                />
-              </Tooltip>
-              <Tooltip title="Xem">
-                <Button
-                  variant="outlined"
-                  icon={<EyeOutlined />}
-                  onClick={() => setShowId(String(record.id))}
-                />
-              </Tooltip>
-              <DeleteButton hideText recordItemId={record.id} />
-            </Space>
-          )}
-        />
-      </Table>
+      <ResponsiveTable
+        {...tableProps}
+        resource="product_categories"
+        columns={columns}
+        filters={filters}
+        sorters={sorters}
+        rowKey="id"
+      />
 
       <Drawer
         {...createDrawerProps}
