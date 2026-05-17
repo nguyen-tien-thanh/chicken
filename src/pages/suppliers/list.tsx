@@ -239,7 +239,7 @@ export const List = () => {
         width={drawerWidth}
         open={!!showId}
         onClose={() => setShowId(undefined)}
-        destroyOnClose
+        destroyOnHidden
       >
         {showQuery.isLoading ? (
           <Spin />

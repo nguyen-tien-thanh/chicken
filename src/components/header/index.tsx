@@ -58,7 +58,7 @@ export const Header: React.FC<RefineThemedLayoutHeaderProps> = ({
               defaultChecked={mode === 'dark'}
             />
             <Space style={{ marginLeft: '8px' }} size="middle">
-              {user?.name && <Text strong>{user.name}</Text>}
+              {user?.name && <Text strong>{user.name.split('@')[0]}</Text>}
               {user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}
             </Space>
           </Space>

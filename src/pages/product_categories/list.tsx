@@ -23,11 +23,13 @@ import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
+import { useResponsiveDrawerWidth } from '@/hooks';
 import type { IProductCategory } from '@/types';
 
 const DRAWER_WIDTH = '45vw';
 
 export const List = () => {
+  const formDrawerWidth = useResponsiveDrawerWidth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showId, setShowId] = useState<string | undefined>(undefined);
 
@@ -145,7 +147,7 @@ export const List = () => {
 
       <Drawer
         {...createDrawerProps}
-        width={DRAWER_WIDTH}
+        width={formDrawerWidth}
         title="Tạo danh mục"
         extra={
           <Space>
@@ -169,7 +171,7 @@ export const List = () => {
 
       <Drawer
         {...editDrawerProps}
-        width={DRAWER_WIDTH}
+        width={formDrawerWidth}
         title="Sửa danh mục"
         extra={
           <Space>
@@ -196,7 +198,7 @@ export const List = () => {
         width={DRAWER_WIDTH}
         open={!!showId}
         onClose={() => setShowId(undefined)}
-        destroyOnClose
+        destroyOnHidden
       >
         {showQuery.isLoading ? (
           <Spin />

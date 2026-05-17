@@ -25,6 +25,7 @@ import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 
 import { RelativeTime } from '@/components/relative-time';
+import { useResponsiveDrawerWidth } from '@/hooks';
 import {
   PRODUCT_TYPE_LABELS,
   PRODUCT_TYPE_OPTIONS,
@@ -36,6 +37,7 @@ import {
 const DRAWER_WIDTH = '45vw';
 
 export const List = () => {
+  const formDrawerWidth = useResponsiveDrawerWidth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showId, setShowId] = useState<string | undefined>(undefined);
 
@@ -49,6 +51,9 @@ export const List = () => {
     resource: 'products',
     action: 'create',
     syncWithLocation: false,
+    defaultFormValues: {
+      type: PRODUCT_TYPE_OPTIONS[0].value,
+    },
   });
 
   const {
@@ -178,7 +183,7 @@ export const List = () => {
 
       <Drawer
         {...createDrawerProps}
-        width={DRAWER_WIDTH}
+        width={formDrawerWidth}
         title="Tạo sản phẩm"
         extra={
           <Space>
@@ -219,7 +224,7 @@ export const List = () => {
 
       <Drawer
         {...editDrawerProps}
-        width={DRAWER_WIDTH}
+        width={formDrawerWidth}
         title="Sửa sản phẩm"
         extra={
           <Space>
@@ -260,10 +265,10 @@ export const List = () => {
 
       <Drawer
         title="Chi tiết sản phẩm"
-        width={DRAWER_WIDTH}
+        width={formDrawerWidth}
         open={!!showId}
         onClose={() => setShowId(undefined)}
-        destroyOnClose
+        destroyOnHidden
       >
         {showQuery.isLoading ? (
           <Spin />

@@ -30,8 +30,8 @@ import { useSearchParams } from 'react-router';
 import { LocationFormFields, LocationShowValue } from '@/components';
 import { googleMapsLink } from '@/components/location-picker/utils';
 import { RelativeTime } from '@/components/relative-time';
-import type { ICustomer } from '@/types';
 import { useResponsiveDrawerWidth } from '@/hooks';
+import type { ICustomer } from '@/types';
 
 function CustomerFormFields() {
   return (
@@ -233,7 +233,7 @@ export const List = () => {
         width={drawerWidth}
         open={!!showId}
         onClose={() => setShowId(undefined)}
-        destroyOnClose
+        destroyOnHidden
       >
         {showQuery.isLoading ? (
           <Spin />
