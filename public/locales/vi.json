@@ -110,7 +110,7 @@
     "editError": "Lỗi khi cập nhật {{resource}} (mã: {{statusCode}})"
   },
   "documentTitle": {
-    "default": "Refine",
+    "default": "Chicken",
     "suffix": " | Chicken",
     "product_categories": {
       "list": "Danh mục sản phẩm | Chicken",
