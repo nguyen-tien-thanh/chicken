@@ -5,12 +5,14 @@ FROM base AS deps
 COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
 
 RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then \
-    yarn global add pnpm@10 && \
+  if [ -f pnpm-lock.yaml ]; then \
+    npm install -g pnpm@10.12.1 && \
     pnpm config set onlyBuiltDependencies esbuild && \
     pnpm i --frozen-lockfile; \
+  elif [ -f yarn.lock ]; then \
+    corepack enable && \
+    yarn --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then npm ci; \
   else echo "Lockfile not found." && exit 1; \
   fi
 
