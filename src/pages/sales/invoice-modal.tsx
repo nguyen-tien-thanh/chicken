@@ -6,6 +6,7 @@ import {
   Image,
   message,
   Modal,
+  Space,
   Table,
   Tag,
   Typography,
@@ -201,20 +202,23 @@ export const SaleInvoiceModal = ({ sale_id }: Props) => {
         }}
         width={640}
         footer={
-          <Button
-            icon={<PrinterOutlined />}
-            type="primary"
-            onClick={handlePrint}
-          >
-            In hoá đơn
-          </Button>
+          <Space>
+            <Button onClick={() => setOpen(false)}>Đóng</Button>
+            <Button
+              icon={<PrinterOutlined />}
+              type="primary"
+              onClick={handlePrint}
+            >
+              In hoá đơn
+            </Button>
+          </Space>
         }
       >
         <Typography.Text type="secondary" style={{ fontSize: 12 }}>
           Mã: {invoice?.id}
         </Typography.Text>
         <Divider style={{ margin: '12px 0' }} />
-        <Descriptions size="small" column={2} bordered>
+        <Descriptions size="small" bordered>
           <Descriptions.Item label="Ngày bán">
             {invoice?.sale_date &&
               dayjs(invoice.sale_date).format(DATETIME_FORMAT)}

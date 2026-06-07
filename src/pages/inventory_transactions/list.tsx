@@ -109,11 +109,8 @@ export const List = () => {
       dataIndex: 'quantity',
       title: 'Số lượng',
       align: 'right',
-    },
-    {
-      dataIndex: 'quantity_unit',
-      title: 'Đơn vị',
-      width: 80,
+      render: (quantity: number, record) =>
+        `${quantity} ${record.quantity_unit}`,
     },
     {
       dataIndex: 'total_cost',

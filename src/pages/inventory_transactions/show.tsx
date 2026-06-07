@@ -128,12 +128,14 @@ export const Show = () => {
               </Link>
             ),
           },
+          { label: 'Giá vốn đơn vị', value: showMoney(record?.unit_cost) },
           {
             label: 'Số lượng',
-            value: record?.quantity != null ? record.quantity : undefined,
+            value:
+              record?.quantity != null
+                ? `${record.quantity} ${record.quantity_unit}`
+                : undefined,
           },
-          { label: 'Đơn vị tính', value: record?.quantity_unit },
-          { label: 'Giá vốn đơn vị', value: showMoney(record?.unit_cost) },
           { label: 'Tổng giá vốn', value: showMoney(record?.total_cost) },
           { label: 'Ghi chú', value: record?.note },
           {
