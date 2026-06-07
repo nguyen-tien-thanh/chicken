@@ -1,4 +1,3 @@
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { Edit as AntdEdit, useForm } from '@refinedev/antd';
 import {
   useCreate,
@@ -11,41 +10,28 @@ import {
 import type { FormProps } from 'antd';
 import {
   App,
-  Button,
   Col,
   DatePicker,
   Form,
   Input,
-  InputNumber,
   Row,
   Select,
-  Space,
-  Table,
-  Tooltip,
-  Typography,
 } from 'antd';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 
-import { InputMoney } from '@/components';
+import {
+  InputMoney,
+  VoucherLineItemsEditor,
+  VoucherSummaryBox,
+  type VoucherLineItem,
+} from '@/components';
 import type { ICustomer, IProduct, ISale, ISaleItem } from '@/types';
 import { SALE_STATUS_OPTIONS, type SaleStatus } from '@/types';
-import { DATETIME_FORMAT, formatMoney } from '@/utils';
-
-const { Text } = Typography;
-
-type LineItem = {
-  key: number;
-  id?: string;
-  product_id?: string;
-  quantity: number;
-  quantity_unit: 'kg' | 'con';
-  unit_price: number;
-  note?: string;
-};
+import { DATETIME_FORMAT } from '@/utils';
 
 let nextKey = 1;
-function fromExisting(item: ISaleItem): LineItem {
+function fromExisting(item: ISaleItem): VoucherLineItem {
   return {
     key: nextKey++,
     id: item.id,
@@ -56,7 +42,7 @@ function fromExisting(item: ISaleItem): LineItem {
     note: item.note ?? undefined,
   };
 }
-function newRow(): LineItem {
+function newRow(): VoucherLineItem {
   return {
     key: nextKey++,
     quantity_unit: 'kg',
@@ -67,7 +53,7 @@ function newRow(): LineItem {
 
 export const Edit = () => {
   const { notification } = App.useApp();
-  const [lines, setLines] = useState<LineItem[]>([]);
+  const [lines, setLines] = useState<VoucherLineItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
   const { mutateAsync: updateSale } = useUpdate();
@@ -84,7 +70,6 @@ export const Edit = () => {
     },
   });
 
-  // Sync line items khi data load xong
   useEffect(() => {
     const data = query?.data?.data;
     if (data?.sale_items && lines.length === 0) {
@@ -113,10 +98,10 @@ export const Edit = () => {
     optionValue: (item: IProduct) => item.id,
   });
 
-  function updateLine<K extends keyof LineItem>(
+  function updateLine<K extends keyof VoucherLineItem>(
     key: number,
     field: K,
-    value: LineItem[K],
+    value: VoucherLineItem[K],
   ) {
     setLines(prev =>
       prev.map(row => (row.key === key ? { ...row, [field]: value } : row)),
@@ -125,6 +110,24 @@ export const Edit = () => {
 
   function removeLine(key: number) {
     setLines(prev => prev.filter(row => row.key !== key));
+  }
+
+  function addLine() {
+    setLines(prev => {
+      const last = prev[prev.length - 1];
+      return [
+        ...prev,
+        last
+          ? {
+              key: nextKey++,
+              product_id: last.product_id,
+              quantity_unit: last.quantity_unit,
+              unit_price: last.unit_price,
+              quantity: 1,
+            }
+          : newRow(),
+      ];
+    });
   }
 
   const subtotal = lines.reduce((sum, row) => {
@@ -243,106 +246,6 @@ export const Edit = () => {
     })();
   };
 
-  const columns = [
-    {
-      title: '#',
-      width: 44,
-      render: (_: unknown, _row: LineItem, index: number) => (
-        <Text type="secondary">{index + 1}</Text>
-      ),
-    },
-    {
-      title: 'Sản phẩm',
-      width: 360,
-      render: (_: unknown, row: LineItem) => (
-        <Select
-          placeholder="Chọn sản phẩm"
-          value={row.product_id}
-          options={productOptions}
-          loading={productsQuery.isFetching}
-          showSearch
-          onSearch={onSearchProduct}
-          filterOption={false}
-          optionFilterProp="label"
-          allowClear
-          style={{ width: '100%' }}
-          onChange={v => updateLine(row.key, 'product_id', v)}
-        />
-      ),
-    },
-    {
-      title: 'Số lượng',
-      width: 120,
-      render: (_: unknown, row: LineItem) => (
-        <InputNumber
-          min={0}
-          step={0.1}
-          style={{ width: '100%' }}
-          value={row.quantity}
-          onChange={v => updateLine(row.key, 'quantity', v ?? 0)}
-        />
-      ),
-    },
-    {
-      title: 'Đơn vị',
-      width: 110,
-      render: (_: unknown, row: LineItem) => (
-        <Select
-          value={row.quantity_unit}
-          options={[
-            { value: 'kg', label: 'kg' },
-            { value: 'con', label: 'con' },
-          ]}
-          style={{ width: '100%' }}
-          onChange={v => updateLine(row.key, 'quantity_unit', v)}
-        />
-      ),
-    },
-    {
-      title: 'Đơn giá',
-      width: 160,
-      render: (_: unknown, row: LineItem) => (
-        <InputMoney
-          value={row.unit_price}
-          onChange={v => updateLine(row.key, 'unit_price', (v as number) ?? 0)}
-        />
-      ),
-    },
-    {
-      title: 'Thành tiền',
-      width: 160,
-      render: (_: unknown, row: LineItem) => (
-        <Text strong>{formatMoney(row.quantity * row.unit_price)}</Text>
-      ),
-    },
-    {
-      title: 'Ghi chú',
-      width: 220,
-      render: (_: unknown, row: LineItem) => (
-        <Input
-          placeholder="Tuỳ chọn"
-          value={row.note}
-          onChange={e => updateLine(row.key, 'note', e.target.value)}
-        />
-      ),
-    },
-    {
-      title: '',
-      width: 52,
-      fixed: 'right' as const,
-      render: (_: unknown, row: LineItem) => (
-        <Tooltip title="Xoá dòng">
-          <Button
-            danger
-            type="text"
-            icon={<MinusCircleOutlined />}
-            onClick={() => removeLine(row.key)}
-          />
-        </Tooltip>
-      ),
-    },
-  ];
-
   return (
     <AntdEdit
       saveButtonProps={{
@@ -367,7 +270,7 @@ export const Edit = () => {
           />
         </Form.Item>
         <Row gutter={16}>
-          <Col span={12}>
+          <Col xs={24} md={12}>
             <Form.Item
               label="Ngày bán"
               name="sale_date"
@@ -386,7 +289,7 @@ export const Edit = () => {
               />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col xs={24} md={12}>
             <Form.Item
               label="Trạng thái"
               name="status"
@@ -397,12 +300,12 @@ export const Edit = () => {
           </Col>
         </Row>
         <Row gutter={16}>
-          <Col span={12}>
+          <Col xs={24} md={12}>
             <Form.Item label="Giảm giá" name="discount_amount">
               <InputMoney style={{ width: '100%' }} />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col xs={24} md={12}>
             <Form.Item label="Đã thanh toán" name="paid_amount">
               <InputMoney style={{ width: '100%' }} />
             </Form.Item>
@@ -412,65 +315,17 @@ export const Edit = () => {
           <Input.TextArea rows={2} />
         </Form.Item>
 
-        <Form.Item label="Chi tiết hàng bán">
-          <Space
-            style={{
-              width: '100%',
-              marginBottom: 8,
-              justifyContent: 'space-between',
-            }}
-            wrap
-          >
-            <Text type="secondary">
-              Thêm sản phẩm, số lượng, đơn giá. Hệ thống tự tính thành tiền.
-            </Text>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() =>
-                setLines(prev => {
-                  const last = prev[prev.length - 1];
-                  return [
-                    ...prev,
-                    last
-                      ? {
-                          key: nextKey++,
-                          product_id: last.product_id,
-                          quantity_unit: last.quantity_unit,
-                          unit_price: last.unit_price,
-                          quantity: 1,
-                        }
-                      : newRow(),
-                  ];
-                })
-              }
-            >
-              Thêm dòng
-            </Button>
-          </Space>
-          <Table
-            rowKey="key"
-            dataSource={lines}
-            columns={columns}
-            pagination={false}
-            size="small"
-            scroll={{ x: true }}
-          />
-          <div
-            style={{
-              marginTop: 8,
-              padding: '12px 16px',
-              background: 'var(--ant-color-fill-quaternary)',
-              borderRadius: 8,
-              textAlign: 'right',
-            }}
-          >
-            <Text type="secondary">Tổng thành tiền (ước tính): </Text>
-            <Text strong style={{ fontSize: 16 }}>
-              {formatMoney(subtotal)}
-            </Text>
-          </div>
-        </Form.Item>
+        <VoucherLineItemsEditor
+          label="Chi tiết hàng bán"
+          lines={lines}
+          productOptions={productOptions}
+          productsLoading={productsQuery.isFetching}
+          onSearchProduct={onSearchProduct}
+          onUpdateLine={updateLine}
+          onRemoveLine={removeLine}
+          onAddLine={addLine}
+        />
+        <VoucherSummaryBox label="Tổng thành tiền (ước tính):" amount={subtotal} />
       </Form>
     </AntdEdit>
   );
