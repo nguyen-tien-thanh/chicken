@@ -29,7 +29,7 @@ import authProvider from './providers/auth';
 import { dataProvider } from './providers/data';
 import { supabaseClient } from './providers/supabase-client';
 
-import { ShowRedirectDrawer, ThemedLayout, ThemedSider } from './components';
+import { ThemedLayout, ThemedSider } from './components';
 import { Customer } from './pages/customers';
 import { ForgotPassword } from './pages/forgot_password';
 import { InventoryTransaction } from './pages/inventory_transactions';
@@ -82,6 +82,8 @@ function App() {
                 {
                   name: 'suppliers',
                   list: '/suppliers',
+                  create: '/suppliers/create',
+                  edit: '/suppliers/edit/:id',
                   show: '/suppliers/show/:id',
                   meta: { canDelete: true, icon: <ShopOutlined /> },
                 },
@@ -100,6 +102,8 @@ function App() {
                 {
                   name: 'customers',
                   list: '/customers',
+                  create: '/customers/create',
+                  edit: '/customers/edit/:id',
                   show: '/customers/show/:id',
                   meta: { canDelete: true, icon: <UserOutlined /> },
                 },
@@ -118,11 +122,16 @@ function App() {
                 {
                   name: 'product_categories',
                   list: '/product_categories',
+                  create: '/product_categories/create',
+                  edit: '/product_categories/edit/:id',
+                  show: '/product_categories/show/:id',
                   meta: { canDelete: true, icon: <UnorderedListOutlined /> },
                 },
                 {
                   name: 'products',
                   list: '/products',
+                  create: '/products/create',
+                  edit: '/products/edit/:id',
                   show: '/products/show/:id',
                   meta: { canDelete: true, icon: <ProductOutlined /> },
                 },
@@ -166,6 +175,8 @@ function App() {
                   />
                   <Route path="/suppliers">
                     <Route index element={<Supplier.List />} />
+                    <Route path="create" element={<Supplier.Create />} />
+                    <Route path="edit/:id" element={<Supplier.Edit />} />
                     <Route path="show/:id" element={<Supplier.Show />} />
                   </Route>
                   <Route path="/purchases">
@@ -182,10 +193,14 @@ function App() {
                   </Route>
                   <Route path="/customers">
                     <Route index element={<Customer.List />} />
+                    <Route path="create" element={<Customer.Create />} />
+                    <Route path="edit/:id" element={<Customer.Edit />} />
                     <Route path="show/:id" element={<Customer.Show />} />
                   </Route>
                   <Route path="/products">
                     <Route index element={<Product.List />} />
+                    <Route path="create" element={<Product.Create />} />
+                    <Route path="edit/:id" element={<Product.Edit />} />
                     <Route path="show/:id" element={<Product.Show />} />
                   </Route>
                   <Route path="/inventory_transactions">
@@ -197,12 +212,9 @@ function App() {
                   </Route>
                   <Route path="/product_categories">
                     <Route index element={<ProductCategory.List />} />
-                    <Route
-                      path="show/:id"
-                      element={
-                        <ShowRedirectDrawer listPath="/product_categories" />
-                      }
-                    />
+                    <Route path="create" element={<ProductCategory.Create />} />
+                    <Route path="edit/:id" element={<ProductCategory.Edit />} />
+                    <Route path="show/:id" element={<ProductCategory.Show />} />
                   </Route>
                   <Route path="*" element={<ErrorComponent />} />
                 </Route>

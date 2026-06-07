@@ -29,7 +29,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 
 import { FullScreenSpin, InputMoney } from '@/components';
 import type { IProduct, ISupplier } from '@/types';
-import { formatMoney } from '@/utils';
+import { DATE_FORMAT, formatMoney } from '@/utils';
 
 const { Text } = Typography;
 
@@ -322,7 +322,7 @@ export const Create = () => {
               <DatePicker
                 showTime={false}
                 style={{ width: '100%' }}
-                format="DD/MM/YYYY"
+                format={DATE_FORMAT}
               />
             </Form.Item>
           </Col>

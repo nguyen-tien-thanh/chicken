@@ -14,7 +14,7 @@ import {
   type InventoryTransactionDirection,
   type InventoryTransactionType,
 } from '@/types';
-import { formatMoney } from '@/utils';
+import { DATETIME_FORMAT, formatMoney } from '@/utils';
 
 function RefLink({
   type,
@@ -67,12 +67,6 @@ export const List = () => {
     meta: {
       select: '*,product:products(*)',
     },
-    filters: {
-      initial: [
-        { field: 'ref_type', operator: 'eq', value: undefined },
-        { field: 'direction', operator: 'eq', value: undefined },
-      ],
-    },
     sorters: { initial: [{ field: 'transaction_date', order: 'desc' }] },
     queryOptions: { enabled: !isMobile },
   });
@@ -84,8 +78,7 @@ export const List = () => {
       sorter: true,
       defaultSortOrder: 'descend',
       mobileRole: 'title',
-      render: (v: string) =>
-        v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—',
+      render: (v: string) => v && dayjs(v).format(DATETIME_FORMAT),
     },
     {
       key: 'product',
@@ -94,9 +87,7 @@ export const List = () => {
       render: (_, r) =>
         r.product ? (
           <Link to={`/products/show/${r.product.id}`}>{r.product.name}</Link>
-        ) : (
-          '—'
-        ),
+        ) : null,
     },
     {
       dataIndex: 'ref_type',
@@ -128,14 +119,14 @@ export const List = () => {
       dataIndex: 'total_cost',
       title: 'Tổng giá vốn',
       align: 'right',
-      render: (n: number) => (n != null ? formatMoney(n) : '—'),
+      render: (n: number) => n != null && formatMoney(n),
     },
     {
       dataIndex: 'created_at',
       title: 'Ghi nhận',
       sorter: true,
       mobileRole: 'hidden',
-      render: (v: string) => (v ? <RelativeTime value={v} /> : '—'),
+      render: (v: string) => v && <RelativeTime value={v} />,
     },
     {
       title: 'Thao tác',

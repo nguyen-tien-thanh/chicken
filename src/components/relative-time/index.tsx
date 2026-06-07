@@ -6,6 +6,7 @@ import {
   formatRelativeTimeVi,
   type RelativeTimeInput,
 } from '@/utils/formatRelativeTimeVi';
+import { DATETIME_SECONDS_FORMAT } from '@/utils/formatDateTime';
 
 export type RelativeTimeProps = {
   /** Thời điểm cần hiển thị (ISO string, timestamp, Date). */
@@ -25,7 +26,7 @@ export const RelativeTime = ({
   value,
   className,
   style,
-  emptyText = '—',
+  emptyText = '',
   refreshMs = 60_000,
 }: RelativeTimeProps) => {
   const [label, setLabel] = useState(() => formatRelativeTimeVi(value));
@@ -49,7 +50,7 @@ export const RelativeTime = ({
   const title = useMemo(() => {
     if (value == null) return undefined;
     const d = dayjs(value);
-    return d.isValid() ? d.format('DD/MM/YYYY HH:mm:ss') : undefined;
+    return d.isValid() ? d.format(DATETIME_SECONDS_FORMAT) : undefined;
   }, [value]);
 
   return (

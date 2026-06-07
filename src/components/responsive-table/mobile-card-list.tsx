@@ -1,13 +1,5 @@
 import type { TableProps } from 'antd';
-import {
-  Card,
-  Divider,
-  Empty,
-  Flex,
-  Skeleton,
-  Spin,
-  Typography,
-} from 'antd';
+import { Card, Divider, Empty, Flex, Skeleton, Spin, Typography } from 'antd';
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
@@ -82,17 +74,15 @@ function MobileCard<RecordType extends object>({
   const cardTitle = titleColumn
     ? renderColumnCell(titleColumn, record, index)
     : subtitleColumn
-      ? renderColumnCell(subtitleColumn, record, index)
-      : undefined;
+    ? renderColumnCell(subtitleColumn, record, index)
+    : undefined;
 
   const cardActions = actionsColumn
     ? extractCardActions(renderColumnCell(actionsColumn, record, index))
     : [];
 
   const fieldColumns = (
-    titleColumn
-      ? [subtitleColumn, ...bodyColumns]
-      : bodyColumns
+    titleColumn ? [subtitleColumn, ...bodyColumns] : bodyColumns
   ).filter(Boolean) as ResponsiveColumnType<RecordType>[];
 
   return (

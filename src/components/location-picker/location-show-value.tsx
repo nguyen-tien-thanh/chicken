@@ -1,6 +1,6 @@
-import { Button, Space, Typography } from 'antd';
+import { Button, Space } from 'antd';
 
-import { formatCoordinates, getCoordinates, googleMapsUrl } from './utils';
+import { getCoordinates, googleMapsUrl } from './utils';
 
 type LocationShowValueProps = {
   latitude?: number | null;
@@ -12,13 +12,13 @@ export function LocationShowValue({
   longitude,
 }: LocationShowValueProps) {
   const coords = getCoordinates(latitude, longitude);
-  if (!coords) return <>—</>;
+  if (!coords) return null;
 
   return (
     <Space direction="vertical" size={4}>
-      <Typography.Text>
+      {/* <Typography.Text>
         {formatCoordinates(coords.lat, coords.lng)}
-      </Typography.Text>
+      </Typography.Text> */}
       <Button
         type="link"
         size="small"

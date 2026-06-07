@@ -1,9 +1,21 @@
-import { Show as AntdShow, ShowButton, useTable } from '@refinedev/antd';
+import {
+  CreateButton,
+  DeleteButton,
+  EditButton,
+  ListButton,
+  useTable,
+} from '@refinedev/antd';
 import { useShow } from '@refinedev/core';
-import { Card, Descriptions, Table, Tag, Typography } from 'antd';
 import dayjs from 'dayjs';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
+import {
+  MobileShowDetails,
+  MobileShowList,
+  MobileShowPage,
+  MobileShowSection,
+  MobileShowTag,
+} from '@/components';
 import { RelativeTime } from '@/components/relative-time';
 import {
   PRODUCT_TYPE_LABELS,
@@ -12,9 +24,26 @@ import {
   type ISaleItem,
   type ProductType,
 } from '@/types';
-import { formatMoney } from '@/utils';
+import { DATE_FORMAT, DATETIME_FORMAT, joinDetail, showMoney } from '@/utils';
+
+type PurchaseItemRow = IPurchaseItem & {
+  purchase?: {
+    id: string;
+    purchase_date: string;
+    supplier?: { id: string; name: string };
+  };
+};
+
+type SaleItemRow = ISaleItem & {
+  sale?: {
+    id: string;
+    sale_date: string;
+    customer?: { id: string; name?: string | null; phone: string };
+  };
+};
 
 export const Show = () => {
+  const navigate = useNavigate();
   const { result: record, query } = useShow<IProduct>({
     resource: 'products',
     meta: {
@@ -24,8 +53,9 @@ export const Show = () => {
   const { isLoading } = query;
 
   const product_id = record?.id;
+  const productType = record?.type as ProductType | undefined;
 
-  const { tableProps: purchaseTableProps } = useTable<IPurchaseItem>({
+  const { tableProps: purchaseTableProps } = useTable<PurchaseItemRow>({
     resource: 'purchase_items',
     syncWithLocation: false,
     filters: {
@@ -40,7 +70,7 @@ export const Show = () => {
     queryOptions: { enabled: !!product_id },
   });
 
-  const { tableProps: saleTableProps } = useTable<ISaleItem>({
+  const { tableProps: saleTableProps } = useTable<SaleItemRow>({
     resource: 'sale_items',
     syncWithLocation: false,
     filters: {
@@ -49,228 +79,115 @@ export const Show = () => {
         : [],
     },
     meta: {
-      select:
-        '*,sale:sales(*,customer:customers(*)),purchase:purchases(*,supplier:suppliers(*))',
+      select: '*,sale:sales(*,customer:customers(*))',
     },
     sorters: { initial: [{ field: 'created_at', order: 'desc' }] },
     queryOptions: { enabled: !!product_id },
   });
 
-  const productType = record?.type as ProductType | undefined;
+  const purchaseItems = purchaseTableProps.dataSource ?? [];
+  const saleItems = saleTableProps.dataSource ?? [];
 
   return (
-    <AntdShow isLoading={isLoading}>
-      <Card size="small" styles={{ body: { padding: 0 } }}>
-        <Descriptions
-          bordered
-          column={2}
-          size="small"
-          styles={{ label: { width: 160, fontWeight: 500 } }}
-        >
-          <Descriptions.Item label="Mã" span={2}>
-            <Typography.Text copyable={!!record?.id}>
-              {record?.id ?? '—'}
-            </Typography.Text>
-          </Descriptions.Item>
-          <Descriptions.Item label="Tên sản phẩm">
-            {record?.name ?? '—'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Loại">
-            {productType ? <Tag>{PRODUCT_TYPE_LABELS[productType]}</Tag> : '—'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Danh mục">
-            {record?.category ? (
+    <MobileShowPage
+      loading={isLoading}
+      title={record?.name}
+      actions={
+        <>
+          <ListButton />
+          <EditButton />
+          <DeleteButton />
+          {product_id ? <CreateButton /> : null}
+        </>
+      }
+    >
+      <MobileShowDetails
+        items={[
+          { label: 'Tên sản phẩm', value: record?.name },
+          {
+            label: 'Loại',
+            value: productType && (
+              <MobileShowTag>{PRODUCT_TYPE_LABELS[productType]}</MobileShowTag>
+            ),
+          },
+          {
+            label: 'Danh mục',
+            value: record?.category ? (
               <Link to={`/product_categories/show/${record.category.id}`}>
                 {record.category.name}
               </Link>
             ) : (
-              record?.category_id ?? '—'
-            )}
-          </Descriptions.Item>
-          <Descriptions.Item label="Ngày tạo">
-            {record?.created_at ? (
-              <RelativeTime value={record.created_at} />
-            ) : (
-              '—'
-            )}
-          </Descriptions.Item>
-        </Descriptions>
-      </Card>
-
-      <Typography.Title level={5} style={{ marginTop: 24 }}>
-        Lịch sử nhập hàng
-      </Typography.Title>
-      <Table<IPurchaseItem>
-        {...purchaseTableProps}
-        rowKey="id"
-        size="small"
-        scroll={{ x: true }}
-        columns={[
-          {
-            title: 'Ngày nhập',
-            render: (
-              _,
-              row: IPurchaseItem & {
-                purchase?: {
-                  id: string;
-                  purchase_date: string;
-                  supplier?: { id: string; name: string };
-                };
-              },
-            ) =>
-              row.purchase?.purchase_date
-                ? dayjs(row.purchase.purchase_date).format('DD/MM/YYYY')
-                : '—',
-          },
-          {
-            title: 'Nhà cung cấp',
-            render: (
-              _,
-              row: IPurchaseItem & {
-                purchase?: {
-                  id: string;
-                  purchase_date: string;
-                  supplier?: { id: string; name: string };
-                };
-              },
-            ) =>
-              row.purchase?.supplier ? (
-                <Link to={`/suppliers/show/${row.purchase.supplier.id}`}>
-                  {row.purchase.supplier.name}
-                </Link>
-              ) : (
-                '—'
-              ),
-          },
-          {
-            dataIndex: 'quantity',
-            title: 'Số lượng',
-            render: (v: number, row: IPurchaseItem) =>
-              v != null ? `${v} ${row.quantity_unit ?? ''}`.trim() : '—',
-          },
-          {
-            dataIndex: 'unit_price',
-            title: 'Đơn giá',
-            render: (v: number) => formatMoney(v),
-          },
-          {
-            dataIndex: 'amount',
-            title: 'Thành tiền',
-            render: (v: number) => (
-              <Typography.Text strong>{formatMoney(v)}</Typography.Text>
+              record?.category_id
             ),
           },
-          { dataIndex: 'note', title: 'Ghi chú', ellipsis: true },
           {
-            title: 'Phiếu nhập',
-            fixed: 'right',
-            render: (_, row: IPurchaseItem & { purchase?: { id: string } }) =>
-              row.purchase?.id ? (
-                <ShowButton
-                  resource="purchases"
-                  recordItemId={row.purchase.id}
-                  hideText
-                />
-              ) : (
-                '—'
-              ),
+            label: 'Ngày tạo',
+            value: record?.created_at && (
+              <RelativeTime value={record.created_at} emptyText="" />
+            ),
+          },
+          {
+            label: 'Cập nhật',
+            value: record?.updated_at && (
+              <RelativeTime value={record.updated_at} emptyText="" />
+            ),
           },
         ]}
       />
 
-      <Typography.Title level={5} style={{ marginTop: 24 }}>
-        Lịch sử xuất hàng
-      </Typography.Title>
-      <Table<ISaleItem>
-        {...saleTableProps}
-        rowKey="id"
-        size="small"
-        scroll={{ x: true }}
-        columns={[
-          {
-            title: 'Ngày bán',
-            render: (
-              _,
-              row: ISaleItem & {
-                sale?: {
-                  id: string;
-                  sale_date: string;
-                  customer?: {
-                    id: string;
-                    name?: string | null;
-                    phone: string;
-                  };
-                };
-              },
-            ) =>
-              row.sale?.sale_date
-                ? dayjs(row.sale.sale_date).format('DD/MM/YYYY HH:mm')
-                : '—',
-          },
-          {
-            title: 'Khách hàng',
-            render: (
-              _,
-              row: ISaleItem & {
-                sale?: {
-                  id: string;
-                  sale_date: string;
-                  customer?: {
-                    id: string;
-                    name?: string | null;
-                    phone: string;
-                  };
-                };
-              },
-            ) =>
-              row.sale?.customer ? (
-                <Link to={`/customers/show/${row.sale.customer.id}`}>
-                  {row.sale.customer.name ?? row.sale.customer.phone}
-                </Link>
-              ) : (
-                '—'
-              ),
-          },
-          {
-            dataIndex: 'quantity',
-            title: 'Số lượng',
-            render: (v: number, row: ISaleItem) =>
-              v != null ? `${v} ${row.quantity_unit ?? ''}`.trim() : '—',
-          },
-          {
-            dataIndex: 'unit_price',
-            title: 'Đơn giá',
-            render: (v: number) => formatMoney(v),
-          },
-          {
-            dataIndex: 'amount',
-            title: 'Thành tiền',
-            render: (v: number) => (
-              <Typography.Text strong>{formatMoney(v)}</Typography.Text>
-            ),
-          },
-          {
-            dataIndex: 'profit_amount',
-            title: 'Lợi nhuận',
-            render: (v: number) => formatMoney(v),
-          },
-          { dataIndex: 'note', title: 'Ghi chú', ellipsis: true },
-          {
-            title: 'Phiếu bán',
-            fixed: 'right',
-            render: (_, row: ISaleItem & { sale?: { id: string } }) =>
-              row.sale?.id ? (
-                <ShowButton
-                  resource="sales"
-                  recordItemId={row.sale.id}
-                  hideText
-                />
-              ) : (
-                '—'
-              ),
-          },
-        ]}
-      />
-    </AntdShow>
+      <MobileShowSection title="Lịch sử nhập hàng">
+        <MobileShowList
+          dataSource={purchaseItems}
+          loading={!!purchaseTableProps.loading}
+          getKey={row => row.id}
+          onItemClick={row => {
+            if (row.purchase?.id) {
+              navigate(`/purchases/show/${row.purchase.id}`);
+            }
+          }}
+          renderTitle={row =>
+            row.purchase?.purchase_date &&
+            dayjs(row.purchase.purchase_date).format(DATE_FORMAT)
+          }
+          renderDescription={row =>
+            joinDetail(
+              row.purchase?.supplier?.name,
+              row.quantity != null &&
+                `${row.quantity} ${row.quantity_unit ?? ''}`.trim(),
+              showMoney(row.amount),
+              row.note,
+            )
+          }
+        />
+      </MobileShowSection>
+
+      <MobileShowSection title="Lịch sử xuất hàng">
+        <MobileShowList
+          dataSource={saleItems}
+          loading={!!saleTableProps.loading}
+          getKey={row => row.id}
+          onItemClick={row => {
+            if (row.sale?.id) {
+              navigate(`/sales/show/${row.sale.id}`);
+            }
+          }}
+          renderTitle={row =>
+            row.sale?.sale_date &&
+            dayjs(row.sale.sale_date).format(DATETIME_FORMAT)
+          }
+          renderDescription={row =>
+            joinDetail(
+              row.sale?.customer &&
+                (row.sale.customer.name ?? row.sale.customer.phone),
+              row.quantity != null &&
+                `${row.quantity} ${row.quantity_unit ?? ''}`.trim(),
+              showMoney(row.amount),
+              row.profit_amount != null && `LN ${showMoney(row.profit_amount)}`,
+              row.note,
+            )
+          }
+        />
+      </MobileShowSection>
+    </MobileShowPage>
   );
 };

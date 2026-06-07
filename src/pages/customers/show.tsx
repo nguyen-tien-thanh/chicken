@@ -1,18 +1,22 @@
-import { Show as AntdShow, ShowButton, useTable } from '@refinedev/antd';
-import { useShow } from '@refinedev/core';
 import {
-  Button,
-  Card,
-  Descriptions,
-  Space,
-  Table,
-  Tag,
-  Typography,
-} from 'antd';
+  CreateButton,
+  DeleteButton,
+  EditButton,
+  ListButton,
+  useTable,
+} from '@refinedev/antd';
+import { useShow } from '@refinedev/core';
 import dayjs from 'dayjs';
-import { Link } from 'react-router';
+import { useNavigate } from 'react-router';
 
-import { LocationShowValue } from '@/components';
+import {
+  LocationShowValue,
+  MobileShowDetails,
+  MobileShowList,
+  MobileShowPage,
+  MobileShowSection,
+  MobileShowTag,
+} from '@/components';
 import { RelativeTime } from '@/components/relative-time';
 import {
   SALE_STATUS_LABELS,
@@ -20,15 +24,19 @@ import {
   type ISale,
   type SaleStatus,
 } from '@/types';
-import { formatMoney } from '@/utils';
+import { DATETIME_FORMAT, joinDetail, showMoney } from '@/utils';
 
-const statusColor: Record<SaleStatus, string> = {
-  PENDING: 'orange',
-  PAID: 'green',
-  CANCELLED: 'red',
+const statusColor: Record<
+  SaleStatus,
+  'warning' | 'success' | 'danger' | 'default'
+> = {
+  PENDING: 'warning',
+  PAID: 'success',
+  CANCELLED: 'danger',
 };
 
 export const Show = () => {
+  const navigate = useNavigate();
   const { result: record, query } = useShow<ICustomer>({
     resource: 'customers',
   });
@@ -48,121 +56,70 @@ export const Show = () => {
     queryOptions: { enabled: !!customer_id },
   });
 
+  const sales = tableProps.dataSource ?? [];
+
   return (
-    <AntdShow isLoading={isLoading}>
-      <Space style={{ marginBottom: 16 }} wrap>
-        {customer_id ? (
-          <Link to={`/sales/create?customer_id=${customer_id}`}>
-            <Button type="primary">Tạo phiếu bán</Button>
-          </Link>
-        ) : null}
-        <Link to="/customers">
-          <Button>Danh sách khách hàng</Button>
-        </Link>
-      </Space>
-
-      <Card size="small" styles={{ body: { padding: 0 } }}>
-        <Descriptions
-          bordered
-          column={2}
-          size="small"
-          styles={{ label: { width: 180, fontWeight: 500 } }}
-        >
-          <Descriptions.Item label="Mã" span={2}>
-            <Typography.Text copyable={!!record?.id}>
-              {record?.id ?? '—'}
-            </Typography.Text>
-          </Descriptions.Item>
-          <Descriptions.Item label="Tên khách hàng">
-            {record?.name ?? '—'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Điện thoại">
-            {record?.phone ?? '—'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Địa chỉ" span={2}>
-            {record?.address ?? '—'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Vị trí" span={2}>
-            <LocationShowValue
-              latitude={record?.latitude}
-              longitude={record?.longitude}
-            />
-          </Descriptions.Item>
-          <Descriptions.Item label="Ngày tạo">
-            {record?.created_at ? (
-              <RelativeTime value={record.created_at} />
-            ) : (
-              '—'
-            )}
-          </Descriptions.Item>
-          <Descriptions.Item label="Cập nhật">
-            {record?.updated_at ? (
-              <RelativeTime value={record.updated_at} />
-            ) : (
-              '—'
-            )}
-          </Descriptions.Item>
-        </Descriptions>
-      </Card>
-
-      <Typography.Title level={5} style={{ marginTop: 24 }}>
-        Phiếu bán hàng
-      </Typography.Title>
-      <Table<ISale>
-        {...tableProps}
-        rowKey="id"
-        size="small"
-        scroll={{ x: true }}
-        columns={[
+    <MobileShowPage
+      loading={isLoading}
+      actions={
+        <>
+          <ListButton />
+          <EditButton />
+          <DeleteButton />
+          {customer_id ? <CreateButton /> : null}
+        </>
+      }
+    >
+      <MobileShowDetails
+        items={[
+          { label: 'Tên khách hàng', value: record?.name },
+          { label: 'Điện thoại', value: record?.phone },
+          { label: 'Địa chỉ', value: record?.address },
           {
-            dataIndex: 'sale_date',
-            title: 'Ngày bán',
-            sorter: true,
-            defaultSortOrder: 'descend',
-            render: (v: string) =>
-              v ? dayjs(v).format('DD/MM/YYYY HH:mm') : '—',
-          },
-          {
-            dataIndex: 'status',
-            title: 'Trạng thái',
-            render: (v: SaleStatus) =>
-              v ? (
-                <Tag color={statusColor[v]}>{SALE_STATUS_LABELS[v]}</Tag>
-              ) : (
-                '—'
-              ),
-          },
-          {
-            dataIndex: 'final_amount',
-            title: 'Thành tiền',
-            render: (v: number) => (
-              <Typography.Text strong>{formatMoney(v)}</Typography.Text>
+            label: 'Vị trí',
+            value: (
+              <LocationShowValue
+                latitude={record?.latitude}
+                longitude={record?.longitude}
+              />
             ),
           },
           {
-            dataIndex: 'paid_amount',
-            title: 'Đã thanh toán',
-            render: (v: number) => formatMoney(v),
+            label: 'Ngày tạo',
+            value: record?.created_at && (
+              <RelativeTime value={record.created_at} emptyText="" />
+            ),
           },
           {
-            dataIndex: 'remaining_amount',
-            title: 'Còn lại',
-            render: (v: number) => formatMoney(v),
-          },
-          {
-            dataIndex: 'note',
-            title: 'Ghi chú',
-            ellipsis: true,
-          },
-          {
-            title: 'Thao tác',
-            fixed: 'right',
-            render: (_, row: ISale) => (
-              <ShowButton resource="sales" recordItemId={row.id} />
+            label: 'Cập nhật',
+            value: record?.updated_at && (
+              <RelativeTime value={record.updated_at} emptyText="" />
             ),
           },
         ]}
       />
-    </AntdShow>
+
+      <MobileShowSection title="Phiếu bán hàng">
+        <MobileShowList
+          dataSource={sales}
+          loading={!!tableProps.loading}
+          getKey={row => row.id}
+          onItemClick={row => navigate(`/sales/show/${row.id}`)}
+          renderTitle={row =>
+            row.sale_date && dayjs(row.sale_date).format(DATETIME_FORMAT)
+          }
+          renderDescription={row => (
+            <>
+              {row.status && (
+                <MobileShowTag color={statusColor[row.status]}>
+                  {SALE_STATUS_LABELS[row.status]}
+                </MobileShowTag>
+              )}{' '}
+              {joinDetail(showMoney(row.final_amount), row.note)}
+            </>
+          )}
+        />
+      </MobileShowSection>
+    </MobileShowPage>
   );
 };

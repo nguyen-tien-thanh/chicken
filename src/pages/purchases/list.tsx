@@ -14,7 +14,7 @@ import { ResponsiveTable, type ResponsiveColumnType } from '@/components';
 import { RelativeTime } from '@/components/relative-time';
 import { MEDIA_MD_DOWN, useMediaQuery } from '@/hooks';
 import type { IPurchase } from '@/types';
-import { formatMoney } from '@/utils';
+import { DATE_FORMAT, formatMoney } from '@/utils';
 
 export const List = () => {
   const isMobile = useMediaQuery(MEDIA_MD_DOWN);
@@ -51,7 +51,7 @@ export const List = () => {
       sorter: true,
       defaultSortOrder: 'descend',
       mobileRole: 'title',
-      render: (v: string) => (v ? dayjs(v).format('DD/MM/YYYY') : '—'),
+      render: (v: string) => v && dayjs(v).format(DATE_FORMAT),
       filterDropdown: props => (
         <FilterDropdown {...props}>
           <Input.Search placeholder="Tìm ngày nhập..." />
@@ -67,7 +67,7 @@ export const List = () => {
         r.supplier ? (
           <Link to={`/suppliers/show/${r.supplier.id}`}>{r.supplier.name}</Link>
         ) : (
-          r.supplier_id ?? '—'
+          r.supplier_id
         ),
       filterDropdown: props => (
         <FilterDropdown {...props}>
@@ -80,7 +80,7 @@ export const List = () => {
       title: 'Số lồng',
       align: 'right',
       sorter: true,
-      render: (v: number) => (v != null ? `${v} lồng` : '—'),
+      render: (v: number) => v != null && `${v} lồng`,
     },
     {
       dataIndex: 'cages_weight',
@@ -88,7 +88,7 @@ export const List = () => {
       align: 'right',
       sorter: true,
       mobileRole: 'hidden',
-      render: (v: number) => (v != null ? `${v} kg` : '—'),
+      render: (v: number) => v != null && `${v} kg`,
     },
     {
       title: 'Tổng tiền',
@@ -110,7 +110,7 @@ export const List = () => {
       align: 'right',
       sorter: true,
       mobileRole: 'hidden',
-      render: (v: number) => (v != null ? `${v} kg` : '—'),
+      render: (v: number) => v != null && `${v} kg`,
     },
     {
       dataIndex: 'note',
@@ -130,7 +130,7 @@ export const List = () => {
       sorter: true,
       responsive: ['xl'],
       mobileRole: 'hidden',
-      render: (v: string) => (v ? <RelativeTime value={v} /> : '—'),
+      render: (v: string) => v && <RelativeTime value={v} />,
       filterDropdown: props => (
         <FilterDropdown {...props}>
           <Input.Search placeholder="Tìm ngày tạo..." />

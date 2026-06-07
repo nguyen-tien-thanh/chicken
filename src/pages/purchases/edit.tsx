@@ -29,7 +29,7 @@ import { useEffect, useState } from 'react';
 
 import { InputMoney } from '@/components';
 import type { IProduct, IPurchase, IPurchaseItem, ISupplier } from '@/types';
-import { formatMoney } from '@/utils';
+import { DATE_FORMAT, formatMoney } from '@/utils';
 
 const { Text } = Typography;
 
@@ -372,7 +372,7 @@ export const Edit = () => {
               <DatePicker
                 showTime={false}
                 style={{ width: '100%' }}
-                format="DD/MM/YYYY"
+                format={DATE_FORMAT}
               />
             </Form.Item>
           </Col>

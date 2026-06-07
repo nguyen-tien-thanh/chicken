@@ -1,17 +1,10 @@
-import { Show as AntdShow } from '@refinedev/antd';
+import { ListButton } from '@refinedev/antd';
 import { useOne, useShow } from '@refinedev/core';
-import {
-  Button,
-  Card,
-  Descriptions,
-  Space,
-  Tag,
-  Tooltip,
-  Typography,
-} from 'antd';
+import { Button } from 'antd';
 import dayjs from 'dayjs';
 import { Link } from 'react-router';
 
+import { MobileShowDetails, MobileShowPage, MobileShowTag } from '@/components';
 import { RelativeTime } from '@/components/relative-time';
 import {
   INVENTORY_TX_DIRECTION_LABELS,
@@ -20,7 +13,7 @@ import {
   type InventoryTransactionDirection,
   type InventoryTransactionType,
 } from '@/types';
-import { formatMoney } from '@/utils';
+import { DATETIME_FORMAT, showMoney } from '@/utils';
 
 type PurchaseItemLookup = { id: string; purchase_id: string };
 type SaleItemLookup = { id: string; sale_id: string };
@@ -50,22 +43,18 @@ function RefDocumentButton({ record }: { record: IInventoryTransaction }) {
     const purchase_id = purchaseItem.result?.purchase_id;
     const loading = purchaseItem.query.isLoading;
     const disabled = !purchase_id || loading;
+
     return (
-      <Tooltip
-        title={
-          loading
-            ? 'Đang tải phiếu tham chiếu…'
-            : disabled
-            ? 'Không tìm thấy phiếu nhập từ refId'
-            : 'Mở phiếu nhập'
-        }
-      >
-        <Link to={purchase_id ? `/purchases/show/${purchase_id}` : '#'}>
-          <Button type="primary" size="small" disabled={disabled}>
-            Mở phiếu nhập
-          </Button>
-        </Link>
-      </Tooltip>
+      <Link to={purchase_id ? `/purchases/show/${purchase_id}` : '#'}>
+        <Button
+          type="primary"
+          size="small"
+          disabled={disabled}
+          loading={loading}
+        >
+          Mở phiếu nhập
+        </Button>
+      </Link>
     );
   }
 
@@ -73,22 +62,18 @@ function RefDocumentButton({ record }: { record: IInventoryTransaction }) {
     const sale_id = saleItem.result?.sale_id;
     const loading = saleItem.query.isLoading;
     const disabled = !sale_id || loading;
+
     return (
-      <Tooltip
-        title={
-          loading
-            ? 'Đang tải phiếu tham chiếu…'
-            : disabled
-            ? 'Không tìm thấy phiếu bán từ refId'
-            : 'Mở phiếu bán'
-        }
-      >
-        <Link to={sale_id ? `/sales/show/${sale_id}` : '#'}>
-          <Button type="primary" size="small" disabled={disabled}>
-            Mở phiếu bán
-          </Button>
-        </Link>
-      </Tooltip>
+      <Link to={sale_id ? `/sales/show/${sale_id}` : '#'}>
+        <Button
+          type="primary"
+          size="small"
+          disabled={disabled}
+          loading={loading}
+        >
+          Mở phiếu bán
+        </Button>
+      </Link>
     );
   }
 
@@ -107,79 +92,58 @@ export const Show = () => {
   const dir = record?.direction as InventoryTransactionDirection | undefined;
 
   return (
-    <AntdShow isLoading={isLoading}>
-      <Card size="small" styles={{ body: { padding: 0 } }}>
-        <Descriptions
-          bordered
-          column={2}
-          size="small"
-          styles={{ label: { width: 160, fontWeight: 500 } }}
-        >
-          <Descriptions.Item label="Mã giao dịch">
-            <Typography.Text copyable={!!record?.id}>
-              {record?.id}
-            </Typography.Text>
-          </Descriptions.Item>
-          <Descriptions.Item label="Ngày giao dịch">
-            {record?.transaction_date
-              ? dayjs(record.transaction_date).format('DD/MM/YYYY HH:mm')
-              : '—'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Loại tham chiếu">
-            {rt ? (
-              <Tag>{INVENTORY_TX_TYPE_LABELS[rt]}</Tag>
-            ) : (
-              (record?.ref_type as string) ?? '—'
-            )}
-          </Descriptions.Item>
-          <Descriptions.Item label="Mã tham chiếu">
-            <Space wrap align="center">
-              <Typography.Text code>{record?.ref_id ?? '—'}</Typography.Text>
-              {record ? <RefDocumentButton record={record} /> : null}
-            </Space>
-          </Descriptions.Item>
-          <Descriptions.Item label="Chiều">
-            {dir ? (
-              <Tag color={dir === 'IN' ? 'green' : 'orange'}>
+    <MobileShowPage loading={isLoading} actions={<ListButton />}>
+      <MobileShowDetails
+        items={[
+          {
+            label: 'Ngày giao dịch',
+            value:
+              record?.transaction_date &&
+              dayjs(record.transaction_date).format(DATETIME_FORMAT),
+          },
+          {
+            label: 'Loại tham chiếu',
+            value: rt && (
+              <MobileShowTag>{INVENTORY_TX_TYPE_LABELS[rt]}</MobileShowTag>
+            ),
+          },
+          {
+            label: 'Phiếu liên quan',
+            value: record && <RefDocumentButton record={record} />,
+            hidden: !record?.ref_id,
+          },
+          {
+            label: 'Chiều',
+            value: dir && (
+              <MobileShowTag color={dir === 'IN' ? 'success' : 'warning'}>
                 {INVENTORY_TX_DIRECTION_LABELS[dir]}
-              </Tag>
-            ) : (
-              '—'
-            )}
-          </Descriptions.Item>
-          <Descriptions.Item label="Sản phẩm">
-            {record?.product ? (
+              </MobileShowTag>
+            ),
+          },
+          {
+            label: 'Sản phẩm',
+            value: record?.product && (
               <Link to={`/products/show/${record.product.id}`}>
                 {record.product.name}
               </Link>
-            ) : (
-              record?.product_id ?? '—'
-            )}
-          </Descriptions.Item>
-          <Descriptions.Item label="Số lượng">
-            {record?.quantity != null ? record.quantity : '—'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Đơn vị tính">
-            {record?.quantity_unit ?? '—'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Giá vốn đơn vị">
-            {formatMoney(record?.unit_cost)}
-          </Descriptions.Item>
-          <Descriptions.Item label="Tổng giá vốn">
-            {formatMoney(record?.total_cost)}
-          </Descriptions.Item>
-          <Descriptions.Item label="Ghi chú">
-            {record?.note ?? '—'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Ghi nhận lúc">
-            {record?.created_at ? (
-              <RelativeTime value={record.created_at} />
-            ) : (
-              '—'
-            )}
-          </Descriptions.Item>
-        </Descriptions>
-      </Card>
-    </AntdShow>
+            ),
+          },
+          {
+            label: 'Số lượng',
+            value: record?.quantity != null ? record.quantity : undefined,
+          },
+          { label: 'Đơn vị tính', value: record?.quantity_unit },
+          { label: 'Giá vốn đơn vị', value: showMoney(record?.unit_cost) },
+          { label: 'Tổng giá vốn', value: showMoney(record?.total_cost) },
+          { label: 'Ghi chú', value: record?.note },
+          {
+            label: 'Ghi nhận lúc',
+            value: record?.created_at && (
+              <RelativeTime value={record.created_at} emptyText="" />
+            ),
+          },
+        ]}
+      />
+    </MobileShowPage>
   );
 };

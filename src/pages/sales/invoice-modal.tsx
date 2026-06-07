@@ -4,11 +4,11 @@ import {
   Descriptions,
   Divider,
   Image,
+  message,
   Modal,
   Table,
   Tag,
   Typography,
-  message,
 } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
@@ -20,7 +20,11 @@ import {
   type ISaleItem,
   type SaleStatus,
 } from '@/types';
-import { buildSaleInvoiceQrPayment, formatMoney } from '@/utils';
+import {
+  buildSaleInvoiceQrPayment,
+  DATETIME_FORMAT,
+  formatMoney,
+} from '@/utils';
 
 interface IInvoice extends ISale {
   payment?: {
@@ -121,13 +125,13 @@ export const SaleInvoiceModal = ({ sale_id }: Props) => {
       ? `${invoice.customer.name ?? invoice.customer.phone} — ${
           invoice.customer.phone
         }`
-      : '—';
+      : '';
     const sale_date = invoice.sale_date
-      ? dayjs(invoice.sale_date).format('DD/MM/YYYY HH:mm')
-      : '—';
+      ? dayjs(invoice.sale_date).format(DATETIME_FORMAT)
+      : '';
     const statusLabel = invoice.status
       ? SALE_STATUS_LABELS[invoice.status as SaleStatus]
-      : '—';
+      : '';
 
     const html = `
       <html><head><title>Hoá đơn</title>
@@ -212,25 +216,21 @@ export const SaleInvoiceModal = ({ sale_id }: Props) => {
         <Divider style={{ margin: '12px 0' }} />
         <Descriptions size="small" column={2} bordered>
           <Descriptions.Item label="Ngày bán">
-            {invoice?.sale_date
-              ? dayjs(invoice.sale_date).format('DD/MM/YYYY HH:mm')
-              : '—'}
+            {invoice?.sale_date &&
+              dayjs(invoice.sale_date).format(DATETIME_FORMAT)}
           </Descriptions.Item>
           <Descriptions.Item label="Trạng thái">
-            {invoice?.status ? (
+            {invoice?.status && (
               <Tag color={statusColor[invoice.status as SaleStatus]}>
                 {SALE_STATUS_LABELS[invoice.status as SaleStatus]}
               </Tag>
-            ) : (
-              '—'
             )}
           </Descriptions.Item>
           <Descriptions.Item label="Khách hàng" span={2}>
-            {invoice?.customer
-              ? `${invoice.customer.name ?? invoice.customer.phone} — ${
-                  invoice.customer.phone
-                }`
-              : '—'}
+            {invoice?.customer &&
+              `${invoice.customer.name ?? invoice.customer.phone} — ${
+                invoice.customer.phone
+              }`}
           </Descriptions.Item>
         </Descriptions>
 

@@ -11,7 +11,12 @@ export {
   type ResponsiveTableProps,
 } from './responsive-table';
 export {
-  ShowRedirectDrawer,
-  type ShowRedirectDrawerProps,
-} from './show-redirect-drawer';
+  MobileShowDetails,
+  MobileShowList,
+  MobileShowPage,
+  MobileShowSection,
+  MobileShowTag,
+  MobileShowValue,
+  type MobileShowDetailItem,
+} from './mobile-show';
 export * from './themed-layout';

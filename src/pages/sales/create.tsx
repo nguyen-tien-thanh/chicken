@@ -36,7 +36,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { InputMoney } from '@/components';
 import type { ICustomer, IProduct } from '@/types';
 import { SALE_STATUS_OPTIONS, type SaleStatus } from '@/types';
-import { formatMoney } from '@/utils';
+import { DATETIME_FORMAT, formatMoney } from '@/utils';
 
 const { Text } = Typography;
 
@@ -409,7 +409,7 @@ export const Create = () => {
               <DatePicker
                 showTime
                 style={{ width: '100%' }}
-                format="DD/MM/YYYY HH:mm"
+                format={DATETIME_FORMAT}
               />
             </Form.Item>
           </Col>

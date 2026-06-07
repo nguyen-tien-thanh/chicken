@@ -82,7 +82,7 @@ export function renderColumnCell<RecordType extends object>(
     }
     return rendered as ReactNode;
   }
-  if (raw == null || raw === '') return '—';
+  if (raw == null || raw === '') return null;
   return raw as ReactNode;
 }
 

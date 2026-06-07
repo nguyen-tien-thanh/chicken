@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import { DATETIME_FORMAT } from './formatDateTime';
 
 export type RelativeTimeInput = Date | string | number | null | undefined;
 
@@ -21,7 +22,7 @@ export function formatRelativeTimeVi(input: RelativeTimeInput): string {
     if (m < 60) return `sau ${m} phút`;
     const h = Math.abs(now.diff(then, 'hour'));
     if (h < 24) return `sau ${h} giờ`;
-    return then.format('DD/MM/YYYY HH:mm');
+    return then.format(DATETIME_FORMAT);
   }
 
   if (secondsTotal < 60) {

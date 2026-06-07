@@ -13,7 +13,7 @@ import { ResponsiveTable, type ResponsiveColumnType } from '@/components';
 import { RelativeTime } from '@/components/relative-time';
 import { MEDIA_MD_DOWN, useMediaQuery } from '@/hooks';
 import { SALE_STATUS_LABELS, type ISale, type SaleStatus } from '@/types';
-import { formatMoney } from '@/utils';
+import { DATETIME_FORMAT, formatMoney } from '@/utils';
 
 const statusColor: Record<SaleStatus, string> = {
   PENDING: 'orange',
@@ -58,7 +58,7 @@ export const List = () => {
       dataIndex: 'sale_date',
       mobileRole: 'title',
       render: (_, r) =>
-        r.sale_date ? dayjs(r.sale_date).format('DD/MM/YYYY') : '—',
+        r.sale_date && dayjs(r.sale_date).format(DATETIME_FORMAT),
     },
     {
       title: 'Khách hàng',
@@ -70,7 +70,7 @@ export const List = () => {
             {r.customer.name ?? r.customer.phone}
           </Link>
         ) : (
-          r.customer_id ?? '—'
+          r.customer_id
         ),
     },
     {
@@ -121,7 +121,7 @@ export const List = () => {
       sorter: true,
       responsive: ['xl'],
       mobileRole: 'hidden',
-      render: (v: string) => (v ? <RelativeTime value={v} /> : '—'),
+      render: (v: string) => v && <RelativeTime value={v} />,
     },
     {
       title: 'Thao tác',

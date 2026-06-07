@@ -1,5 +1,5 @@
 import { useIsMobile } from '@/hooks';
-import { Layout as AntdLayout, Grid } from 'antd';
+import { Layout as AntdLayout, Grid, theme } from 'antd';
 import React from 'react';
 
 import { ThemedLayoutContextProvider } from '@refinedev/antd';
@@ -27,12 +27,14 @@ export const ThemedLayout: React.FC<RefineThemedLayoutProps> = ({
   onSiderCollapsed,
 }) => {
   const breakpoint = Grid.useBreakpoint();
+  const { token } = theme.useToken();
   const SiderToRender = Sider ?? ThemedSider;
   const HeaderToRender = Header ?? ThemedHeader;
   const BottomNavigationToRender = BottomNavigation ?? ThemedBottomNavigation;
   const isSmall = typeof breakpoint.sm === 'undefined' ? true : breakpoint.sm;
   const isMobile = useIsMobile();
   const hasSider = !!SiderToRender({ Title });
+  const contentPadding = isSmall ? 24 : 12;
 
   return (
     <ThemedLayoutContextProvider
@@ -47,9 +49,9 @@ export const ThemedLayout: React.FC<RefineThemedLayoutProps> = ({
             <div
               style={{
                 minHeight: 360,
-                padding: isSmall ? 24 : 12,
+                padding: contentPadding,
                 paddingBottom: isMobile
-                  ? `calc(72px + env(safe-area-inset-bottom, 0px))`
+                  ? `calc(${contentPadding + token.paddingSM * 2 + 58}px + env(safe-area-inset-bottom, 0px))`
                   : undefined,
               }}
             >

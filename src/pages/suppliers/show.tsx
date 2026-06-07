@@ -1,15 +1,27 @@
-import { Show as AntdShow, ShowButton, useTable } from '@refinedev/antd';
+import {
+  CreateButton,
+  DeleteButton,
+  EditButton,
+  ListButton,
+  useTable,
+} from '@refinedev/antd';
 import { useShow } from '@refinedev/core';
-import { Button, Card, Descriptions, Space, Table, Typography } from 'antd';
 import dayjs from 'dayjs';
-import { Link } from 'react-router';
+import { useNavigate } from 'react-router';
 
-import { LocationShowValue } from '@/components';
+import {
+  LocationShowValue,
+  MobileShowDetails,
+  MobileShowList,
+  MobileShowPage,
+  MobileShowSection,
+} from '@/components';
 import { RelativeTime } from '@/components/relative-time';
 import type { IPurchase, ISupplier } from '@/types';
-import { formatMoney } from '@/utils';
+import { DATE_FORMAT, joinDetail, showMoney } from '@/utils';
 
 export const Show = () => {
+  const navigate = useNavigate();
   const { result: record, query } = useShow<ISupplier>({
     resource: 'suppliers',
   });
@@ -29,124 +41,71 @@ export const Show = () => {
     queryOptions: { enabled: !!supplier_id },
   });
 
+  const purchases = tableProps.dataSource ?? [];
+
   return (
-    <AntdShow isLoading={isLoading}>
-      <Space style={{ marginBottom: 16 }} wrap>
-        {supplier_id ? (
-          <Link to={`/purchases/create?supplier_id=${supplier_id}`}>
-            <Button type="primary">Tạo phiếu nhập</Button>
-          </Link>
-        ) : null}
-        <Link to="/suppliers">
-          <Button>Danh sách nhà cung cấp</Button>
-        </Link>
-      </Space>
-
-      <Card size="small" styles={{ body: { padding: 0 } }}>
-        <Descriptions
-          bordered
-          column={2}
-          size="small"
-          styles={{ label: { width: 180, fontWeight: 500 } }}
-        >
-          <Descriptions.Item label="Mã" span={2}>
-            <Typography.Text copyable={!!record?.id}>
-              {record?.id ?? '—'}
-            </Typography.Text>
-          </Descriptions.Item>
-          <Descriptions.Item label="Tên nhà cung cấp">
-            {record?.name ?? '—'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Tên ngân hàng">
-            {record?.bank_name ?? '—'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Điện thoại">
-            {record?.phone ?? '—'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Số tài khoản">
-            {record?.bank_account ?? '—'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Địa chỉ" span={2}>
-            {record?.address ?? '—'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Vị trí" span={2}>
-            <LocationShowValue
-              latitude={record?.latitude}
-              longitude={record?.longitude}
-            />
-          </Descriptions.Item>
-          <Descriptions.Item label="Ngày tạo">
-            {record?.created_at ? (
-              <RelativeTime value={record.created_at} />
-            ) : (
-              '—'
-            )}
-          </Descriptions.Item>
-          <Descriptions.Item label="Cập nhật">
-            {record?.updated_at ? (
-              <RelativeTime value={record.updated_at} />
-            ) : (
-              '—'
-            )}
-          </Descriptions.Item>
-        </Descriptions>
-      </Card>
-
-      <Typography.Title level={5} style={{ marginTop: 24 }}>
-        Phiếu nhập hàng
-      </Typography.Title>
-      <Table<IPurchase>
-        {...tableProps}
-        rowKey="id"
-        size="small"
-        scroll={{ x: true }}
-        columns={[
+    <MobileShowPage
+      loading={isLoading}
+      actions={
+        <>
+          <ListButton />
+          <EditButton />
+          <DeleteButton />
+          {supplier_id ? <CreateButton /> : null}
+        </>
+      }
+    >
+      <MobileShowDetails
+        items={[
+          { label: 'Tên nhà cung cấp', value: record?.name },
+          { label: 'Điện thoại', value: record?.phone },
+          { label: 'Tên ngân hàng', value: record?.bank_name },
+          { label: 'Số tài khoản', value: record?.bank_account },
+          { label: 'Địa chỉ', value: record?.address },
           {
-            dataIndex: 'purchase_date',
-            title: 'Ngày nhập',
-            sorter: true,
-            defaultSortOrder: 'descend',
-            render: (v: string) => (v ? dayjs(v).format('DD/MM/YYYY') : '—'),
-          },
-          {
-            dataIndex: 'cages_count',
-            title: 'Số lồng',
-            align: 'right',
-            render: (v: number) => (v != null ? `${v} lồng` : '—'),
-          },
-          {
-            dataIndex: 'cages_weight',
-            title: 'Tổng trọng lượng lồng',
-            align: 'right',
-            render: (v: number) => (v != null ? `${v} kg` : '—'),
-          },
-          {
-            dataIndex: 'total_amount',
-            title: 'Tổng tiền',
-            align: 'right',
-            render: (v: number) => (
-              <Typography.Text strong>{formatMoney(v)}</Typography.Text>
+            label: 'Vị trí',
+            value: (
+              <LocationShowValue
+                latitude={record?.latitude}
+                longitude={record?.longitude}
+              />
             ),
           },
           {
-            dataIndex: 'average_weight',
-            title: 'TB kg/con',
-            render: (v: number) => (v != null ? `${v} kg` : '—'),
+            label: 'Ngày tạo',
+            value: record?.created_at && (
+              <RelativeTime value={record.created_at} emptyText="" />
+            ),
           },
           {
-            dataIndex: 'note',
-            title: 'Ghi chú',
-            ellipsis: true,
-          },
-          {
-            title: 'Thao tác',
-            fixed: 'right',
-            render: (_, row: IPurchase) => (
-              <ShowButton resource="purchases" recordItemId={row.id} />
+            label: 'Cập nhật',
+            value: record?.updated_at && (
+              <RelativeTime value={record.updated_at} emptyText="" />
             ),
           },
         ]}
       />
-    </AntdShow>
+
+      <MobileShowSection title="Phiếu nhập hàng">
+        <MobileShowList
+          dataSource={purchases}
+          loading={!!tableProps.loading}
+          getKey={row => row.id}
+          onItemClick={row => navigate(`/purchases/show/${row.id}`)}
+          renderTitle={row =>
+            row.purchase_date && dayjs(row.purchase_date).format(DATE_FORMAT)
+          }
+          renderDescription={row =>
+            joinDetail(
+              row.cages_count != null && `${row.cages_count} lồng`,
+              row.cages_weight != null && `${row.cages_weight} kg`,
+              showMoney(row.total_amount),
+              row.average_weight != null && `${row.average_weight} kg/con`,
+              row.note,
+            )
+          }
+        />
+      </MobileShowSection>
+    </MobileShowPage>
   );
 };
