@@ -2,7 +2,7 @@ import 'antd-mobile/es/global';
 
 import { UserControls } from '@/components/header/user-controls';
 import { useIsMobile } from '@/hooks';
-import { AppstoreOutlined } from '@ant-design/icons';
+import { EllipsisOutlined } from '@ant-design/icons';
 import {
   type TreeMenuItem,
   useMenu,
@@ -93,7 +93,7 @@ export const ThemedBottomNavigation: React.FC<
   };
 
   const moreLabel = more?.label ?? 'Thêm';
-  const moreIcon = more?.icon ?? <AppstoreOutlined />;
+  const moreIcon = more?.icon ?? <EllipsisOutlined />;
   const drawerTitle = more?.drawerTitle ?? moreLabel;
 
   if (!isMobile || primaryItems.length === 0) return null;

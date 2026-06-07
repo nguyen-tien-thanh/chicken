@@ -1,8 +1,9 @@
 import type { TableProps } from 'antd';
-import { Card, Divider, Empty, Flex, Skeleton, Spin, Typography } from 'antd';
-import type { ReactNode } from 'react';
+import { Card, Divider, Empty, Flex, Skeleton, Spin, Typography, theme } from 'antd';
+import type { MouseEventHandler, ReactNode } from 'react';
 import { useMemo } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import { useNavigation } from '@refinedev/core';
 
 import type { ResponsiveColumnType } from './types';
 import {
@@ -17,6 +18,7 @@ type MobileCardListProps<RecordType extends object> = Pick<
   TableProps<RecordType>,
   'onRow' | 'rowKey' | 'locale' | 'rowClassName'
 > & {
+  resource: string;
   columns: ResponsiveColumnType<RecordType>[];
   dataSource: readonly RecordType[];
   loading?: boolean;
@@ -38,14 +40,16 @@ function FieldBlock({
           {label}
         </Typography.Text>
       ) : null}
-      <div>{children}</div>
+      <div style={{ minWidth: 0, overflow: 'hidden' }}>{children}</div>
     </Flex>
   );
 }
 
 function MobileCard<RecordType extends object>({
+  resource,
   record,
   index,
+  rowKey,
   rowClassName,
   onRow,
   titleColumn,
@@ -53,8 +57,10 @@ function MobileCard<RecordType extends object>({
   bodyColumns,
   actionsColumn,
 }: {
+  resource: string;
   record: RecordType;
   index: number;
+  rowKey: TableProps<RecordType>['rowKey'];
   rowClassName: TableProps<RecordType>['rowClassName'];
   onRow: TableProps<RecordType>['onRow'];
   titleColumn?: ResponsiveColumnType<RecordType>;
@@ -62,7 +68,10 @@ function MobileCard<RecordType extends object>({
   bodyColumns: ResponsiveColumnType<RecordType>[];
   actionsColumn?: ResponsiveColumnType<RecordType>;
 }) {
+  const { token } = theme.useToken();
+  const { show } = useNavigation();
   const rowProps = onRow?.(record, index);
+  const recordId = getRowKeyValue(record, index, rowKey);
   const className = [
     typeof rowClassName === 'function'
       ? rowClassName(record, index, 0)
@@ -74,8 +83,8 @@ function MobileCard<RecordType extends object>({
   const cardTitle = titleColumn
     ? renderColumnCell(titleColumn, record, index)
     : subtitleColumn
-    ? renderColumnCell(subtitleColumn, record, index)
-    : undefined;
+      ? renderColumnCell(subtitleColumn, record, index)
+      : undefined;
 
   const cardActions = actionsColumn
     ? extractCardActions(renderColumnCell(actionsColumn, record, index))
@@ -85,16 +94,45 @@ function MobileCard<RecordType extends object>({
     titleColumn ? [subtitleColumn, ...bodyColumns] : bodyColumns
   ).filter(Boolean) as ResponsiveColumnType<RecordType>[];
 
+  const handleCardClick: MouseEventHandler<HTMLElement> = event => {
+    const target = event.target as HTMLElement;
+    if (target.closest('a, button, [role="button"]')) {
+      return;
+    }
+
+    if (rowProps?.onClick) {
+      rowProps.onClick(event);
+      return;
+    }
+
+    show(resource, recordId);
+  };
+
   return (
     <Card
       size="small"
-      hoverable={!!rowProps?.onClick}
+      hoverable
       className={className}
-      onClick={rowProps?.onClick}
+      onClick={handleCardClick}
       title={cardTitle}
-      actions={cardActions.length > 0 ? cardActions : undefined}
+      style={{
+        flex: 1,
+        width: '100%',
+        cursor: 'pointer',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+      styles={{
+        body: {
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: token.marginSM,
+          minHeight: 0,
+        },
+      }}
     >
-      <Flex vertical gap="middle">
+      <Flex vertical gap="small" style={{ flex: 1, minWidth: 0 }}>
         {fieldColumns.map(col => {
           const colKey = String(col.key ?? col.dataIndex ?? col.title);
           return (
@@ -104,11 +142,29 @@ function MobileCard<RecordType extends object>({
           );
         })}
       </Flex>
+      {cardActions.length > 0 ? (
+        <Flex
+          justify="flex-end"
+          gap="small"
+          wrap="wrap"
+          onClick={event => event.stopPropagation()}
+          style={{
+            borderTop: `1px solid ${token.colorBorderSecondary}`,
+            marginTop: 'auto',
+            marginInline: -token.paddingSM,
+            marginBottom: -token.paddingSM,
+            padding: token.paddingSM,
+          }}
+        >
+          {cardActions}
+        </Flex>
+      ) : null}
     </Card>
   );
 }
 
 export function MobileCardList<RecordType extends object>({
+  resource,
   columns,
   dataSource,
   loading,
@@ -119,6 +175,7 @@ export function MobileCardList<RecordType extends object>({
   locale,
   rowClassName,
 }: MobileCardListProps<RecordType>) {
+  const { token } = theme.useToken();
   const { titleColumn, subtitleColumn, bodyColumns, actionsColumn } = useMemo(
     () => partitionMobileColumns(columns),
     [columns],
@@ -161,21 +218,33 @@ export function MobileCardList<RecordType extends object>({
         ) : undefined
       }
     >
-      <Flex vertical gap="small">
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+          gap: token.marginXS,
+        }}
+      >
         {dataSource.map((record, index) => (
-          <MobileCard
+          <div
             key={getRowKeyValue(record, index, rowKey)}
-            record={record}
-            index={index}
-            rowClassName={rowClassName}
-            onRow={onRow}
-            titleColumn={titleColumn}
-            subtitleColumn={subtitleColumn}
-            bodyColumns={bodyColumns}
-            actionsColumn={actionsColumn}
-          />
+            style={{ minWidth: 0, display: 'flex' }}
+          >
+            <MobileCard
+              resource={resource}
+              record={record}
+              index={index}
+              rowKey={rowKey}
+              rowClassName={rowClassName}
+              onRow={onRow}
+              titleColumn={titleColumn}
+              subtitleColumn={subtitleColumn}
+              bodyColumns={bodyColumns}
+              actionsColumn={actionsColumn}
+            />
+          </div>
         ))}
-      </Flex>
+      </div>
     </InfiniteScroll>
   );
 }

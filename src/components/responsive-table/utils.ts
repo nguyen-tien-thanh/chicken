@@ -111,20 +111,36 @@ function flattenActionNodes(content: ReactNode): ReactNode[] {
   return items;
 }
 
+function isShowButton(node: ReactNode): boolean {
+  if (!isValidElement(node)) return false;
+
+  const type = node.type;
+  if (typeof type !== 'function') return false;
+
+  const componentType = type as ButtonComponentType & {
+    displayName?: string;
+    name?: string;
+  };
+  const name = componentType.displayName ?? componentType.name ?? '';
+  return name.includes('ShowButton');
+}
+
 /** Tách wrapper (Space/Flex/Tooltip) và chỉ giữ button cho footer card mobile */
 export function extractCardActions(content: ReactNode): ReactNode[] {
-  return flattenActionNodes(content).map((action, index) => {
-    const actionKey =
-      isValidElement(action) && action.key != null
-        ? String(action.key)
-        : `action-${index}`;
+  return flattenActionNodes(content)
+    .filter(action => !isShowButton(action))
+    .map((action, index) => {
+      const actionKey =
+        isValidElement(action) && action.key != null
+          ? String(action.key)
+          : `action-${index}`;
 
-    if (!isValidElement(action)) {
-      return action;
-    }
+      if (!isValidElement(action)) {
+        return action;
+      }
 
-    return cloneElement(action, { key: actionKey });
-  });
+      return cloneElement(action, { key: actionKey, hideText: false });
+    });
 }
 
 export function getRowKeyValue<RecordType extends object>(

@@ -49,6 +49,7 @@ export function ResponsiveTable<RecordType extends BaseRecord>({
 
     return (
       <MobileCardList
+        resource={resource}
         columns={columns}
         dataSource={records}
         loading={isLoading}
