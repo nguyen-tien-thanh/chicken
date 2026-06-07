@@ -25,6 +25,10 @@ const isPrimaryTab = (item: TreeMenuItem) => item.meta?.bottomNav === 'primary';
 const getItemLabel = (item: TreeMenuItem) =>
   item.meta?.label ?? item.label ?? item.name;
 
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
 export const ThemedBottomNavigation: React.FC<
   RefineThemedLayoutBottomNavigationProps
 > = ({ meta, more }) => {
@@ -94,6 +98,20 @@ export const ThemedBottomNavigation: React.FC<
     if (item) handleNavigate(item);
   };
 
+  const handlePrimaryTabClick = (item: TreeMenuItem) => {
+    if (item.key === activeKey) {
+      scrollToTop();
+    }
+  };
+
+  const handleMoreTabClick = () => {
+    if (activeKey === MORE_TAB_KEY) {
+      scrollToTop();
+      return;
+    }
+    setMoreOpen(true);
+  };
+
   const moreLabel = more?.label ?? 'Thêm';
   const moreIcon = more?.icon ?? <EllipsisOutlined />;
   const drawerTitle = more?.drawerTitle ?? moreLabel;
@@ -124,6 +142,7 @@ export const ThemedBottomNavigation: React.FC<
               key={item.key}
               icon={item.icon ?? item.meta?.icon}
               title={getItemLabel(item)}
+              onClick={() => handlePrimaryTabClick(item)}
             />
           ))}
           {moreItems.length > 0 && (
@@ -131,7 +150,7 @@ export const ThemedBottomNavigation: React.FC<
               key={MORE_TAB_KEY}
               icon={moreIcon}
               title={moreLabel}
-              onClick={() => setMoreOpen(true)}
+              onClick={handleMoreTabClick}
             />
           )}
         </TabBar>
@@ -164,19 +183,30 @@ export const ThemedBottomNavigation: React.FC<
             <UserControls />
           </div>
           <List header={drawerTitle}>
-            {moreItems.map(item => (
-              <List.Item
-                key={item.key}
-                prefix={item.icon ?? item.meta?.icon}
-                clickable
-                onClick={() => {
-                  setMoreOpen(false);
-                  handleNavigate(item);
-                }}
-              >
-                {getItemLabel(item)}
-              </List.Item>
-            ))}
+            {moreItems.map(item => {
+              const isActive = item.key === selectedKey;
+
+              return (
+                <List.Item
+                  key={item.key}
+                  className={
+                    isActive ? 'themed-bottom-navigation-more-item--active' : undefined
+                  }
+                  prefix={
+                    <span className="themed-bottom-navigation-more-item__prefix">
+                      {item.icon ?? item.meta?.icon}
+                    </span>
+                  }
+                  clickable
+                  onClick={() => {
+                    setMoreOpen(false);
+                    handleNavigate(item);
+                  }}
+                >
+                  {getItemLabel(item)}
+                </List.Item>
+              );
+            })}
           </List>
         </Popup>
       )}

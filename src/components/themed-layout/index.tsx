@@ -5,6 +5,7 @@ import React from 'react';
 import { ThemedLayoutContextProvider } from '@refinedev/antd';
 import { ThemedBottomNavigation } from './bottom-navigation';
 import { ThemedHeader } from './header';
+import { MobilePullToRefresh } from './mobile-pull-to-refresh';
 import { ThemedSider } from './sider';
 import type { RefineThemedLayoutProps } from './types';
 
@@ -57,7 +58,7 @@ export const ThemedLayout: React.FC<RefineThemedLayoutProps> = ({
                 paddingBottom: mobileBottomPadding,
               }}
             >
-              {children}
+              <MobilePullToRefresh>{children}</MobilePullToRefresh>
             </div>
             {OffLayoutArea && <OffLayoutArea />}
           </AntdLayout.Content>
