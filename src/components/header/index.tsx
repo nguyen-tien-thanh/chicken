@@ -1,22 +1,10 @@
-import { ColorModeContext } from '@/contexts/color-mode';
-import { IUser } from '@/types';
+import { useIsMobile } from '@/hooks';
 import type { RefineThemedLayoutHeaderProps } from '@refinedev/antd';
-import { useGetIdentity } from '@refinedev/core';
-import {
-  Layout as AntdLayout,
-  Avatar,
-  Col,
-  Grid,
-  Row,
-  Space,
-  Switch,
-  theme,
-  Typography,
-} from 'antd';
-import React, { useContext } from 'react';
+import { Layout as AntdLayout, Col, Grid, Row, theme } from 'antd';
+import React from 'react';
 import { GlobalSearch } from './GlobalSearch';
+import { UserControls } from './user-controls';
 
-const { Text } = Typography;
 const { useToken } = theme;
 const { useBreakpoint } = Grid;
 
@@ -24,9 +12,9 @@ export const Header: React.FC<RefineThemedLayoutHeaderProps> = ({
   sticky = true,
 }) => {
   const { token } = useToken();
-  const { data: user } = useGetIdentity<IUser>();
-  const { mode, setMode } = useContext(ColorModeContext);
   const screens = useBreakpoint();
+  const isMobile = useIsMobile();
+  if (isMobile) return null;
 
   const headerStyles: React.CSSProperties = {
     backgroundColor: token.colorBgElevated,
@@ -50,18 +38,7 @@ export const Header: React.FC<RefineThemedLayoutHeaderProps> = ({
           <GlobalSearch />
         </Col>
         <Col>
-          <Space>
-            <Switch
-              checkedChildren="🌛"
-              unCheckedChildren="🔆"
-              onChange={() => setMode(mode === 'light' ? 'dark' : 'light')}
-              defaultChecked={mode === 'dark'}
-            />
-            <Space style={{ marginLeft: '8px' }} size="middle">
-              {user?.name && <Text strong>{user.name.split('@')[0]}</Text>}
-              {user?.avatar && <Avatar src={user?.avatar} alt={user?.name} />}
-            </Space>
-          </Space>
+          <UserControls />
         </Col>
       </Row>
     </AntdLayout.Header>

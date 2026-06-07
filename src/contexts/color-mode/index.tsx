@@ -10,7 +10,7 @@ import {
 
 type ColorModeContextType = {
   mode: string;
-  setMode: (mode: string) => void;
+  setMode: (mode?: string) => void;
 };
 
 export const ColorModeContext = createContext<ColorModeContextType>(
@@ -31,15 +31,17 @@ export const ColorModeContextProvider: React.FC<PropsWithChildren> = ({
   );
 
   useEffect(() => {
+    document.documentElement.setAttribute('data-prefers-color-scheme', mode);
     window.localStorage.setItem('colorMode', mode);
   }, [mode]);
 
-  const setColorMode = () => {
-    if (mode === 'light') {
-      setMode('dark');
-    } else {
-      setMode('light');
+  const setColorMode = (nextMode?: string) => {
+    if (nextMode === 'dark' || nextMode === 'light') {
+      setMode(nextMode);
+      return;
     }
+
+    setMode(current => (current === 'light' ? 'dark' : 'light'));
   };
 
   const { darkAlgorithm, defaultAlgorithm } = theme;

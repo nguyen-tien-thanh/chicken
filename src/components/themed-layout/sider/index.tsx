@@ -1,5 +1,4 @@
 import {
-  BarsOutlined,
   LeftOutlined,
   LogoutOutlined,
   RightOutlined,
@@ -15,11 +14,10 @@ import {
   useTranslate,
   useWarnAboutChange,
 } from '@refinedev/core';
+import { useIsMobile } from '@/hooks';
 import {
   Button,
   ConfigProvider,
-  Drawer,
-  Grid,
   Layout,
   Menu,
   theme,
@@ -29,7 +27,6 @@ import React, { useContext } from 'react';
 import { useThemedLayoutContext } from '@refinedev/antd';
 import { ThemedTitle } from '../title';
 import type { RefineThemedLayoutSiderProps } from '../types';
-import { drawerButtonStyles } from './styles';
 
 export const ThemedSider: React.FC<RefineThemedLayoutSiderProps> = ({
   Title: TitleFromProps,
@@ -40,12 +37,7 @@ export const ThemedSider: React.FC<RefineThemedLayoutSiderProps> = ({
   siderItemsAreCollapsed = true,
 }) => {
   const { token } = theme.useToken();
-  const {
-    siderCollapsed,
-    setSiderCollapsed,
-    mobileSiderOpen,
-    setMobileSiderOpen,
-  } = useThemedLayoutContext();
+  const { siderCollapsed, setSiderCollapsed } = useThemedLayoutContext();
 
   const isExistAuthentication = useIsExistAuthentication();
   const direction = useContext(ConfigProvider.ConfigContext)?.direction;
@@ -53,11 +45,8 @@ export const ThemedSider: React.FC<RefineThemedLayoutSiderProps> = ({
   const { warnWhen, setWarnWhen } = useWarnAboutChange();
   const translate = useTranslate();
   const { menuItems, selectedKey, defaultOpenKeys } = useMenu({ meta });
-  const breakpoint = Grid.useBreakpoint();
   const { mutate: mutateLogout } = useLogout();
-
-  const isMobile =
-    typeof breakpoint.lg === 'undefined' ? false : !breakpoint.lg;
+  const isMobile = useIsMobile();
 
   const RenderToTitle = TitleFromProps ?? ThemedTitle;
 
@@ -180,68 +169,14 @@ export const ThemedSider: React.FC<RefineThemedLayoutSiderProps> = ({
           overflow: 'auto',
           height: 'calc(100% - 72px)',
         }}
-        onClick={() => {
-          setMobileSiderOpen(false);
-        }}
       >
         {renderSider()}
       </Menu>
     );
   };
 
-  const renderDrawerSider = () => {
-    return (
-      <>
-        <Drawer
-          open={mobileSiderOpen}
-          onClose={() => setMobileSiderOpen(false)}
-          placement={direction === 'rtl' ? 'right' : 'left'}
-          closable={false}
-          width={200}
-          styles={{
-            body: {
-              padding: 0,
-            },
-          }}
-          maskClosable={true}
-        >
-          <Layout>
-            <Layout.Sider
-              style={{
-                height: '100vh',
-                backgroundColor: token.colorBgContainer,
-                borderRight: `1px solid ${token.colorBgElevated}`,
-              }}
-            >
-              <div
-                style={{
-                  width: '200px',
-                  padding: '0 16px',
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  alignItems: 'center',
-                  height: '64px',
-                  backgroundColor: token.colorBgElevated,
-                }}
-              >
-                <RenderToTitle collapsed={false} />
-              </div>
-              {renderMenu()}
-            </Layout.Sider>
-          </Layout>
-        </Drawer>
-        <Button
-          style={drawerButtonStyles}
-          size="large"
-          onClick={() => setMobileSiderOpen(true)}
-          icon={<BarsOutlined />}
-        />
-      </>
-    );
-  };
-
   if (isMobile) {
-    return renderDrawerSider();
+    return null;
   }
 
   const siderStyles: React.CSSProperties = {

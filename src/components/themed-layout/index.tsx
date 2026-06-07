@@ -1,11 +1,14 @@
+import { useIsMobile } from '@/hooks';
 import { Layout as AntdLayout, Grid } from 'antd';
 import React from 'react';
 
 import { ThemedLayoutContextProvider } from '@refinedev/antd';
+import { ThemedBottomNavigation } from './bottom-navigation';
 import { ThemedHeader } from './header';
 import { ThemedSider } from './sider';
 import type { RefineThemedLayoutProps } from './types';
 
+export * from './bottom-navigation';
 export * from './header';
 export * from './sider';
 export * from './title';
@@ -18,13 +21,17 @@ export const ThemedLayout: React.FC<RefineThemedLayoutProps> = ({
   Title,
   Footer,
   OffLayoutArea,
+  BottomNavigation,
+  bottomNavMore,
   initialSiderCollapsed,
   onSiderCollapsed,
 }) => {
   const breakpoint = Grid.useBreakpoint();
   const SiderToRender = Sider ?? ThemedSider;
   const HeaderToRender = Header ?? ThemedHeader;
+  const BottomNavigationToRender = BottomNavigation ?? ThemedBottomNavigation;
   const isSmall = typeof breakpoint.sm === 'undefined' ? true : breakpoint.sm;
+  const isMobile = useIsMobile();
   const hasSider = !!SiderToRender({ Title });
 
   return (
@@ -41,6 +48,9 @@ export const ThemedLayout: React.FC<RefineThemedLayoutProps> = ({
               style={{
                 minHeight: 360,
                 padding: isSmall ? 24 : 12,
+                paddingBottom: isMobile
+                  ? `calc(72px + env(safe-area-inset-bottom, 0px))`
+                  : undefined,
               }}
             >
               {children}
@@ -48,6 +58,7 @@ export const ThemedLayout: React.FC<RefineThemedLayoutProps> = ({
             {OffLayoutArea && <OffLayoutArea />}
           </AntdLayout.Content>
           {Footer && <Footer />}
+          <BottomNavigationToRender more={bottomNavMore} />
         </AntdLayout>
       </AntdLayout>
     </ThemedLayoutContextProvider>

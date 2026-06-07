@@ -1,11 +1,7 @@
 import { Authenticated, Refine } from '@refinedev/core';
 import { RefineKbar, RefineKbarProvider } from '@refinedev/kbar';
 
-import {
-  ErrorComponent,
-  ThemedLayout,
-  useNotificationProvider,
-} from '@refinedev/antd';
+import { ErrorComponent, useNotificationProvider } from '@refinedev/antd';
 import '@refinedev/antd/dist/reset.css';
 import { useTranslation } from 'react-i18next';
 
@@ -15,6 +11,7 @@ import {
   ProductOutlined,
   RiseOutlined,
   ShopOutlined,
+  UnorderedListOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import routerProvider, {
@@ -32,7 +29,7 @@ import authProvider from './providers/auth';
 import { dataProvider } from './providers/data';
 import { supabaseClient } from './providers/supabase-client';
 
-import { ShowRedirectDrawer, ThemedSider } from './components';
+import { ShowRedirectDrawer, ThemedLayout, ThemedSider } from './components';
 import { Customer } from './pages/customers';
 import { ForgotPassword } from './pages/forgot_password';
 import { InventoryTransaction } from './pages/inventory_transactions';
@@ -94,7 +91,11 @@ function App() {
                   create: '/purchases/create',
                   edit: '/purchases/edit/:id',
                   show: '/purchases/show/:id',
-                  meta: { canDelete: true, icon: <FallOutlined /> },
+                  meta: {
+                    canDelete: true,
+                    icon: <FallOutlined />,
+                    bottomNav: 'primary',
+                  },
                 },
                 {
                   name: 'customers',
@@ -108,12 +109,16 @@ function App() {
                   create: '/sales/create',
                   edit: '/sales/edit/:id',
                   show: '/sales/show/:id',
-                  meta: { canDelete: true, icon: <RiseOutlined /> },
+                  meta: {
+                    canDelete: true,
+                    icon: <RiseOutlined />,
+                    bottomNav: 'primary',
+                  },
                 },
                 {
                   name: 'product_categories',
                   list: '/product_categories',
-                  meta: { canDelete: true },
+                  meta: { canDelete: true, icon: <UnorderedListOutlined /> },
                 },
                 {
                   name: 'products',
@@ -125,7 +130,11 @@ function App() {
                   name: 'inventory_transactions',
                   list: '/inventory_transactions',
                   show: '/inventory_transactions/show/:id',
-                  meta: { icon: <DatabaseOutlined /> },
+                  meta: {
+                    icon: <DatabaseOutlined />,
+                    bottomNav: 'primary',
+                    label: 'Đơn hàng',
+                  },
                 },
               ]}
               options={{
@@ -144,6 +153,7 @@ function App() {
                       <ThemedLayout
                         Header={Header}
                         Sider={props => <ThemedSider {...props} fixed />}
+                        bottomNavMore={{ label: 'Thêm', drawerTitle: 'Thêm' }}
                       >
                         <Outlet />
                       </ThemedLayout>
