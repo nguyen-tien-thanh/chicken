@@ -3,12 +3,6 @@
   padding-bottom: 0;
 }
 
-.themed-bottom-navigation-more-item--active {
-  color: var(--adm-color-primary);
-  font-weight: 500;
-}
-
-.themed-bottom-navigation-more-item--active .themed-bottom-navigation-more-item__prefix,
-.themed-bottom-navigation-more-item--active .themed-bottom-navigation-more-item__prefix .anticon {
-  color: var(--adm-color-primary);
+.themed-bottom-navigation-more-item--active .adm-list-item-content-main {
+  color: inherit;
 }

@@ -7,6 +7,7 @@ import {
   type TreeMenuItem,
   useMenu,
   useNavigation,
+  useResourceParams,
   useTranslate,
   useWarnAboutChange,
 } from '@refinedev/core';
@@ -38,7 +39,11 @@ export const ThemedBottomNavigation: React.FC<
   const { list } = useNavigation();
   const { warnWhen, setWarnWhen } = useWarnAboutChange();
   const { menuItems, selectedKey } = useMenu({ meta });
+  const { resource, identifier } = useResourceParams();
   const [moreOpen, setMoreOpen] = useState(false);
+
+  const isMoreItemActive = (item: TreeMenuItem) =>
+    item.name === resource?.name || item.name === identifier;
 
   const flatMenuItems = useMemo(
     () => menuItems.filter(item => item.children.length === 0),
@@ -105,10 +110,6 @@ export const ThemedBottomNavigation: React.FC<
   };
 
   const handleMoreTabClick = () => {
-    if (activeKey === MORE_TAB_KEY) {
-      scrollToTop();
-      return;
-    }
     setMoreOpen(true);
   };
 
@@ -184,7 +185,10 @@ export const ThemedBottomNavigation: React.FC<
           </div>
           <List header={drawerTitle}>
             {moreItems.map(item => {
-              const isActive = item.key === selectedKey;
+              const isActive = isMoreItemActive(item);
+              const activeStyle = isActive
+                ? { color: token.colorPrimary, fontWeight: 500 as const }
+                : undefined;
 
               return (
                 <List.Item
@@ -193,7 +197,10 @@ export const ThemedBottomNavigation: React.FC<
                     isActive ? 'themed-bottom-navigation-more-item--active' : undefined
                   }
                   prefix={
-                    <span className="themed-bottom-navigation-more-item__prefix">
+                    <span
+                      className="themed-bottom-navigation-more-item__prefix"
+                      style={activeStyle}
+                    >
                       {item.icon ?? item.meta?.icon}
                     </span>
                   }
@@ -203,7 +210,7 @@ export const ThemedBottomNavigation: React.FC<
                     handleNavigate(item);
                   }}
                 >
-                  {getItemLabel(item)}
+                  <span style={activeStyle}>{getItemLabel(item)}</span>
                 </List.Item>
               );
             })}
