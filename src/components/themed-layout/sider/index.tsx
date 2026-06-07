@@ -22,11 +22,14 @@ import {
   Menu,
   theme,
 } from 'antd';
-import React, { useContext } from 'react';
+import type { MenuProps } from 'antd';
+import React, { useContext, useMemo } from 'react';
 
 import { useThemedLayoutContext } from '@refinedev/antd';
 import { ThemedTitle } from '../title';
 import type { RefineThemedLayoutSiderProps } from '../types';
+
+type MenuItem = NonNullable<MenuProps['items']>[number];
 
 export const ThemedSider: React.FC<RefineThemedLayoutSiderProps> = ({
   Title: TitleFromProps,
@@ -50,64 +53,69 @@ export const ThemedSider: React.FC<RefineThemedLayoutSiderProps> = ({
 
   const RenderToTitle = TitleFromProps ?? ThemedTitle;
 
-  const renderTreeView = (tree: TreeMenuItem[], selectedKey?: string) => {
-    return tree.map((item: TreeMenuItem) => {
-      const { key, name, children, meta, list } = item;
-      const parentName = meta?.parent;
-      const label = item?.label ?? meta?.label ?? name;
-      const icon = meta?.icon;
+  const buildTreeItems = (
+    tree: TreeMenuItem[],
+    currentSelectedKey?: string,
+  ): MenuItem[] => {
+    const items: MenuItem[] = [];
+
+    for (const item of tree) {
+      const { key, name, children, meta: itemMeta, list } = item;
+      const parentName = itemMeta?.parent;
+      const label = item?.label ?? itemMeta?.label ?? name;
+      const icon = itemMeta?.icon;
       const route = list;
 
       if (children.length > 0) {
-        return (
-          <CanAccess
-            key={item.key}
-            resource={name}
-            action="list"
-            params={{
-              resource: item,
-            }}
-          >
-            <Menu.SubMenu
-              key={item.key}
-              icon={icon ?? <UnorderedListOutlined />}
-              title={label}
-            >
-              {renderTreeView(children, selectedKey)}
-            </Menu.SubMenu>
-          </CanAccess>
-        );
-      }
-      const isSelected = key === selectedKey;
-      const isRoute = !(parentName !== undefined && children.length === 0);
+        const childItems = buildTreeItems(children, currentSelectedKey);
+        if (childItems.length === 0) continue;
 
+        items.push({
+          key: item.key,
+          icon: icon ?? <UnorderedListOutlined />,
+          label: (
+            <CanAccess
+              resource={name}
+              action="list"
+              params={{ resource: item }}
+            >
+              {label}
+            </CanAccess>
+          ),
+          children: childItems,
+        });
+        continue;
+      }
+
+      const isSelected = key === currentSelectedKey;
+      const isRoute = !(parentName !== undefined && children.length === 0);
       const linkStyle: React.CSSProperties =
         activeItemDisabled && isSelected ? { pointerEvents: 'none' } : {};
 
-      return (
-        <CanAccess
-          key={item.key}
-          resource={name}
-          action="list"
-          params={{
-            resource: item,
-          }}
-        >
-          <Menu.Item
-            key={item.key}
-            icon={icon ?? (isRoute && <UnorderedListOutlined />)}
-            style={linkStyle}
+      items.push({
+        key: item.key,
+        icon: icon ?? (isRoute ? <UnorderedListOutlined /> : undefined),
+        label: (
+          <CanAccess
+            resource={name}
+            action="list"
+            params={{ resource: item }}
           >
-            <Link to={route ?? ''} style={linkStyle}>
-              {label}
-            </Link>
-            {!siderCollapsed && isSelected && (
-              <div className="ant-menu-tree-arrow" />
-            )}
-          </Menu.Item>
-        </CanAccess>
-      );
-    });
+            <>
+              <Link to={route ?? ''} style={linkStyle}>
+                {label}
+              </Link>
+              {!siderCollapsed && isSelected ? (
+                <div className="ant-menu-tree-arrow" />
+              ) : null}
+            </>
+          </CanAccess>
+        ),
+        style: linkStyle,
+      });
+    }
+
+    return items;
   };
 
   const handleLogout = () => {
@@ -128,15 +136,13 @@ export const ThemedSider: React.FC<RefineThemedLayoutSiderProps> = ({
     }
   };
 
-  const logout = isExistAuthentication && (
-    <Menu.Item
-      key="logout"
-      onClick={() => handleLogout()}
-      icon={<LogoutOutlined />}
-    >
-      {translate('buttons.logout', 'Logout')}
-    </Menu.Item>
-  );
+  const logoutItem: MenuItem | false =
+    isExistAuthentication && {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: translate('buttons.logout', 'Logout'),
+      onClick: () => handleLogout(),
+    };
 
   const defaultExpandMenuItems = (() => {
     if (siderItemsAreCollapsed) return [];
@@ -144,17 +150,21 @@ export const ThemedSider: React.FC<RefineThemedLayoutSiderProps> = ({
     return menuItems.map(({ key }) => key);
   })();
 
-  const items = renderTreeView(menuItems, selectedKey);
+  const treeItems = useMemo(
+    () => buildTreeItems(menuItems, selectedKey),
+    [menuItems, selectedKey, siderCollapsed, activeItemDisabled, Link],
+  );
 
-  const renderSider = () => {
+  const renderSiderItems = (): MenuProps['items'] => {
     if (render) {
       return render({
-        items,
-        logout,
+        items: treeItems as unknown as React.ReactElement[],
+        logout: logoutItem as unknown as React.ReactNode,
         collapsed: siderCollapsed,
-      });
+      }) as MenuProps['items'];
     }
-    return [...items, logout].filter(Boolean);
+
+    return [...treeItems, logoutItem].filter(Boolean) as MenuProps['items'];
   };
 
   const renderMenu = () => {
@@ -163,15 +173,14 @@ export const ThemedSider: React.FC<RefineThemedLayoutSiderProps> = ({
         selectedKeys={selectedKey ? [selectedKey] : []}
         defaultOpenKeys={[...defaultOpenKeys, ...defaultExpandMenuItems]}
         mode="inline"
+        items={renderSiderItems()}
         style={{
           paddingTop: '8px',
           border: 'none',
           overflow: 'auto',
           height: 'calc(100% - 72px)',
         }}
-      >
-        {renderSider()}
-      </Menu>
+      />
     );
   };
 

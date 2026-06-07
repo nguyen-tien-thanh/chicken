@@ -35,6 +35,9 @@ export const ThemedLayout: React.FC<RefineThemedLayoutProps> = ({
   const isMobile = useIsMobile();
   const hasSider = !!SiderToRender({ Title });
   const contentPadding = isSmall ? 24 : 12;
+  const mobileBottomPadding = isMobile
+    ? `calc(${contentPadding + token.paddingSM * 2 + 58}px + env(safe-area-inset-bottom, 0px))`
+    : contentPadding;
 
   return (
     <ThemedLayoutContextProvider
@@ -49,10 +52,10 @@ export const ThemedLayout: React.FC<RefineThemedLayoutProps> = ({
             <div
               style={{
                 minHeight: 360,
-                padding: contentPadding,
-                paddingBottom: isMobile
-                  ? `calc(${contentPadding + token.paddingSM * 2 + 58}px + env(safe-area-inset-bottom, 0px))`
-                  : undefined,
+                paddingTop: contentPadding,
+                paddingRight: contentPadding,
+                paddingLeft: contentPadding,
+                paddingBottom: mobileBottomPadding,
               }}
             >
               {children}
