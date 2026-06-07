@@ -16,6 +16,8 @@ import React, { useMemo, useState } from 'react';
 
 import type { RefineThemedLayoutBottomNavigationProps } from '../types';
 
+import './bottom-navigation.css';
+
 const MORE_TAB_KEY = 'more';
 
 const isPrimaryTab = (item: TreeMenuItem) => item.meta?.bottomNav === 'primary';
@@ -101,6 +103,7 @@ export const ThemedBottomNavigation: React.FC<
   return (
     <>
       <div
+        className="themed-bottom-navigation"
         style={{
           position: 'fixed',
           bottom: 0,
