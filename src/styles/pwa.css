@@ -21,3 +21,16 @@ body {
     overscroll-behavior-y: none;
   }
 }
+
+/* iOS Safari auto-zooms when input font-size < 16px */
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select,
+  .ant-input,
+  .ant-input-number-input,
+  .ant-select-selector input,
+  .ant-picker-input input {
+    font-size: 16px !important;
+  }
+}
