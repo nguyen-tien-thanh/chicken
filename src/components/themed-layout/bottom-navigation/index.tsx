@@ -109,7 +109,6 @@ export const ThemedBottomNavigation: React.FC<
           zIndex: 1000,
           backgroundColor: token.colorBgContainer,
           borderTop: `1px solid ${token.colorBgElevated}`,
-          paddingBlock: token.paddingSM,
         }}
       >
         <TabBar
