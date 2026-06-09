@@ -66,8 +66,12 @@ export const Create = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   const { mutate: createCustomer } = useCreate();
-  const { mutateAsync: createSale } = useCreate();
-  const { mutateAsync: createSaleItems } = useCreateMany();
+  const { mutateAsync: createSale } = useCreate({
+    successNotification: false,
+  });
+  const { mutateAsync: createSaleItems } = useCreateMany({
+    successNotification: false,
+  });
   const invalidate = useInvalidate();
   const { setWarnWhen } = useWarnAboutChange();
 
@@ -234,13 +238,7 @@ export const Create = () => {
   };
 
   return (
-    <AntdCreate
-      saveButtonProps={{
-        ...saveButtonProps,
-        loading: isSaving,
-        disabled: isSaving,
-      }}
-    >
+    <AntdCreate isLoading={isSaving} saveButtonProps={saveButtonProps}>
       <Form {...formProps} layout="vertical" onFinish={onFinish}>
         <Form.Item
           label="Khách hàng"
@@ -350,7 +348,10 @@ export const Create = () => {
           onRemoveLine={removeLine}
           onAddLine={addLine}
         />
-        <VoucherSummaryBox label="Tổng thành tiền (ước tính):" amount={subtotal} />
+        <VoucherSummaryBox
+          label="Tổng thành tiền (ước tính):"
+          amount={subtotal}
+        />
       </Form>
     </AntdCreate>
   );

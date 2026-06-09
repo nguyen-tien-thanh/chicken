@@ -88,6 +88,18 @@ function App() {
                   meta: { canDelete: true, icon: <ShopOutlined /> },
                 },
                 {
+                  name: 'sales',
+                  list: '/sales',
+                  create: '/sales/create',
+                  edit: '/sales/edit/:id',
+                  show: '/sales/show/:id',
+                  meta: {
+                    canDelete: true,
+                    icon: <RiseOutlined />,
+                    bottomNav: 'primary',
+                  },
+                },
+                {
                   name: 'purchases',
                   list: '/purchases',
                   create: '/purchases/create',
@@ -105,17 +117,9 @@ function App() {
                   create: '/customers/create',
                   edit: '/customers/edit/:id',
                   show: '/customers/show/:id',
-                  meta: { canDelete: true, icon: <UserOutlined /> },
-                },
-                {
-                  name: 'sales',
-                  list: '/sales',
-                  create: '/sales/create',
-                  edit: '/sales/edit/:id',
-                  show: '/sales/show/:id',
                   meta: {
                     canDelete: true,
-                    icon: <RiseOutlined />,
+                    icon: <UserOutlined />,
                     bottomNav: 'primary',
                   },
                 },
@@ -139,11 +143,7 @@ function App() {
                   name: 'inventory_transactions',
                   list: '/inventory_transactions',
                   show: '/inventory_transactions/show/:id',
-                  meta: {
-                    icon: <DatabaseOutlined />,
-                    bottomNav: 'primary',
-                    label: 'Đơn hàng',
-                  },
+                  meta: { icon: <DatabaseOutlined />, label: 'Đơn hàng' },
                 },
               ]}
               options={{

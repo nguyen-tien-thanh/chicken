@@ -8,15 +8,7 @@ import {
   useWarnAboutChange,
 } from '@refinedev/core';
 import type { FormProps } from 'antd';
-import {
-  App,
-  Col,
-  DatePicker,
-  Form,
-  Input,
-  Row,
-  Select,
-} from 'antd';
+import { App, Col, DatePicker, Form, Input, Row, Select } from 'antd';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 
@@ -56,9 +48,15 @@ export const Edit = () => {
   const [lines, setLines] = useState<VoucherLineItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
-  const { mutateAsync: updateSale } = useUpdate();
-  const { mutateAsync: createItem } = useCreate();
-  const { mutateAsync: updateItem } = useUpdate();
+  const { mutateAsync: updateSale } = useUpdate({
+    successNotification: false,
+  });
+  const { mutateAsync: createItem } = useCreate({
+    successNotification: false,
+  });
+  const { mutateAsync: updateItem } = useUpdate({
+    successNotification: false,
+  });
   const { mutateAsync: deleteItem } = useDelete();
   const invalidate = useInvalidate();
   const { setWarnWhen } = useWarnAboutChange();
@@ -247,13 +245,7 @@ export const Edit = () => {
   };
 
   return (
-    <AntdEdit
-      saveButtonProps={{
-        ...saveButtonProps,
-        loading: isSaving,
-        disabled: isSaving,
-      }}
-    >
+    <AntdEdit isLoading={isSaving} saveButtonProps={saveButtonProps}>
       <Form {...formProps} layout="vertical" onFinish={onFinish}>
         <Form.Item
           label="Khách hàng"
@@ -325,7 +317,10 @@ export const Edit = () => {
           onRemoveLine={removeLine}
           onAddLine={addLine}
         />
-        <VoucherSummaryBox label="Tổng thành tiền (ước tính):" amount={subtotal} />
+        <VoucherSummaryBox
+          label="Tổng thành tiền (ước tính):"
+          amount={subtotal}
+        />
       </Form>
     </AntdEdit>
   );

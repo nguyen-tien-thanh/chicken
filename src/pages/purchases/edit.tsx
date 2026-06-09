@@ -55,9 +55,15 @@ export const Edit = () => {
   const [lines, setLines] = useState<VoucherLineItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
-  const { mutateAsync: updatePurchase } = useUpdate();
-  const { mutateAsync: createItem } = useCreate();
-  const { mutateAsync: updateItem } = useUpdate();
+  const { mutateAsync: updatePurchase } = useUpdate({
+    successNotification: false,
+  });
+  const { mutateAsync: createItem } = useCreate({
+    successNotification: false,
+  });
+  const { mutateAsync: updateItem } = useUpdate({
+    successNotification: false,
+  });
   const { mutateAsync: deleteItem } = useDelete();
   const invalidate = useInvalidate();
   const { setWarnWhen } = useWarnAboutChange();
@@ -219,13 +225,7 @@ export const Edit = () => {
   };
 
   return (
-    <AntdEdit
-      saveButtonProps={{
-        ...saveButtonProps,
-        loading: isSaving,
-        disabled: isSaving,
-      }}
-    >
+    <AntdEdit isLoading={isSaving} saveButtonProps={saveButtonProps}>
       <Form {...formProps} layout="vertical" onFinish={onFinish}>
         <Form.Item
           label="Nhà cung cấp"
