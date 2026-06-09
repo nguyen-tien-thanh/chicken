@@ -84,6 +84,19 @@ export const Edit = () => {
     optionLabel: (item: ICustomer) =>
       `${item.name ?? item.phone} (${item.phone})`,
     optionValue: (item: ICustomer) => item.id,
+    onSearch: value => {
+      const q = value.trim();
+      if (!q) return [];
+      return [
+        {
+          operator: 'or',
+          value: [
+            { field: 'name', operator: 'contains', value: q },
+            { field: 'phone', operator: 'contains', value: q },
+          ],
+        },
+      ];
+    },
   });
 
   const {
