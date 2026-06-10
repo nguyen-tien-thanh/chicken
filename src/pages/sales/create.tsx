@@ -4,6 +4,7 @@ import {
   useCreate,
   useCreateMany,
   useInvalidate,
+  useNavigation,
   useSelect,
   useWarnAboutChange,
 } from '@refinedev/core';
@@ -22,7 +23,7 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
 
 import {
   InputMoney,
@@ -55,7 +56,7 @@ function newRow(): VoucherLineItem {
 
 export const Create = () => {
   const { notification } = App.useApp();
-  const navigate = useNavigate();
+  const { show } = useNavigation();
   const [searchParams] = useSearchParams();
   const query_customer_id = searchParams.get('customer_id') ?? undefined;
 
@@ -77,6 +78,7 @@ export const Create = () => {
 
   const { formProps, saveButtonProps, form } = useForm({
     resource: 'sales',
+    redirect: 'show',
     defaultFormValues: {
       ...(query_customer_id ? { customer_id: query_customer_id } : {}),
       sale_date: dayjs(),
@@ -237,7 +239,7 @@ export const Create = () => {
         await invalidate({ resource: 'sale_items', invalidates: ['list'] });
         notification.success({ message: 'Đã tạo phiếu bán' });
         setWarnWhen(false);
-        navigate(`/sales/show/${saleId}`);
+        show('sales', saleId);
       } catch (e: unknown) {
         const msg =
           e && typeof e === 'object' && 'message' in e
@@ -251,7 +253,16 @@ export const Create = () => {
   };
 
   return (
-    <AntdCreate isLoading={isSaving} saveButtonProps={saveButtonProps}>
+    <AntdCreate
+      isLoading={isSaving}
+      saveButtonProps={saveButtonProps}
+      footerButtons={({ defaultButtons }) => (
+        <>
+          <VoucherSummaryBox label="Tổng tiền (ước tính):" amount={subtotal} />
+          {defaultButtons}
+        </>
+      )}
+    >
       <Form {...formProps} layout="vertical" onFinish={onFinish}>
         <Form.Item
           label="Khách hàng"
@@ -360,10 +371,6 @@ export const Create = () => {
           onUpdateLine={updateLine}
           onRemoveLine={removeLine}
           onAddLine={addLine}
-        />
-        <VoucherSummaryBox
-          label="Tổng thành tiền (ước tính):"
-          amount={subtotal}
         />
       </Form>
     </AntdCreate>

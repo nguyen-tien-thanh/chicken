@@ -6,6 +6,7 @@ import { CustomerFormFields } from './form-fields';
 export const Create = () => {
   const { formProps, saveButtonProps } = useForm({
     resource: 'customers',
+    redirect: 'show',
   });
 
   return (

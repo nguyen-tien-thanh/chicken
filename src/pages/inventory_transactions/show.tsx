@@ -115,7 +115,7 @@ export const Show = () => {
           {
             label: 'Chiều',
             value: dir && (
-              <MobileShowTag color={dir === 'IN' ? 'success' : 'warning'}>
+              <MobileShowTag color={dir === 'IN' ? 'warning' : 'success'}>
                 {INVENTORY_TX_DIRECTION_LABELS[dir]}
               </MobileShowTag>
             ),

@@ -3,6 +3,7 @@ import {
   useCreate,
   useCreateMany,
   useInvalidate,
+  useNavigation,
   useSelect,
   useWarnAboutChange,
 } from '@refinedev/core';
@@ -19,7 +20,7 @@ import {
 } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useSearchParams } from 'react-router';
 
 import {
   FullScreenSpin,
@@ -51,7 +52,7 @@ function newRow(): VoucherLineItem {
 
 export const Create = () => {
   const { notification } = App.useApp();
-  const navigate = useNavigate();
+  const { show } = useNavigation();
   const [searchParams] = useSearchParams();
   const supplier_idFromQuery = searchParams.get('supplier_id') ?? undefined;
 
@@ -69,6 +70,7 @@ export const Create = () => {
 
   const { formProps, saveButtonProps } = useForm({
     resource: 'purchases',
+    redirect: 'show',
     defaultFormValues: {
       ...(supplier_idFromQuery ? { supplier_id: supplier_idFromQuery } : {}),
       purchase_date: dayjs(),
@@ -107,6 +109,24 @@ export const Create = () => {
 
   function removeLine(key: number) {
     setLines(prev => prev.filter(row => row.key !== key));
+  }
+
+  function addLine() {
+    setLines(prev => {
+      const last = prev[prev.length - 1];
+      return [
+        ...prev,
+        last
+          ? {
+              key: nextKey++,
+              product_id: last.product_id,
+              quantity_unit: last.quantity_unit,
+              unit_price: last.unit_price,
+              quantity: 0,
+            }
+          : newRow(),
+      ];
+    });
   }
 
   const total = lines.reduce((sum, row) => {
@@ -162,7 +182,7 @@ export const Create = () => {
         await invalidate({ resource: 'purchase_items', invalidates: ['list'] });
         notification.success({ message: 'Đã tạo phiếu nhập' });
         setWarnWhen(false);
-        navigate(`/purchases/show/${purchaseId}`);
+        show('purchases', purchaseId);
       } catch (e: unknown) {
         const msg =
           e && typeof e === 'object' && 'message' in e
@@ -180,7 +200,16 @@ export const Create = () => {
   }
 
   return (
-    <AntdCreate isLoading={isSaving} saveButtonProps={saveButtonProps}>
+    <AntdCreate
+      isLoading={isSaving}
+      saveButtonProps={saveButtonProps}
+      footerButtons={({ defaultButtons }) => (
+        <>
+          <VoucherSummaryBox label="Tổng tiền (ước tính):" amount={total} />
+          {defaultButtons}
+        </>
+      )}
+    >
       <Form {...formProps} layout="vertical" onFinish={onFinish}>
         <Form.Item
           label="Nhà cung cấp"
@@ -275,9 +304,8 @@ export const Create = () => {
           onSearchProduct={onSearchProduct}
           onUpdateLine={updateLine}
           onRemoveLine={removeLine}
-          onAddLine={() => setLines(prev => [...prev, newRow()])}
+          onAddLine={addLine}
         />
-        <VoucherSummaryBox label="Tổng thành tiền (ước tính):" amount={total} />
       </Form>
     </AntdCreate>
   );

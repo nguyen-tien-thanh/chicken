@@ -61,6 +61,7 @@ export const Show = () => {
   return (
     <MobileShowPage
       loading={isLoading}
+      title={record?.phone}
       actions={
         <>
           <ListButton />
@@ -115,7 +116,7 @@ export const Show = () => {
                   {SALE_STATUS_LABELS[row.status]}
                 </MobileShowTag>
               )}{' '}
-              {joinDetail(showMoney(row.final_amount), row.note)}
+              {joinDetail(showMoney(row.final_amount))}
             </>
           )}
         />

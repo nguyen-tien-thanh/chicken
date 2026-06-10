@@ -1,8 +1,9 @@
 import { Edit as AntdEdit, useForm } from '@refinedev/antd';
 import {
   useCreate,
-  useDelete,
+  useDeleteMany,
   useInvalidate,
+  useNavigation,
   useSelect,
   useUpdate,
   useWarnAboutChange,
@@ -52,6 +53,7 @@ function newRow(): VoucherLineItem {
 
 export const Edit = () => {
   const { notification } = App.useApp();
+  const { show } = useNavigation();
   const [lines, setLines] = useState<VoucherLineItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -64,12 +66,13 @@ export const Edit = () => {
   const { mutateAsync: updateItem } = useUpdate({
     successNotification: false,
   });
-  const { mutateAsync: deleteItem } = useDelete();
+  const { mutateAsync: deleteItems } = useDeleteMany();
   const invalidate = useInvalidate();
   const { setWarnWhen } = useWarnAboutChange();
 
   const { formProps, saveButtonProps, query } = useForm<IPurchase>({
     resource: 'purchases',
+    redirect: 'show',
     meta: {
       select: '*,supplier:suppliers(*),purchase_items(*,product:products(*))',
     },
@@ -114,6 +117,24 @@ export const Edit = () => {
 
   function removeLine(key: number) {
     setLines(prev => prev.filter(row => row.key !== key));
+  }
+
+  function addLine() {
+    setLines(prev => {
+      const last = prev[prev.length - 1];
+      return [
+        ...prev,
+        last
+          ? {
+              key: nextKey++,
+              product_id: last.product_id,
+              quantity_unit: last.quantity_unit,
+              unit_price: last.unit_price,
+              quantity: 0,
+            }
+          : newRow(),
+      ];
+    });
   }
 
   const total = lines.reduce((sum, row) => {
@@ -173,10 +194,15 @@ export const Edit = () => {
         const nextIds = new Set(
           validLines.map(r => r.id).filter(Boolean) as string[],
         );
-        for (const id of existingIds) {
-          if (!nextIds.has(id)) {
-            await deleteItem({ resource: 'purchase_items', id });
-          }
+        const idsToDelete = Array.from(existingIds).filter(
+          id => !nextIds.has(id),
+        );
+        if (idsToDelete.length > 0) {
+          await deleteItems({
+            resource: 'purchase_items',
+            ids: idsToDelete,
+            successNotification: false,
+          });
         }
 
         for (const row of validLines) {
@@ -212,6 +238,7 @@ export const Edit = () => {
         }
         setWarnWhen(false);
         notification.success({ message: 'Đã cập nhật phiếu nhập' });
+        show('purchases', purchaseId);
       } catch (e: unknown) {
         const msg =
           e && typeof e === 'object' && 'message' in e
@@ -225,7 +252,16 @@ export const Edit = () => {
   };
 
   return (
-    <AntdEdit isLoading={isSaving} saveButtonProps={saveButtonProps}>
+    <AntdEdit
+      isLoading={isSaving}
+      saveButtonProps={saveButtonProps}
+      footerButtons={({ defaultButtons }) => (
+        <>
+          <VoucherSummaryBox label="Tổng tiền (ước tính):" amount={total} />
+          {defaultButtons}
+        </>
+      )}
+    >
       <Form {...formProps} layout="vertical" onFinish={onFinish}>
         <Form.Item
           label="Nhà cung cấp"
@@ -315,9 +351,8 @@ export const Edit = () => {
           onSearchProduct={onSearchProduct}
           onUpdateLine={updateLine}
           onRemoveLine={removeLine}
-          onAddLine={() => setLines(prev => [...prev, newRow()])}
+          onAddLine={addLine}
         />
-        <VoucherSummaryBox label="Tổng thành tiền (ước tính):" amount={total} />
       </Form>
     </AntdEdit>
   );

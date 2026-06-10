@@ -1,92 +1,135 @@
-import {
-  List as AntdList,
-  DeleteButton,
-  EditButton,
-  ShowButton,
-  useTable,
-} from '@refinedev/antd';
-import { Space, Tag } from 'antd';
-import { Link } from 'react-router';
+import { List as AntdList, useTable } from '@refinedev/antd';
+import { useInfiniteList, useNavigation } from '@refinedev/core';
+import { SearchOutlined } from '@ant-design/icons';
+import { Divider, Empty, Flex, Input, Result, Skeleton, Spin } from 'antd';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
-import { ResponsiveTable, type ResponsiveColumnType } from '@/components';
-import { RelativeTime } from '@/components/relative-time';
-import { MEDIA_MD_DOWN, useMediaQuery } from '@/hooks';
-import {
-  PRODUCT_TYPE_LABELS,
-  type IProduct,
-  type ProductType,
-} from '@/types';
+import { MobileShowList } from '@/components';
+import { PRODUCT_TYPE_LABELS, type IProduct } from '@/types';
+
+const PAGE_SIZE = 20;
+const SEARCH_DEBOUNCE_MS = 200;
 
 export const List = () => {
-  const isMobile = useMediaQuery(MEDIA_MD_DOWN);
+  const { show } = useNavigation();
+  const [search, setSearch] = useState('');
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const syncedFromUrl = useRef(false);
 
-  const { tableProps, filters, sorters } = useTable<IProduct>({
-    syncWithLocation: true,
+  const { filters, sorters, setFilters } = useTable<IProduct>({
     resource: 'products',
+    syncWithLocation: true,
     meta: {
       select: '*,category:product_categories(*)',
     },
-    sorters: { initial: [{ field: 'created_at', order: 'desc' }] },
-    queryOptions: { enabled: !isMobile },
+    sorters: { initial: [{ field: 'name', order: 'asc' }] },
+    queryOptions: { enabled: false },
   });
 
-  const columns: ResponsiveColumnType<IProduct>[] = [
-    {
-      dataIndex: 'name',
-      title: 'Tên sản phẩm',
-      sorter: true,
-      mobileRole: 'title',
+  const {
+    result: { data, hasNextPage },
+    query: { isError, isLoading, fetchNextPage },
+  } = useInfiniteList<IProduct>({
+    resource: 'products',
+    filters,
+    sorters,
+    meta: {
+      select: '*,category:product_categories(*)',
     },
-    {
-      dataIndex: 'type',
-      title: 'Loại',
-      mobileRole: 'subtitle',
-      render: (t: ProductType) => <Tag>{PRODUCT_TYPE_LABELS[t] ?? t}</Tag>,
-    },
-    {
-      key: 'category',
-      title: 'Danh mục',
-      render: (_, r) =>
-        r.category ? (
-          <Link to={`/product_categories/show/${r.category.id}`}>
-            {r.category.name}
-          </Link>
-        ) : null,
-    },
-    {
-      dataIndex: 'created_at',
-      title: 'Ngày tạo',
-      sorter: true,
-      defaultSortOrder: 'descend',
-      mobileRole: 'hidden',
-      render: (v: string) => v && <RelativeTime value={v} />,
-    },
-    {
-      title: 'Thao tác',
-      dataIndex: 'actions',
-      fixed: 'right',
-      mobileRole: 'actions',
-      render: (_, record) => (
-        <Space>
-          <EditButton hideText recordItemId={record.id} />
-          <ShowButton hideText recordItemId={record.id} />
-          <DeleteButton hideText recordItemId={record.id} />
-        </Space>
-      ),
-    },
-  ];
+    pagination: { pageSize: PAGE_SIZE },
+  });
+
+  const records = useMemo(
+    () => (data?.pages ?? []).flatMap(page => page.data),
+    [data?.pages],
+  );
+
+  useEffect(() => {
+    if (syncedFromUrl.current) return;
+
+    const orFilter = filters.find(
+      f => 'operator' in f && f.operator === 'or' && Array.isArray(f.value),
+    );
+    const nameFilter =
+      orFilter && 'value' in orFilter
+        ? orFilter.value.find(
+            (f: { field?: string; value?: unknown }) => f.field === 'name',
+          )
+        : undefined;
+    const fromUrl =
+      nameFilter && 'value' in nameFilter ? String(nameFilter.value) : '';
+
+    if (fromUrl) setSearch(fromUrl);
+    if (fromUrl || filters.length === 0) syncedFromUrl.current = true;
+  }, [filters]);
+
+  useEffect(() => () => clearTimeout(debounceRef.current), []);
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      const q = value.trim();
+      setFilters(
+        q
+          ? [
+              {
+                operator: 'or',
+                value: [{ field: 'name', operator: 'contains', value: q }],
+              },
+            ]
+          : [],
+        'replace',
+      );
+    }, SEARCH_DEBOUNCE_MS);
+  };
 
   return (
     <AntdList>
-      <ResponsiveTable
-        {...tableProps}
-        resource="products"
-        columns={columns}
-        filters={filters}
-        sorters={sorters}
-        meta={{ select: '*,category:product_categories(*)' }}
-        rowKey="id"
+      <Input
+        allowClear
+        placeholder="Tìm tên sản phẩm..."
+        style={{ marginBottom: 16, maxWidth: 480 }}
+        size="large"
+        value={search}
+        onChange={e => handleSearchChange(e.target.value)}
+        suffix={<SearchOutlined />}
       />
+
+      {isError ? (
+        <Result status="error" title="Không tải được danh sách" />
+      ) : isLoading && records.length === 0 ? (
+        <Flex justify="center" style={{ padding: 24 }}>
+          <Spin />
+        </Flex>
+      ) : records.length === 0 ? (
+        <Empty description="Không có dữ liệu" style={{ padding: '24px 0' }} />
+      ) : (
+        <InfiniteScroll
+          dataLength={records.length}
+          next={() => fetchNextPage()}
+          hasMore={!!hasNextPage}
+          loader={
+            <Flex justify="center">
+              <Skeleton active paragraph={{ rows: 1 }} />
+            </Flex>
+          }
+          endMessage={<Divider plain>Đã hiển thị tất cả</Divider>}
+        >
+          <MobileShowList
+            dataSource={records}
+            getKey={row => row.id}
+            onItemClick={row => show('products', row.id)}
+            renderTitle={row => row.name}
+            renderDescription={row =>
+              [PRODUCT_TYPE_LABELS[row.type], row.category?.name]
+                .filter(Boolean)
+                .join(' · ')
+            }
+          />
+        </InfiniteScroll>
+      )}
     </AntdList>
   );
 };

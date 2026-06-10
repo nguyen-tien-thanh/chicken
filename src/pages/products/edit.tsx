@@ -6,6 +6,7 @@ import { ProductFormFields } from './form-fields';
 export const Edit = () => {
   const { formProps, saveButtonProps } = useForm({
     resource: 'products',
+    redirect: 'show',
     meta: {
       select: '*,category:product_categories(*)',
     },

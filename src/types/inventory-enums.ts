@@ -27,3 +27,11 @@ export const INVENTORY_TX_DIRECTION_LABELS: Record<
   IN: 'Nhập',
   OUT: 'Xuất',
 };
+
+export const INVENTORY_TX_DIRECTION_TAG_COLORS: Record<
+  InventoryTransactionDirection,
+  'gold' | 'green'
+> = {
+  IN: 'gold',
+  OUT: 'green',
+};

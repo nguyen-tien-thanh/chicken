@@ -1,10 +1,8 @@
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
-import type { DefaultOptionType } from 'antd/es/select';
-import type { ReactNode } from 'react';
 import {
   Button,
-  Card,
   Col,
+  Collapse,
   Empty,
   Flex,
   Form,
@@ -18,6 +16,8 @@ import {
   Typography,
   theme,
 } from 'antd';
+import type { DefaultOptionType } from 'antd/es/select';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { InputMoney } from '@/components';
 import { useIsMobile } from '@/hooks';
@@ -45,51 +45,33 @@ type VoucherLineItemsEditorProps = {
 
 function FieldLabel({ children }: { children: ReactNode }) {
   return (
-    <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 4 }}>
+    <Text
+      type="secondary"
+      style={{ fontSize: 12, display: 'block', marginBottom: 4 }}
+    >
       {children}
     </Text>
   );
 }
 
-function MobileLineCard({
+function MobileLineFields({
   row,
-  index,
   productOptions,
   productsLoading,
   onSearchProduct,
   onUpdateLine,
-  onRemoveLine,
 }: {
   row: VoucherLineItem;
-  index: number;
   productOptions: DefaultOptionType[];
   productsLoading?: boolean;
   onSearchProduct: (value: string) => void;
   onUpdateLine: VoucherLineItemsEditorProps['onUpdateLine'];
-  onRemoveLine: (key: number) => void;
 }) {
   const { token } = theme.useToken();
   const lineAmount = row.quantity * row.unit_price;
 
   return (
-    <Card
-      size="small"
-      style={{ width: '100%' }}
-      styles={{ body: { display: 'flex', flexDirection: 'column', gap: token.marginSM } }}
-    >
-      <Flex justify="space-between" align="center">
-        <Text strong>Dòng {index + 1}</Text>
-        <Button
-          danger
-          type="text"
-          size="small"
-          icon={<MinusCircleOutlined />}
-          onClick={() => onRemoveLine(row.key)}
-        >
-          Xoá
-        </Button>
-      </Flex>
-
+    <Flex vertical gap={token.marginSM}>
       <div>
         <FieldLabel>Sản phẩm</FieldLabel>
         <Select
@@ -133,7 +115,9 @@ function MobileLineCard({
         <FieldLabel>Đơn giá</FieldLabel>
         <InputMoney
           value={row.unit_price}
-          onChange={v => onUpdateLine(row.key, 'unit_price', (v as number) ?? 0)}
+          onChange={v =>
+            onUpdateLine(row.key, 'unit_price', (v as number) ?? 0)
+          }
           style={{ width: '100%' }}
         />
       </div>
@@ -151,7 +135,7 @@ function MobileLineCard({
           onChange={e => onUpdateLine(row.key, 'note', e.target.value)}
         />
       </div>
-    </Card>
+    </Flex>
   );
 }
 
@@ -167,6 +151,25 @@ export function VoucherLineItemsEditor({
   hint = 'Thêm sản phẩm, số lượng, đơn giá. Hệ thống tự tính thành tiền.',
 }: VoucherLineItemsEditorProps) {
   const isMobile = useIsMobile();
+  const lineKeys = lines.map(row => String(row.key));
+  const [activeLineKeys, setActiveLineKeys] = useState(lineKeys);
+  const prevLineKeysRef = useRef(lineKeys);
+
+  useEffect(() => {
+    const prevKeys = prevLineKeysRef.current;
+    const addedKeys = lineKeys.filter(key => !prevKeys.includes(key));
+    const removedKeys = prevKeys.filter(key => !lineKeys.includes(key));
+
+    if (addedKeys.length === 1 && prevKeys.length > 0) {
+      setActiveLineKeys(addedKeys);
+    } else if (addedKeys.length > 0 && prevKeys.length === 0) {
+      setActiveLineKeys(lineKeys);
+    } else if (removedKeys.length > 0) {
+      setActiveLineKeys(prev => prev.filter(key => lineKeys.includes(key)));
+    }
+
+    prevLineKeysRef.current = lineKeys;
+  }, [lineKeys.join(',')]);
 
   const columns = [
     {
@@ -226,7 +229,9 @@ export function VoucherLineItemsEditor({
       render: (_: unknown, row: VoucherLineItem) => (
         <InputMoney
           value={row.unit_price}
-          onChange={v => onUpdateLine(row.key, 'unit_price', (v as number) ?? 0)}
+          onChange={v =>
+            onUpdateLine(row.key, 'unit_price', (v as number) ?? 0)
+          }
         />
       ),
     },
@@ -272,18 +277,7 @@ export function VoucherLineItemsEditor({
         size="small"
         style={{ width: '100%', display: 'flex' }}
       >
-        {!isMobile ? (
-          <Text type="secondary">{hint}</Text>
-        ) : null}
-
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={onAddLine}
-          block={isMobile}
-        >
-          Thêm dòng
-        </Button>
+        {!isMobile ? <Text type="secondary">{hint}</Text> : null}
 
         {isMobile ? (
           lines.length === 0 ? (
@@ -292,20 +286,54 @@ export function VoucherLineItemsEditor({
               description="Chưa có dòng hàng. Nhấn Thêm dòng để bắt đầu."
             />
           ) : (
-            <Flex vertical gap="small">
-              {lines.map((row, index) => (
-                <MobileLineCard
-                  key={row.key}
-                  row={row}
-                  index={index}
-                  productOptions={productOptions}
-                  productsLoading={productsLoading}
-                  onSearchProduct={onSearchProduct}
-                  onUpdateLine={onUpdateLine}
-                  onRemoveLine={onRemoveLine}
-                />
-              ))}
-            </Flex>
+            <Collapse
+              activeKey={activeLineKeys}
+              onChange={keys =>
+                setActiveLineKeys(Array.isArray(keys) ? keys : [keys])
+              }
+              items={lines.map((row, index) => {
+                const productLabel = productOptions.find(
+                  o => o.value === row.product_id,
+                )?.label;
+                const lineAmount = row.quantity * row.unit_price;
+
+                return {
+                  key: String(row.key),
+                  label: (
+                    <Flex vertical gap={2}>
+                      <Text strong>Dòng {index + 1}</Text>
+                      <Text type="secondary" ellipsis>
+                        {[productLabel, `${row.quantity} ${row.quantity_unit}`]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </Text>
+                    </Flex>
+                  ),
+                  extra: (
+                    <Flex align="center" gap="small" onClick={e => e.stopPropagation()}>
+                      <Text strong>{formatMoney(lineAmount)}</Text>
+                      <Button
+                        danger
+                        size="small"
+                        icon={<MinusCircleOutlined />}
+                        onClick={() => onRemoveLine(row.key)}
+                      >
+                        Xoá
+                      </Button>
+                    </Flex>
+                  ),
+                  children: (
+                    <MobileLineFields
+                      row={row}
+                      productOptions={productOptions}
+                      productsLoading={productsLoading}
+                      onSearchProduct={onSearchProduct}
+                      onUpdateLine={onUpdateLine}
+                    />
+                  ),
+                };
+              })}
+            />
           )
         ) : (
           <Table
@@ -317,6 +345,15 @@ export function VoucherLineItemsEditor({
             scroll={{ x: true }}
           />
         )}
+
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={onAddLine}
+          block={isMobile}
+        >
+          Thêm dòng
+        </Button>
       </Space>
     </Form.Item>
   );

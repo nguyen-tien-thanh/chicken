@@ -1,7 +1,7 @@
 import { Form, Input, Select } from 'antd';
 
 import { LocationFormFields } from '@/components';
-import { BankNameOptions } from '@/types/bank-name-enum';
+import { bankOptions } from '@/types';
 
 export function SupplierFormFields() {
   return (
@@ -21,7 +21,13 @@ export function SupplierFormFields() {
       </Form.Item>
       <LocationFormFields />
       <Form.Item label="Tên ngân hàng" name="bank_name">
-        <Select options={BankNameOptions} showSearch />
+        <Select
+          options={bankOptions.map(bank => ({
+            label: `${bank.shortName} (${bank.name})`,
+            value: bank.code,
+          }))}
+          showSearch
+        />
       </Form.Item>
       <Form.Item label="Số tài khoản" name="bank_account">
         <Input />

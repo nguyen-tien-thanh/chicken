@@ -1,8 +1,9 @@
 import { Edit as AntdEdit, useForm } from '@refinedev/antd';
 import {
   useCreate,
-  useDelete,
+  useDeleteMany,
   useInvalidate,
+  useNavigation,
   useSelect,
   useUpdate,
   useWarnAboutChange,
@@ -45,6 +46,7 @@ function newRow(): VoucherLineItem {
 
 export const Edit = () => {
   const { notification } = App.useApp();
+  const { show } = useNavigation();
   const [lines, setLines] = useState<VoucherLineItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -57,12 +59,13 @@ export const Edit = () => {
   const { mutateAsync: updateItem } = useUpdate({
     successNotification: false,
   });
-  const { mutateAsync: deleteItem } = useDelete();
+  const { mutateAsync: deleteItems } = useDeleteMany();
   const invalidate = useInvalidate();
   const { setWarnWhen } = useWarnAboutChange();
 
   const { formProps, saveButtonProps, query } = useForm<ISale>({
     resource: 'sales',
+    redirect: 'show',
     meta: {
       select: '*,customer:customers(*),sale_items(*,product:products(*))',
     },
@@ -203,10 +206,15 @@ export const Edit = () => {
         const nextIds = new Set(
           validLines.map(r => r.id).filter(Boolean) as string[],
         );
-        for (const id of existingIds) {
-          if (!nextIds.has(id)) {
-            await deleteItem({ resource: 'sale_items', id });
-          }
+        const idsToDelete = Array.from(existingIds).filter(
+          id => !nextIds.has(id),
+        );
+        if (idsToDelete.length > 0) {
+          await deleteItems({
+            resource: 'sale_items',
+            ids: idsToDelete,
+            successNotification: false,
+          });
         }
 
         for (const row of validLines) {
@@ -245,6 +253,7 @@ export const Edit = () => {
         }
         setWarnWhen(false);
         notification.success({ message: 'Đã cập nhật phiếu bán' });
+        show('sales', saleId);
       } catch (e: unknown) {
         const msg =
           e && typeof e === 'object' && 'message' in e
@@ -258,7 +267,16 @@ export const Edit = () => {
   };
 
   return (
-    <AntdEdit isLoading={isSaving} saveButtonProps={saveButtonProps}>
+    <AntdEdit
+      isLoading={isSaving}
+      saveButtonProps={saveButtonProps}
+      footerButtons={({ defaultButtons }) => (
+        <>
+          <VoucherSummaryBox label="Tổng tiền (ước tính):" amount={subtotal} />
+          {defaultButtons}
+        </>
+      )}
+    >
       <Form {...formProps} layout="vertical" onFinish={onFinish}>
         <Form.Item
           label="Khách hàng"
@@ -329,10 +347,6 @@ export const Edit = () => {
           onUpdateLine={updateLine}
           onRemoveLine={removeLine}
           onAddLine={addLine}
-        />
-        <VoucherSummaryBox
-          label="Tổng thành tiền (ước tính):"
-          amount={subtotal}
         />
       </Form>
     </AntdEdit>

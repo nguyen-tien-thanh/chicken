@@ -4,6 +4,7 @@ import { Form, Input } from 'antd';
 export const Edit = () => {
   const { formProps, saveButtonProps } = useForm({
     resource: 'product_categories',
+    redirect: 'show',
   });
 
   return (

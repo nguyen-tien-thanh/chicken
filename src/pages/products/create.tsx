@@ -8,6 +8,7 @@ import { ProductFormFields } from './form-fields';
 export const Create = () => {
   const { formProps, saveButtonProps } = useForm({
     resource: 'products',
+    redirect: 'show',
     defaultFormValues: {
       type: PRODUCT_TYPE_OPTIONS[0].value,
     },

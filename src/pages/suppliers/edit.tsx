@@ -6,6 +6,7 @@ import { SupplierFormFields } from './form-fields';
 export const Edit = () => {
   const { formProps, saveButtonProps } = useForm({
     resource: 'suppliers',
+    redirect: 'show',
   });
 
   return (

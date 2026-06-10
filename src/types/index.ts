@@ -1,8 +1,9 @@
-export { BankName } from './bank-name-enum';
+export { bankOptions } from './bank-name-enum';
 export type { ICustomer } from './customer';
 export type { HttpMethod } from './http-method';
 export {
   INVENTORY_TX_DIRECTION_LABELS,
+  INVENTORY_TX_DIRECTION_TAG_COLORS,
   INVENTORY_TX_TYPE_LABELS,
 } from './inventory-enums';
 export type {

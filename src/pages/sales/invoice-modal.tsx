@@ -21,11 +21,7 @@ import {
   type ISaleItem,
   type SaleStatus,
 } from '@/types';
-import {
-  buildSaleInvoiceQrPayment,
-  DATETIME_FORMAT,
-  formatMoney,
-} from '@/utils';
+import { DATETIME_FORMAT, formatMoney, buildSaleInvoiceQrPayment } from '@/utils';
 
 interface IInvoice extends ISale {
   payment?: {
