@@ -12,6 +12,7 @@ import type { FormProps } from 'antd';
 import { App, DatePicker, Flex, Form, Select } from 'antd';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
 
 import {
   VoucherLineItemsEditor,
@@ -69,7 +70,7 @@ export const Edit = () => {
 
   const { formProps, saveButtonProps, query, form } = useForm<ISale>({
     resource: 'sales',
-    redirect: 'show',
+    redirect: false,
     meta: {
       select: '*,customer:customers(*),sale_items(*,product:products(*))',
     },
@@ -260,14 +261,8 @@ export const Edit = () => {
 
         await invalidate({ resource: 'sales', invalidates: ['list'] });
         await invalidate({ resource: 'sale_items', invalidates: ['list'] });
-        const refetched = await query?.refetch();
-        const fresh = refetched?.data?.data as ISale | undefined;
-        if (fresh) {
-          nextKey = 1;
-          setLines((fresh.sale_items ?? []).map(fromExisting));
-        }
-        setWarnWhen(false);
         notification.success({ message: 'Đã cập nhật phiếu bán' });
+        flushSync(() => setWarnWhen(false));
         show('sales', saleId);
       } catch (e: unknown) {
         const msg =
