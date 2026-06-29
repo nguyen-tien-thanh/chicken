@@ -85,12 +85,15 @@ export const Edit = () => {
     }
   }, [query?.data?.data]);
 
+  const supplierId = query?.data?.data?.supplier_id;
+
   const {
     options: supplierOptions,
     onSearch: onSearchSupplier,
     query: suppliersQuery,
   } = useSelect({
     resource: 'suppliers',
+    ...(supplierId ? { defaultValue: supplierId } : {}),
     optionLabel: (item: ISupplier) => `${item.name} (${item.phone})`,
     optionValue: (item: ISupplier) => item.id,
   });
@@ -253,7 +256,9 @@ export const Edit = () => {
 
   return (
     <AntdEdit
-      isLoading={isSaving}
+      isLoading={
+        isSaving || suppliersQuery.isFetching || productsQuery.isFetching
+      }
       saveButtonProps={saveButtonProps}
       footerButtons={({ defaultButtons }) => (
         <>

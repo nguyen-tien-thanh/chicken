@@ -105,7 +105,7 @@ function MobileLineFields({
           <Select
             value={row.quantity_unit}
             options={QUANTITY_UNIT_OPTIONS}
-            style={{ width: '100%' }}
+            style={{ width: '100%', height: '36px' }}
             onChange={v => onUpdateLine(row.key, 'quantity_unit', v)}
           />
         </Col>
@@ -126,15 +126,6 @@ function MobileLineFields({
         <Text type="secondary">Thành tiền</Text>
         <Text strong>{formatMoney(lineAmount)}</Text>
       </Flex>
-
-      <div>
-        <FieldLabel>Ghi chú</FieldLabel>
-        <Input
-          placeholder="Tuỳ chọn"
-          value={row.note}
-          onChange={e => onUpdateLine(row.key, 'note', e.target.value)}
-        />
-      </div>
     </Flex>
   );
 }
@@ -310,7 +301,11 @@ export function VoucherLineItemsEditor({
                     </Flex>
                   ),
                   extra: (
-                    <Flex align="center" gap="small" onClick={e => e.stopPropagation()}>
+                    <Flex
+                      align="center"
+                      gap="small"
+                      onClick={e => e.stopPropagation()}
+                    >
                       <Text strong>{formatMoney(lineAmount)}</Text>
                       <Button
                         danger

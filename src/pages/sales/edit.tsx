@@ -78,12 +78,15 @@ export const Edit = () => {
     }
   }, [query?.data?.data]);
 
+  const customerId = query?.data?.data?.customer_id;
+
   const {
     options: customerOptions,
     onSearch: onSearchCustomer,
     query: customersQuery,
   } = useSelect({
     resource: 'customers',
+    ...(customerId ? { defaultValue: customerId } : {}),
     optionLabel: (item: ICustomer) =>
       `${item.name ?? item.phone} (${item.phone})`,
     optionValue: (item: ICustomer) => item.id,
@@ -268,7 +271,9 @@ export const Edit = () => {
 
   return (
     <AntdEdit
-      isLoading={isSaving}
+      isLoading={
+        isSaving || customersQuery.isFetching || productsQuery.isFetching
+      }
       saveButtonProps={saveButtonProps}
       footerButtons={({ defaultButtons }) => (
         <>
