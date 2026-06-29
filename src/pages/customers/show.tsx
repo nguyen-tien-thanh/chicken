@@ -24,7 +24,7 @@ import {
   type ISale,
   type SaleStatus,
 } from '@/types';
-import { DATETIME_FORMAT, joinDetail, showMoney } from '@/utils';
+import { DATETIME_FORMAT, formatVietnamesePhone, joinDetail, showMoney } from '@/utils';
 
 const statusColor: Record<
   SaleStatus,
@@ -62,7 +62,7 @@ export const Show = () => {
   return (
     <MobileShowPage
       loading={isLoading}
-      title={record?.phone}
+      title={formatVietnamesePhone(record?.phone)}
       actions={
         <>
           <ListButton />
@@ -75,7 +75,7 @@ export const Show = () => {
       <MobileShowDetails
         items={[
           { label: 'Tên khách hàng', value: record?.name },
-          { label: 'Điện thoại', value: record?.phone },
+          { label: 'Điện thoại', value: formatVietnamesePhone(record?.phone) },
           {
             label: 'Địa chỉ',
             value: record?.address,

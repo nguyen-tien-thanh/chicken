@@ -1,6 +1,7 @@
 import { useIsMobile } from '@/hooks';
 import { Layout as AntdLayout, Grid } from 'antd';
 import React from 'react';
+import { useLocation } from 'react-router';
 
 import { ThemedLayoutContextProvider } from '@refinedev/antd';
 import { ThemedBottomNavigation } from './bottom-navigation';
@@ -33,8 +34,10 @@ export const ThemedLayout: React.FC<RefineThemedLayoutProps> = ({
   const BottomNavigationToRender = BottomNavigation ?? ThemedBottomNavigation;
   const isSmall = typeof breakpoint.sm === 'undefined' ? true : breakpoint.sm;
   const isMobile = useIsMobile();
+  const { pathname } = useLocation();
+  const isCrudForm = /\/(create|edit)(\/|$)/.test(pathname);
   const hasSider = !!SiderToRender({ Title });
-  const contentPadding = isSmall ? 24 : 12;
+  const contentPadding = isCrudForm ? (isSmall ? 12 : 8) : isSmall ? 24 : 12;
   const mobileBottomPadding = isMobile
     ? `calc(${contentPadding + 58}px + env(safe-area-inset-bottom, 0px))`
     : contentPadding;

@@ -9,7 +9,7 @@ import {
   useWarnAboutChange,
 } from '@refinedev/core';
 import type { FormProps } from 'antd';
-import { App, Col, DatePicker, Form, Input, Row, Select } from 'antd';
+import { App, Col, DatePicker, Flex, Form, Input, Row, Select } from 'antd';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 
@@ -21,7 +21,7 @@ import {
 } from '@/components';
 import type { ICustomer, IProduct, ISale, ISaleItem } from '@/types';
 import { SALE_STATUS_OPTIONS, type SaleStatus } from '@/types';
-import { DATETIME_FORMAT } from '@/utils';
+import { DATETIME_FORMAT, formatVietnamesePhone } from '@/utils';
 
 let nextKey = 1;
 function fromExisting(item: ISaleItem): VoucherLineItem {
@@ -88,7 +88,9 @@ export const Edit = () => {
     resource: 'customers',
     ...(customerId ? { defaultValue: customerId } : {}),
     optionLabel: (item: ICustomer) =>
-      `${item.name ?? item.phone} (${item.phone})`,
+      `${
+        item.name ?? formatVietnamesePhone(item.phone)
+      } (${formatVietnamesePhone(item.phone)})`,
     optionValue: (item: ICustomer) => item.id,
     onSearch: value => {
       const q = value.trim();
@@ -279,10 +281,12 @@ export const Edit = () => {
       }
       saveButtonProps={saveButtonProps}
       footerButtons={({ defaultButtons }) => (
-        <>
+        <Flex vertical gap={8}>
           <VoucherSummaryBox label="Tổng tiền:" amount={total} />
-          {defaultButtons}
-        </>
+          <Flex justify="flex-end" gap={8}>
+            {defaultButtons}
+          </Flex>
+        </Flex>
       )}
     >
       <Form {...formProps} layout="vertical" onFinish={onFinish}>

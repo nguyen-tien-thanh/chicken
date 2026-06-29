@@ -13,7 +13,7 @@ import { ResponsiveTable, type ResponsiveColumnType } from '@/components';
 import { RelativeTime } from '@/components/relative-time';
 import { MEDIA_MD_DOWN, useMediaQuery } from '@/hooks';
 import { SALE_STATUS_LABELS, type ISale, type SaleStatus } from '@/types';
-import { DATETIME_FORMAT, formatMoney } from '@/utils';
+import { DATETIME_FORMAT, formatMoney, formatVietnamesePhone } from '@/utils';
 import { useNavigation } from '@refinedev/core';
 
 const statusColor: Record<SaleStatus, string> = {
@@ -68,7 +68,7 @@ export const List = () => {
       render: (_, r) =>
         r.customer ? (
           <Link to={`/customers/show/${r.customer.id}`}>
-            {r.customer.name ?? r.customer.phone}
+            {r.customer.name ?? formatVietnamesePhone(r.customer.phone)}
           </Link>
         ) : (
           r.customer_id

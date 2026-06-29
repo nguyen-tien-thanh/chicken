@@ -15,6 +15,7 @@ import {
   Col,
   DatePicker,
   Divider,
+  Flex,
   Form,
   Input,
   Modal,
@@ -33,7 +34,11 @@ import {
 } from '@/components';
 import type { ICustomer, IProduct } from '@/types';
 import { SALE_STATUS_OPTIONS, type SaleStatus } from '@/types';
-import { DATETIME_FORMAT } from '@/utils';
+import {
+  DATETIME_FORMAT,
+  formatVietnamesePhone,
+  normalizeVietnamesePhone,
+} from '@/utils';
 
 type FormValues = {
   customer_id?: string;
@@ -63,6 +68,7 @@ export const Create = () => {
 
   const [lines, setLines] = useState<VoucherLineItem[]>([newRow()]);
   const [createCustomerOpen, setCreateCustomerOpen] = useState(false);
+  const [customerSelectOpen, setCustomerSelectOpen] = useState(false);
   const [customerSearchText, setCustomerSearchText] = useState('');
   const [createCustomerForm] = Form.useForm();
   const [isSaving, setIsSaving] = useState(false);
@@ -96,7 +102,9 @@ export const Create = () => {
   } = useSelect({
     resource: 'customers',
     optionLabel: (item: ICustomer) =>
-      `${item.name ?? item.phone} (${item.phone})`,
+      `${
+        item.name ?? formatVietnamesePhone(item.phone)
+      } (${formatVietnamesePhone(item.phone)})`,
     optionValue: (item: ICustomer) => item.id,
     onSearch: value => {
       const q = value.trim();
@@ -114,6 +122,7 @@ export const Create = () => {
   });
 
   function handleOpenCreateCustomer() {
+    setCustomerSelectOpen(false);
     createCustomerForm.setFieldsValue({ phone: customerSearchText, name: '' });
     setCreateCustomerOpen(true);
   }
@@ -121,12 +130,19 @@ export const Create = () => {
   function handleCreateCustomer() {
     createCustomerForm.validateFields().then(values => {
       createCustomer(
-        { resource: 'customers', values },
+        {
+          resource: 'customers',
+          values: {
+            ...values,
+            phone: normalizeVietnamesePhone(String(values.phone ?? '')),
+          },
+        },
         {
           onSuccess: data => {
             form?.setFieldValue('customer_id', data.data.id);
             customersQuery.refetch();
             setCreateCustomerOpen(false);
+            setCustomerSelectOpen(false);
             createCustomerForm.resetFields();
           },
         },
@@ -277,10 +293,12 @@ export const Create = () => {
       isLoading={isSaving}
       saveButtonProps={saveButtonProps}
       footerButtons={({ defaultButtons }) => (
-        <>
+        <Flex vertical gap={8}>
           <VoucherSummaryBox label="Tổng tiền:" amount={total} />
-          {defaultButtons}
-        </>
+          <Flex justify="flex-end" gap={8}>
+            {defaultButtons}
+          </Flex>
+        </Flex>
       )}
     >
       <Form {...formProps} layout="vertical" onFinish={onFinish}>
@@ -293,6 +311,9 @@ export const Create = () => {
             options={customerOptions}
             loading={customersQuery.isFetching}
             showSearch
+            open={customerSelectOpen}
+            onOpenChange={setCustomerSelectOpen}
+            onChange={() => setCustomerSelectOpen(false)}
             onSearch={v => {
               setCustomerSearchText(v);
               onSearchCustomer(v);
@@ -308,6 +329,7 @@ export const Create = () => {
                   type="link"
                   icon={<UserAddOutlined />}
                   style={{ width: '100%', textAlign: 'left' }}
+                  onMouseDown={e => e.preventDefault()}
                   onClick={handleOpenCreateCustomer}
                 >
                   Tạo khách hàng mới

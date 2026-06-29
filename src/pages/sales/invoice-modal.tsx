@@ -21,7 +21,12 @@ import {
   type ISaleItem,
   type SaleStatus,
 } from '@/types';
-import { DATETIME_FORMAT, formatMoney, buildSaleInvoiceQrPayment } from '@/utils';
+import {
+  DATETIME_FORMAT,
+  formatMoney,
+  formatVietnamesePhone,
+  buildSaleInvoiceQrPayment,
+} from '@/utils';
 
 interface IInvoice extends ISale {
   payment?: {
@@ -119,9 +124,7 @@ export const SaleInvoiceModal = ({ sale_id }: Props) => {
       : '';
 
     const customer = invoice.customer
-      ? `${invoice.customer.name ?? invoice.customer.phone} — ${
-          invoice.customer.phone
-        }`
+      ? `${invoice.customer.name ?? formatVietnamesePhone(invoice.customer.phone)} — ${formatVietnamesePhone(invoice.customer.phone)}`
       : '';
     const sale_date = invoice.sale_date
       ? dayjs(invoice.sale_date).format(DATETIME_FORMAT)
@@ -228,9 +231,7 @@ export const SaleInvoiceModal = ({ sale_id }: Props) => {
           </Descriptions.Item>
           <Descriptions.Item label="Khách hàng" span={2}>
             {invoice?.customer &&
-              `${invoice.customer.name ?? invoice.customer.phone} — ${
-                invoice.customer.phone
-              }`}
+              `${invoice.customer.name ?? formatVietnamesePhone(invoice.customer.phone)} — ${formatVietnamesePhone(invoice.customer.phone)}`}
           </Descriptions.Item>
         </Descriptions>
 

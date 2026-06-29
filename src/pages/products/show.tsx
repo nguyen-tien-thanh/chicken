@@ -24,7 +24,13 @@ import {
   type ISaleItem,
   type ProductType,
 } from '@/types';
-import { DATE_FORMAT, DATETIME_FORMAT, joinDetail, showMoney } from '@/utils';
+import {
+  DATE_FORMAT,
+  DATETIME_FORMAT,
+  formatVietnamesePhone,
+  joinDetail,
+  showMoney,
+} from '@/utils';
 
 type PurchaseItemRow = IPurchaseItem & {
   purchase?: {
@@ -173,7 +179,8 @@ export const Show = () => {
           renderDescription={row =>
             joinDetail(
               row.sale?.customer &&
-                (row.sale.customer.name ?? row.sale.customer.phone),
+                (row.sale.customer.name ??
+                  formatVietnamesePhone(row.sale.customer.phone)),
               row.quantity != null &&
                 `${row.quantity} ${row.quantity_unit ?? ''}`.trim(),
               showMoney(row.amount),

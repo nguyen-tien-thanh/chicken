@@ -17,7 +17,7 @@ import {
 } from '@/components';
 import { RelativeTime } from '@/components/relative-time';
 import { SALE_STATUS_LABELS, type ISale, type SaleStatus } from '@/types';
-import { DATETIME_FORMAT, joinDetail, showMoney } from '@/utils';
+import { DATETIME_FORMAT, formatVietnamesePhone, joinDetail, showMoney } from '@/utils';
 
 import { SaleInvoiceModal } from './invoice-modal';
 
@@ -66,9 +66,10 @@ export const Show = () => {
             label: 'Khách hàng',
             value: record?.customer && (
               <Link to={`/customers/show/${record.customer.id}`}>
-                {(record.customer.name ?? record.customer.phone) +
+                {(record.customer.name ??
+                  formatVietnamesePhone(record.customer.phone)) +
                   ' — ' +
-                  record.customer.phone}
+                  formatVietnamesePhone(record.customer.phone)}
               </Link>
             ),
           },

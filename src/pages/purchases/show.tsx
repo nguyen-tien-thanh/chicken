@@ -16,7 +16,7 @@ import {
 } from '@/components';
 import { RelativeTime } from '@/components/relative-time';
 import type { IPurchase } from '@/types';
-import { DATE_FORMAT, joinDetail, showMoney } from '@/utils';
+import { DATE_FORMAT, formatVietnamesePhone, joinDetail, showMoney } from '@/utils';
 
 export const Show = () => {
   const { list } = useNavigation();
@@ -53,7 +53,8 @@ export const Show = () => {
             label: 'Nhà cung cấp',
             value: record?.supplier && (
               <Link to={`/suppliers/show/${record.supplier.id}`}>
-                {record.supplier.name} — {record.supplier.phone}
+                {record.supplier.name} —{' '}
+                {formatVietnamesePhone(record.supplier.phone)}
               </Link>
             ),
           },

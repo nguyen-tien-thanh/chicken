@@ -6,6 +6,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 
 import { MobileShowList } from '@/components';
 import type { ICustomer } from '@/types';
+import { formatVietnamesePhone } from '@/utils';
 import { SearchOutlined } from '@ant-design/icons';
 
 const PAGE_SIZE = 20;
@@ -119,7 +120,7 @@ export const List = () => {
             getKey={row => row.id}
             onItemClick={row => show('customers', row.id)}
             renderTitle={row => row.name}
-            renderDescription={row => row.phone}
+            renderDescription={row => formatVietnamesePhone(row.phone)}
           />
         </InfiniteScroll>
       )}

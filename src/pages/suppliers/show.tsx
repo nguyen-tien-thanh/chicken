@@ -21,7 +21,13 @@ import {
 } from '@/components';
 import { RelativeTime } from '@/components/relative-time';
 import { bankOptions, type IPurchase, type ISupplier } from '@/types';
-import { buildVietQrImage, DATE_FORMAT, joinDetail, showMoney } from '@/utils';
+import {
+  buildVietQrImage,
+  DATE_FORMAT,
+  formatVietnamesePhone,
+  joinDetail,
+  showMoney,
+} from '@/utils';
 
 export const Show = () => {
   const navigate = useNavigate();
@@ -76,7 +82,7 @@ export const Show = () => {
       <MobileShowDetails
         items={[
           { label: 'Tên nhà cung cấp', value: record?.name },
-          { label: 'Điện thoại', value: record?.phone },
+          { label: 'Điện thoại', value: formatVietnamesePhone(record?.phone) },
           {
             label: 'Tên ngân hàng',
             value: bankOptions.find(bank => bank.code === record?.bank_name)

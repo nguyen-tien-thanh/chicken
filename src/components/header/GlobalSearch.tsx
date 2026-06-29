@@ -4,6 +4,7 @@ import type { IPurchase } from '@/types/purchase';
 import type { ISale } from '@/types/sale';
 import type { ISupplier } from '@/types/supplier';
 import { formatMoney } from '@/utils/formatMoney';
+import { formatVietnamesePhone } from '@/utils/normalizePhone';
 import { normalizeVietnamese } from '@/utils/normalizeVietnamese';
 import {
   AppstoreOutlined,
@@ -156,7 +157,7 @@ export const GlobalSearch: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span>{highlight(c.name ?? '', query)}</span>
               <Text type="secondary" style={{ fontSize: 12 }}>
-                {c.phone}
+                {formatVietnamesePhone(c.phone)}
               </Text>
             </div>
           ),
@@ -179,7 +180,7 @@ export const GlobalSearch: React.FC = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <span>{highlight(s.name, query)}</span>
               <Text type="secondary" style={{ fontSize: 12 }}>
-                {s.phone}
+                {formatVietnamesePhone(s.phone)}
               </Text>
             </div>
           ),

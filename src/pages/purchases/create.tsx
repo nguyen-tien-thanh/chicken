@@ -12,6 +12,7 @@ import {
   App,
   Col,
   DatePicker,
+  Flex,
   Form,
   Input,
   InputNumber,
@@ -29,7 +30,7 @@ import {
   type VoucherLineItem,
 } from '@/components';
 import type { IProduct, ISupplier } from '@/types';
-import { DATE_FORMAT } from '@/utils';
+import { DATE_FORMAT, formatVietnamesePhone } from '@/utils';
 
 type FormValues = {
   supplier_id?: string;
@@ -84,7 +85,8 @@ export const Create = () => {
     query: suppliersQuery,
   } = useSelect({
     resource: 'suppliers',
-    optionLabel: (item: ISupplier) => `${item.name} (${item.phone})`,
+    optionLabel: (item: ISupplier) =>
+      `${item.name} (${formatVietnamesePhone(item.phone)})`,
     optionValue: (item: ISupplier) => item.id,
   });
 
@@ -221,10 +223,12 @@ export const Create = () => {
       isLoading={isSaving}
       saveButtonProps={saveButtonProps}
       footerButtons={({ defaultButtons }) => (
-        <>
+        <Flex vertical gap={8}>
           <VoucherSummaryBox label="Tổng tiền:" amount={total} />
-          {defaultButtons}
-        </>
+          <Flex justify="flex-end" gap={8}>
+            {defaultButtons}
+          </Flex>
+        </Flex>
       )}
     >
       <Form {...formProps} layout="vertical" onFinish={onFinish}>
