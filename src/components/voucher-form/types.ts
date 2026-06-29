@@ -2,7 +2,7 @@ export type VoucherLineItem = {
   key: number;
   id?: string;
   product_id?: string;
-  quantity: number;
+  quantity: number | null;
   quantity_unit: 'kg' | 'con';
   unit_price: number;
   note?: string;

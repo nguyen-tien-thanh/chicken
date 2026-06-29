@@ -63,7 +63,7 @@ export const Edit = () => {
   const invalidate = useInvalidate();
   const { setWarnWhen } = useWarnAboutChange();
 
-  const { formProps, saveButtonProps, query } = useForm<ISale>({
+  const { formProps, saveButtonProps, query, form } = useForm<ISale>({
     resource: 'sales',
     redirect: 'show',
     meta: {
@@ -149,8 +149,11 @@ export const Edit = () => {
 
   const subtotal = lines.reduce((sum, row) => {
     if (!row.product_id) return sum;
-    return sum + row.quantity * row.unit_price;
+    return sum + (row.quantity ?? 0) * row.unit_price;
   }, 0);
+
+  const discountAmount = Number(Form.useWatch('discount_amount', form) ?? 0);
+  const total = Math.max(0, subtotal - discountAmount);
 
   const onFinish: FormProps['onFinish'] = values => {
     const sale = query?.data?.data;
@@ -178,7 +181,7 @@ export const Edit = () => {
     const discount_amount = Number(v.discount_amount ?? 0);
     const paid_amount = Number(v.paid_amount ?? 0);
     const subtotal_amount = validLines.reduce(
-      (s, row) => s + row.quantity * row.unit_price,
+      (s, row) => s + (row.quantity ?? 0) * row.unit_price,
       0,
     );
     const final_amount = Math.max(0, subtotal_amount - discount_amount);
@@ -221,10 +224,10 @@ export const Edit = () => {
         }
 
         for (const row of validLines) {
-          const amount = row.quantity * row.unit_price;
+          const amount = (row.quantity ?? 0) * row.unit_price;
           const itemValues = {
             product_id: row.product_id!,
-            quantity: row.quantity,
+            quantity: row.quantity!,
             quantity_unit: row.quantity_unit,
             unit_price: row.unit_price,
             amount,
@@ -277,7 +280,7 @@ export const Edit = () => {
       saveButtonProps={saveButtonProps}
       footerButtons={({ defaultButtons }) => (
         <>
-          <VoucherSummaryBox label="Tổng tiền (ước tính):" amount={subtotal} />
+          <VoucherSummaryBox label="Tổng tiền:" amount={total} />
           {defaultButtons}
         </>
       )}

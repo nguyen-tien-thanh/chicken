@@ -22,7 +22,7 @@ import {
   Select,
 } from 'antd';
 import dayjs from 'dayjs';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
 import {
@@ -45,12 +45,13 @@ type FormValues = {
 };
 
 let nextKey = 1;
-function newRow(): VoucherLineItem {
+function newRow(defaultProductId?: string): VoucherLineItem {
   return {
     key: nextKey++,
     quantity_unit: 'kg',
-    quantity: 1,
+    quantity: null,
     unit_price: 0,
+    ...(defaultProductId ? { product_id: defaultProductId } : {}),
   };
 }
 
@@ -143,6 +144,18 @@ export const Create = () => {
     optionValue: (item: IProduct) => item.id,
   });
 
+  const defaultProductId = productOptions[0]?.value as string | undefined;
+
+  useEffect(() => {
+    if (!defaultProductId) return;
+    setLines(prev => {
+      if (prev.every(row => row.product_id)) return prev;
+      return prev.map(row =>
+        row.product_id ? row : { ...row, product_id: defaultProductId },
+      );
+    });
+  }, [defaultProductId]);
+
   function updateLine<K extends keyof VoucherLineItem>(
     key: number,
     field: K,
@@ -168,17 +181,20 @@ export const Create = () => {
               product_id: last.product_id,
               quantity_unit: last.quantity_unit,
               unit_price: last.unit_price,
-              quantity: 1,
+              quantity: null,
             }
-          : newRow(),
+          : newRow(defaultProductId),
       ];
     });
   }
 
   const subtotal = lines.reduce((sum, row) => {
     if (!row.product_id) return sum;
-    return sum + row.quantity * row.unit_price;
+    return sum + (row.quantity ?? 0) * row.unit_price;
   }, 0);
+
+  const discountAmount = Number(Form.useWatch('discount_amount', form) ?? 0);
+  const total = Math.max(0, subtotal - discountAmount);
 
   const onFinish: FormProps['onFinish'] = values => {
     const v = values as FormValues;
@@ -189,13 +205,17 @@ export const Create = () => {
       });
       return Promise.resolve();
     }
+    if (validLines.some(row => row.quantity == null)) {
+      notification.warning({ message: 'Nhập số lượng cho từng dòng' });
+      return Promise.resolve();
+    }
     const discount_amount = Number(v.discount_amount ?? 0);
     const paid_amount = Number(v.paid_amount ?? 0);
     const items = validLines.map(row => {
-      const amount = row.quantity * row.unit_price;
+      const amount = row.quantity! * row.unit_price;
       return {
         product_id: row.product_id!,
-        quantity: row.quantity,
+        quantity: row.quantity!,
         quantity_unit: row.quantity_unit,
         unit_price: row.unit_price,
         amount,
@@ -258,7 +278,7 @@ export const Create = () => {
       saveButtonProps={saveButtonProps}
       footerButtons={({ defaultButtons }) => (
         <>
-          <VoucherSummaryBox label="Tổng tiền (ước tính):" amount={subtotal} />
+          <VoucherSummaryBox label="Tổng tiền:" amount={total} />
           {defaultButtons}
         </>
       )}

@@ -68,7 +68,7 @@ function MobileLineFields({
   onUpdateLine: VoucherLineItemsEditorProps['onUpdateLine'];
 }) {
   const { token } = theme.useToken();
-  const lineAmount = row.quantity * row.unit_price;
+  const lineAmount = (row.quantity ?? 0) * row.unit_price;
 
   return (
     <Flex vertical gap={token.marginSM}>
@@ -97,7 +97,7 @@ function MobileLineFields({
             step={0.1}
             style={{ width: '100%' }}
             value={row.quantity}
-            onChange={v => onUpdateLine(row.key, 'quantity', v ?? 0)}
+            onChange={v => onUpdateLine(row.key, 'quantity', v ?? null)}
           />
         </Col>
         <Col span={10}>
@@ -198,7 +198,7 @@ export function VoucherLineItemsEditor({
           step={0.1}
           style={{ width: '100%' }}
           value={row.quantity}
-          onChange={v => onUpdateLine(row.key, 'quantity', v ?? 0)}
+          onChange={v => onUpdateLine(row.key, 'quantity', v ?? null)}
         />
       ),
     },
@@ -230,7 +230,7 @@ export function VoucherLineItemsEditor({
       title: 'Thành tiền',
       width: 160,
       render: (_: unknown, row: VoucherLineItem) => (
-        <Text strong>{formatMoney(row.quantity * row.unit_price)}</Text>
+        <Text strong>{formatMoney((row.quantity ?? 0) * row.unit_price)}</Text>
       ),
     },
     {
@@ -286,7 +286,7 @@ export function VoucherLineItemsEditor({
                 const productLabel = productOptions.find(
                   o => o.value === row.product_id,
                 )?.label;
-                const lineAmount = row.quantity * row.unit_price;
+                const lineAmount = (row.quantity ?? 0) * row.unit_price;
 
                 return {
                   key: String(row.key),
@@ -294,7 +294,12 @@ export function VoucherLineItemsEditor({
                     <Flex vertical gap={2}>
                       <Text strong>Dòng {index + 1}</Text>
                       <Text type="secondary" ellipsis>
-                        {[productLabel, `${row.quantity} ${row.quantity_unit}`]
+                        {[
+                          productLabel,
+                          row.quantity != null
+                            ? `${row.quantity} ${row.quantity_unit}`
+                            : null,
+                        ]
                           .filter(Boolean)
                           .join(' · ')}
                       </Text>

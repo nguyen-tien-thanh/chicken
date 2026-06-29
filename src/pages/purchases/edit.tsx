@@ -142,7 +142,7 @@ export const Edit = () => {
 
   const total = lines.reduce((sum, row) => {
     if (!row.product_id) return sum;
-    return sum + row.quantity * row.unit_price;
+    return sum + (row.quantity ?? 0) * row.unit_price;
   }, 0);
 
   const onFinish: FormProps['onFinish'] = values => {
@@ -169,7 +169,7 @@ export const Edit = () => {
         : dayjs(pd as string).toISOString();
 
     const total_amount = validLines.reduce(
-      (s, row) => s + row.quantity * row.unit_price,
+      (s, row) => s + (row.quantity ?? 0) * row.unit_price,
       0,
     );
     const purchasePayload = {
@@ -211,10 +211,10 @@ export const Edit = () => {
         for (const row of validLines) {
           const itemValues = {
             product_id: row.product_id!,
-            quantity: row.quantity,
+            quantity: row.quantity!,
             quantity_unit: row.quantity_unit,
             unit_price: row.unit_price,
-            amount: row.quantity * row.unit_price,
+            amount: row.quantity! * row.unit_price,
             note: row.note ?? null,
           };
           if (row.id) {
@@ -262,7 +262,7 @@ export const Edit = () => {
       saveButtonProps={saveButtonProps}
       footerButtons={({ defaultButtons }) => (
         <>
-          <VoucherSummaryBox label="Tổng tiền (ước tính):" amount={total} />
+          <VoucherSummaryBox label="Tổng tiền:" amount={total} />
           {defaultButtons}
         </>
       )}
