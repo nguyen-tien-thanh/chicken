@@ -14,6 +14,7 @@ import { RelativeTime } from '@/components/relative-time';
 import { MEDIA_MD_DOWN, useMediaQuery } from '@/hooks';
 import { SALE_STATUS_LABELS, type ISale, type SaleStatus } from '@/types';
 import { DATETIME_FORMAT, formatMoney } from '@/utils';
+import { useNavigation } from '@refinedev/core';
 
 const statusColor: Record<SaleStatus, string> = {
   PENDING: 'orange',
@@ -25,7 +26,7 @@ export const List = () => {
   const isMobile = useMediaQuery(MEDIA_MD_DOWN);
   const [searchParams] = useSearchParams();
   const customer_idParam = searchParams.get('customer_id');
-
+  const { list } = useNavigation();
   const { tableProps, filters, sorters } = useTable<ISale>({
     syncWithLocation: true,
     resource: 'sales',
@@ -132,7 +133,11 @@ export const List = () => {
         <Space>
           <EditButton hideText recordItemId={record.id} />
           <ShowButton hideText recordItemId={record.id} />
-          <DeleteButton hideText recordItemId={record.id} />
+          <DeleteButton
+            hideText
+            recordItemId={record.id}
+            onSuccess={() => list('sales')}
+          />
         </Space>
       ),
     },

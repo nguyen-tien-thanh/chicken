@@ -4,7 +4,7 @@ import {
   EditButton,
   ListButton,
 } from '@refinedev/antd';
-import { useShow } from '@refinedev/core';
+import { useNavigation, useShow } from '@refinedev/core';
 import dayjs from 'dayjs';
 import { Link } from 'react-router';
 
@@ -31,6 +31,7 @@ const statusColor: Record<
 };
 
 export const Show = () => {
+  const { list } = useNavigation();
   const { result: record, query } = useShow<ISale>({
     meta: {
       select: '*,customer:customers(*),sale_items(*,product:products(*))',
@@ -47,7 +48,7 @@ export const Show = () => {
         <>
           <ListButton />
           <EditButton />
-          <DeleteButton />
+          <DeleteButton onSuccess={() => list('sales')} />
           {record?.id ? <CreateButton /> : null}
           <SaleInvoiceModal sale_id={record?.id} />
         </>

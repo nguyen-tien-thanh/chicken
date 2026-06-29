@@ -4,7 +4,7 @@ import {
   EditButton,
   ListButton,
 } from '@refinedev/antd';
-import { useShow } from '@refinedev/core';
+import { useNavigation, useShow } from '@refinedev/core';
 import dayjs from 'dayjs';
 import { Link } from 'react-router';
 
@@ -19,6 +19,7 @@ import type { IPurchase } from '@/types';
 import { DATE_FORMAT, joinDetail, showMoney } from '@/utils';
 
 export const Show = () => {
+  const { list } = useNavigation();
   const { result: record, query } = useShow<IPurchase>({
     meta: {
       select: '*,supplier:suppliers(*),purchase_items(*,product:products(*))',
@@ -35,7 +36,7 @@ export const Show = () => {
         <>
           <ListButton />
           <EditButton />
-          <DeleteButton />
+          <DeleteButton onSuccess={() => list('purchases')} />
           {record?.id ? <CreateButton /> : null}
         </>
       }

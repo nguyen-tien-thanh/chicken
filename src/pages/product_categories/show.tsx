@@ -4,7 +4,7 @@ import {
   EditButton,
   ListButton,
 } from '@refinedev/antd';
-import { useShow } from '@refinedev/core';
+import { useNavigation, useShow } from '@refinedev/core';
 import dayjs from 'dayjs';
 
 import { MobileShowDetails, MobileShowPage } from '@/components';
@@ -13,6 +13,7 @@ import type { IProductCategory } from '@/types';
 import { DATETIME_FORMAT } from '@/utils';
 
 export const Show = () => {
+  const { list } = useNavigation();
   const { result: record, query } = useShow<IProductCategory>({
     resource: 'product_categories',
   });
@@ -26,7 +27,7 @@ export const Show = () => {
         <>
           <ListButton />
           <EditButton />
-          <DeleteButton />
+          <DeleteButton onSuccess={() => list('product_categories')} />
           {record?.id ? <CreateButton /> : null}
         </>
       }

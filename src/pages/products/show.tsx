@@ -5,7 +5,7 @@ import {
   ListButton,
   useTable,
 } from '@refinedev/antd';
-import { useShow } from '@refinedev/core';
+import { useNavigation, useShow } from '@refinedev/core';
 import dayjs from 'dayjs';
 import { Link, useNavigate } from 'react-router';
 
@@ -44,6 +44,7 @@ type SaleItemRow = ISaleItem & {
 
 export const Show = () => {
   const navigate = useNavigate();
+  const { list } = useNavigation();
   const { result: record, query } = useShow<IProduct>({
     resource: 'products',
     meta: {
@@ -96,7 +97,7 @@ export const Show = () => {
         <>
           <ListButton />
           <EditButton />
-          <DeleteButton />
+          <DeleteButton onSuccess={() => list('products')} />
           {product_id ? <CreateButton /> : null}
         </>
       }

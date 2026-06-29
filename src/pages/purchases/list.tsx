@@ -15,12 +15,13 @@ import { RelativeTime } from '@/components/relative-time';
 import { MEDIA_MD_DOWN, useMediaQuery } from '@/hooks';
 import type { IPurchase } from '@/types';
 import { DATE_FORMAT, formatMoney } from '@/utils';
+import { useNavigation } from '@refinedev/core';
 
 export const List = () => {
   const isMobile = useMediaQuery(MEDIA_MD_DOWN);
   const [searchParams] = useSearchParams();
   const supplier_idParam = searchParams.get('supplier_id');
-
+  const { list } = useNavigation();
   const { tableProps, filters, sorters } = useTable<IPurchase>({
     syncWithLocation: true,
     resource: 'purchases',
@@ -146,7 +147,11 @@ export const List = () => {
         <Space>
           <EditButton hideText recordItemId={record.id} />
           <ShowButton hideText recordItemId={record.id} />
-          <DeleteButton hideText recordItemId={record.id} />
+          <DeleteButton
+            hideText
+            recordItemId={record.id}
+            onSuccess={() => list('purchases')}
+          />
         </Space>
       ),
     },

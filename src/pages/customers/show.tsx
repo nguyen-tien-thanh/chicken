@@ -5,7 +5,7 @@ import {
   ListButton,
   useTable,
 } from '@refinedev/antd';
-import { useShow } from '@refinedev/core';
+import { useNavigation, useShow } from '@refinedev/core';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router';
 
@@ -37,6 +37,7 @@ const statusColor: Record<
 
 export const Show = () => {
   const navigate = useNavigate();
+  const { list } = useNavigation();
   const { result: record, query } = useShow<ICustomer>({
     resource: 'customers',
   });

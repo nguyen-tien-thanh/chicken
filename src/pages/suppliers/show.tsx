@@ -6,7 +6,7 @@ import {
   ListButton,
   useTable,
 } from '@refinedev/antd';
-import { useShow } from '@refinedev/core';
+import { useNavigation, useShow } from '@refinedev/core';
 import { Button, Descriptions, Image, Modal, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
@@ -26,6 +26,7 @@ import { buildVietQrImage, DATE_FORMAT, joinDetail, showMoney } from '@/utils';
 export const Show = () => {
   const navigate = useNavigate();
   const [qrOpen, setQrOpen] = useState(false);
+  const { list } = useNavigation();
   const { result: record, query } = useShow<ISupplier>({
     resource: 'suppliers',
   });
@@ -62,7 +63,7 @@ export const Show = () => {
         <>
           <ListButton />
           <EditButton />
-          <DeleteButton />
+          <DeleteButton onSuccess={() => list('suppliers')} />
           {supplier_id ? <CreateButton /> : null}
           {qrUrl ? (
             <Button icon={<QrcodeOutlined />} onClick={() => setQrOpen(true)}>
