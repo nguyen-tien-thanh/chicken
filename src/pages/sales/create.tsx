@@ -12,14 +12,12 @@ import type { FormProps } from 'antd';
 import {
   App,
   Button,
-  Col,
   DatePicker,
   Divider,
   Flex,
   Form,
   Input,
   Modal,
-  Row,
   Select,
 } from 'antd';
 import dayjs from 'dayjs';
@@ -27,18 +25,19 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 
 import {
-  InputMoney,
   VoucherLineItemsEditor,
   VoucherSummaryBox,
   type VoucherLineItem,
 } from '@/components';
 import type { ICustomer, IProduct } from '@/types';
-import { SALE_STATUS_OPTIONS, type SaleStatus } from '@/types';
+import type { SaleStatus } from '@/types';
 import {
   DATETIME_FORMAT,
   formatVietnamesePhone,
   normalizeVietnamesePhone,
 } from '@/utils';
+
+import { SaleDiscountField, SaleNoteField, SaleStatusField } from './form-fields';
 
 type FormValues = {
   customer_id?: string;
@@ -226,7 +225,7 @@ export const Create = () => {
       return Promise.resolve();
     }
     const discount_amount = Number(v.discount_amount ?? 0);
-    const paid_amount = Number(v.paid_amount ?? 0);
+    const status = v.status ?? 'PENDING';
     const items = validLines.map(row => {
       const amount = row.quantity! * row.unit_price;
       return {
@@ -242,6 +241,8 @@ export const Create = () => {
     });
     const subtotal_amount = items.reduce((s, row) => s + row.amount, 0);
     const final_amount = Math.max(0, subtotal_amount - discount_amount);
+    const paid_amount =
+      status === 'PAID' ? Number(v.paid_amount ?? final_amount) : 0;
     const remaining_amount = Math.max(0, final_amount - paid_amount);
     const salePayload = {
       customer_id: v.customer_id,
@@ -251,7 +252,7 @@ export const Create = () => {
       note: v.note ?? null,
       discount_amount,
       paid_amount,
-      status: v.status ?? 'PENDING',
+      status,
       subtotal_amount,
       final_amount,
       remaining_amount,
@@ -366,42 +367,16 @@ export const Create = () => {
           </Form>
         </Modal>
 
-        <Row gutter={16}>
-          <Col xs={24} md={12}>
-            <Form.Item
-              label="Ngày bán"
-              name="sale_date"
-              rules={[{ required: true, message: 'Chọn ngày bán' }]}
-            >
-              <DatePicker
-                showTime
-                style={{ width: '100%' }}
-                format={DATETIME_FORMAT}
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={12}>
-            <Form.Item label="Trạng thái" name="status">
-              <Select options={SALE_STATUS_OPTIONS} />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col xs={24} md={12}>
-            <Form.Item label="Giảm giá" name="discount_amount">
-              <InputMoney style={{ width: '100%' }} />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={12}>
-            <Form.Item label="Đã thanh toán" name="paid_amount">
-              <InputMoney style={{ width: '100%' }} />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Form.Item label="Ghi chú phiếu" name="note">
-          <Input.TextArea rows={2} placeholder="Tuỳ chọn" />
+        <Form.Item
+          label="Ngày bán"
+          name="sale_date"
+          rules={[{ required: true, message: 'Chọn ngày bán' }]}
+        >
+          <DatePicker
+            showTime
+            style={{ width: '100%' }}
+            format={DATETIME_FORMAT}
+          />
         </Form.Item>
 
         <VoucherLineItemsEditor
@@ -414,6 +389,12 @@ export const Create = () => {
           onRemoveLine={removeLine}
           onAddLine={addLine}
         />
+
+        {form ? <SaleDiscountField form={form} /> : null}
+
+        {form ? <SaleStatusField form={form} total={total} /> : null}
+
+        {form ? <SaleNoteField form={form} /> : null}
       </Form>
     </AntdCreate>
   );

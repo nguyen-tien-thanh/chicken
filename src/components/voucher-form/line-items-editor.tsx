@@ -7,7 +7,6 @@ import {
   Flex,
   Form,
   Input,
-  InputNumber,
   Row,
   Select,
   Space,
@@ -19,7 +18,7 @@ import {
 import type { DefaultOptionType } from 'antd/es/select';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
-import { InputMoney } from '@/components';
+import { InputMoney, InputQuantity } from '@/components';
 import { useIsMobile } from '@/hooks';
 import { formatMoney } from '@/utils';
 
@@ -92,12 +91,9 @@ function MobileLineFields({
       <Row gutter={8}>
         <Col span={14}>
           <FieldLabel>Số lượng</FieldLabel>
-          <InputNumber
-            min={0}
-            step={0.1}
-            style={{ width: '100%' }}
+          <InputQuantity
             value={row.quantity}
-            onChange={v => onUpdateLine(row.key, 'quantity', v ?? null)}
+            onChange={v => onUpdateLine(row.key, 'quantity', v)}
           />
         </Col>
         <Col span={10}>
@@ -193,12 +189,9 @@ export function VoucherLineItemsEditor({
       title: 'Số lượng',
       width: 120,
       render: (_: unknown, row: VoucherLineItem) => (
-        <InputNumber
-          min={0}
-          step={0.1}
-          style={{ width: '100%' }}
+        <InputQuantity
           value={row.quantity}
-          onChange={v => onUpdateLine(row.key, 'quantity', v ?? null)}
+          onChange={v => onUpdateLine(row.key, 'quantity', v)}
         />
       ),
     },
@@ -262,7 +255,7 @@ export function VoucherLineItemsEditor({
   ];
 
   return (
-    <Form.Item label={label} style={{ marginBottom: 0 }}>
+    <Form.Item label={label}>
       <Space
         direction="vertical"
         size="small"
@@ -288,39 +281,38 @@ export function VoucherLineItemsEditor({
                 )?.label;
                 const lineAmount = (row.quantity ?? 0) * row.unit_price;
 
+                const titleDetail = [
+                  `#${index + 1}`,
+                  productLabel,
+                  row.quantity != null
+                    ? `${row.quantity} ${row.quantity_unit}`
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(' · ');
+
                 return {
                   key: String(row.key),
                   label: (
-                    <Flex vertical gap={2}>
-                      <Text strong>Dòng {index + 1}</Text>
-                      <Text type="secondary" ellipsis>
-                        {[
-                          productLabel,
-                          row.quantity != null
-                            ? `${row.quantity} ${row.quantity_unit}`
-                            : null,
-                        ]
-                          .filter(Boolean)
-                          .join(' · ')}
+                    <Flex vertical gap={2} style={{ flex: 1, minWidth: 0 }}>
+                      <Text ellipsis type="secondary">
+                        {titleDetail}
                       </Text>
+                      <Text strong>{formatMoney(lineAmount)}</Text>
                     </Flex>
                   ),
                   extra: (
-                    <Flex
-                      align="center"
-                      gap="small"
-                      onClick={e => e.stopPropagation()}
+                    <Button
+                      danger
+                      size="small"
+                      icon={<MinusCircleOutlined />}
+                      onClick={e => {
+                        e.stopPropagation();
+                        onRemoveLine(row.key);
+                      }}
                     >
-                      <Text strong>{formatMoney(lineAmount)}</Text>
-                      <Button
-                        danger
-                        size="small"
-                        icon={<MinusCircleOutlined />}
-                        onClick={() => onRemoveLine(row.key)}
-                      >
-                        Xoá
-                      </Button>
-                    </Flex>
+                      Xoá
+                    </Button>
                   ),
                   children: (
                     <MobileLineFields

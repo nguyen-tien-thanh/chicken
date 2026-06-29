@@ -46,15 +46,14 @@ export const InputMoney = ({
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Loại bỏ dấu . phân cách, chỉ giữ chữ số
     const digits = e.target.value.replace(/\./g, '').replace(/[^0-9]/g, '');
     setRaw(digits);
+    onChange?.(digits === '' ? null : Number(digits));
   };
 
   const handleBlur: React.FocusEventHandler<HTMLInputElement> = e => {
     setFocused(false);
-    const num = raw === '' ? null : Number(raw);
-    onChange?.(num);
+    onChange?.(raw === '' ? null : Number(raw));
     onBlur?.(e);
   };
 

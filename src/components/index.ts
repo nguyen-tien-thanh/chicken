@@ -1,6 +1,7 @@
 export { FullScreenSpin } from './full-screen-spin';
 export { Header } from './header';
 export { InputMoney } from './input-money';
+export { InputQuantity } from './input-quantity';
 export { LocationFormFields, LocationShowValue } from './location-picker';
 export { Logo } from './logo';
 export {
