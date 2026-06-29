@@ -84,17 +84,11 @@ export const Show = () => {
           { label: 'Thành tiền', value: showMoney(record?.final_amount) },
           { label: 'Đã thanh toán', value: showMoney(record?.paid_amount) },
           { label: 'Còn lại', value: showMoney(record?.remaining_amount) },
-          { label: 'Ghi chú', value: record?.note },
+          { label: 'Ghi chú', value: record?.note, hidden: !record?.note },
           {
             label: 'Ngày tạo',
             value: record?.created_at && (
               <RelativeTime value={record.created_at} emptyText="" />
-            ),
-          },
-          {
-            label: 'Cập nhật',
-            value: record?.updated_at && (
-              <RelativeTime value={record.updated_at} emptyText="" />
             ),
           },
         ]}

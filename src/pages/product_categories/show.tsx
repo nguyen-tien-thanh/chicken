@@ -45,12 +45,7 @@ export const Show = () => {
             value:
               record?.deleted_at &&
               dayjs(record.deleted_at).format(DATETIME_FORMAT),
-          },
-          {
-            label: 'Cập nhật',
-            value: record?.updated_at && (
-              <RelativeTime value={record.updated_at} emptyText="" />
-            ),
+            hidden: !record?.deleted_at,
           },
         ]}
       />

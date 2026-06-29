@@ -66,7 +66,7 @@ export const Show = () => {
         <>
           <ListButton />
           <EditButton />
-          <DeleteButton />
+          <DeleteButton onSuccess={() => list('customers')} />
           {customer_id ? <CreateButton /> : null}
         </>
       }
@@ -75,7 +75,11 @@ export const Show = () => {
         items={[
           { label: 'Tên khách hàng', value: record?.name },
           { label: 'Điện thoại', value: record?.phone },
-          { label: 'Địa chỉ', value: record?.address },
+          {
+            label: 'Địa chỉ',
+            value: record?.address,
+            hidden: !record?.address,
+          },
           {
             label: 'Vị trí',
             value: (
@@ -84,17 +88,12 @@ export const Show = () => {
                 longitude={record?.longitude}
               />
             ),
+            hidden: !record?.latitude || !record?.longitude,
           },
           {
             label: 'Ngày tạo',
             value: record?.created_at && (
               <RelativeTime value={record.created_at} emptyText="" />
-            ),
-          },
-          {
-            label: 'Cập nhật',
-            value: record?.updated_at && (
-              <RelativeTime value={record.updated_at} emptyText="" />
             ),
           },
         ]}

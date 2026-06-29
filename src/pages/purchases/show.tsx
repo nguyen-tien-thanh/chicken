@@ -78,12 +78,6 @@ export const Show = () => {
               <RelativeTime value={record.created_at} emptyText="" />
             ),
           },
-          {
-            label: 'Cập nhật',
-            value: record?.updated_at && (
-              <RelativeTime value={record.updated_at} emptyText="" />
-            ),
-          },
         ]}
       />
 
