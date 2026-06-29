@@ -22,6 +22,9 @@ export {
 } from './responsive-table';
 export * from './themed-layout';
 export {
+  formatSaleLineQuantity,
+  lineAmount,
+  lineNetQuantity,
   QUANTITY_UNIT_OPTIONS,
   VoucherLineItemsEditor,
   VoucherSummaryBox,

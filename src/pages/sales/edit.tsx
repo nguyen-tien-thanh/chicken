@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react';
 import {
   VoucherLineItemsEditor,
   VoucherSummaryBox,
+  lineAmount,
   type VoucherLineItem,
 } from '@/components';
 import type { ICustomer, IProduct, ISale, ISaleItem } from '@/types';
@@ -23,6 +24,7 @@ import type { SaleStatus } from '@/types';
 import { DATETIME_FORMAT, formatVietnamesePhone } from '@/utils';
 
 import { SaleDiscountField, SaleNoteField, SaleStatusField } from './form-fields';
+import { buildSaleItemPayload, hasInvalidCageWeight } from './sale-line-utils';
 
 let nextKey = 1;
 function fromExisting(item: ISaleItem): VoucherLineItem {
@@ -31,6 +33,7 @@ function fromExisting(item: ISaleItem): VoucherLineItem {
     id: item.id,
     product_id: item.product_id,
     quantity: item.quantity,
+    cage_weight: item.cage_weight ?? null,
     quantity_unit: item.quantity_unit as 'kg' | 'con',
     unit_price: item.unit_price,
     note: item.note ?? undefined,
@@ -143,6 +146,7 @@ export const Edit = () => {
               product_id: last.product_id,
               quantity_unit: last.quantity_unit,
               unit_price: last.unit_price,
+              cage_weight: last.cage_weight,
               quantity: 1,
             }
           : newRow(),
@@ -152,7 +156,7 @@ export const Edit = () => {
 
   const subtotal = lines.reduce((sum, row) => {
     if (!row.product_id) return sum;
-    return sum + (row.quantity ?? 0) * row.unit_price;
+    return sum + lineAmount(row);
   }, 0);
 
   const discountAmount = Number(Form.useWatch('discount_amount', form) ?? 0);
@@ -172,6 +176,16 @@ export const Edit = () => {
       });
       return Promise.resolve();
     }
+    if (validLines.some(row => row.quantity == null)) {
+      notification.warning({ message: 'Nhập số lượng cho từng dòng' });
+      return Promise.resolve();
+    }
+    if (hasInvalidCageWeight(validLines)) {
+      notification.warning({
+        message: 'Trọng lượng lồng không được lớn hơn khối lượng cân',
+      });
+      return Promise.resolve();
+    }
     const v = values as Record<string, unknown>;
     const sd = v.sale_date;
     const sale_date =
@@ -184,7 +198,7 @@ export const Edit = () => {
     const discount_amount = Number(v.discount_amount ?? 0);
     const status = (v.status as SaleStatus) ?? 'PENDING';
     const subtotal_amount = validLines.reduce(
-      (s, row) => s + (row.quantity ?? 0) * row.unit_price,
+      (s, row) => s + lineAmount(row),
       0,
     );
     const final_amount = Math.max(0, subtotal_amount - discount_amount);
@@ -229,17 +243,7 @@ export const Edit = () => {
         }
 
         for (const row of validLines) {
-          const amount = (row.quantity ?? 0) * row.unit_price;
-          const itemValues = {
-            product_id: row.product_id!,
-            quantity: row.quantity!,
-            quantity_unit: row.quantity_unit,
-            unit_price: row.unit_price,
-            amount,
-            note: row.note ?? null,
-            cost_amount: 0,
-            profit_amount: amount,
-          };
+          const itemValues = buildSaleItemPayload(row);
           if (row.id) {
             await updateItem({
               resource: 'sale_items',
@@ -327,6 +331,7 @@ export const Edit = () => {
 
         <VoucherLineItemsEditor
           label="Chi tiết hàng bán"
+          showCageWeight
           lines={lines}
           productOptions={productOptions}
           productsLoading={productsQuery.isFetching}

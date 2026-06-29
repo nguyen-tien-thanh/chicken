@@ -5,6 +5,7 @@ import type { IProduct } from './product';
 export interface ISaleItem extends BaseRecord {
   id: string;
   quantity: number;
+  cage_weight?: number | null;
   quantity_unit: string;
   unit_price: number;
   amount: number;

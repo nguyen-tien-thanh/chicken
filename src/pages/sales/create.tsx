@@ -27,6 +27,7 @@ import { useSearchParams } from 'react-router';
 import {
   VoucherLineItemsEditor,
   VoucherSummaryBox,
+  lineAmount,
   type VoucherLineItem,
 } from '@/components';
 import type { ICustomer, IProduct } from '@/types';
@@ -38,6 +39,10 @@ import {
 } from '@/utils';
 
 import { SaleDiscountField, SaleNoteField, SaleStatusField } from './form-fields';
+import {
+  buildSaleItemPayload,
+  hasInvalidCageWeight,
+} from './sale-line-utils';
 
 type FormValues = {
   customer_id?: string;
@@ -49,6 +54,7 @@ type FormValues = {
 };
 
 let nextKey = 1;
+
 function newRow(defaultProductId?: string): VoucherLineItem {
   return {
     key: nextKey++,
@@ -196,6 +202,7 @@ export const Create = () => {
               product_id: last.product_id,
               quantity_unit: last.quantity_unit,
               unit_price: last.unit_price,
+              cage_weight: last.cage_weight,
               quantity: null,
             }
           : newRow(defaultProductId),
@@ -205,7 +212,7 @@ export const Create = () => {
 
   const subtotal = lines.reduce((sum, row) => {
     if (!row.product_id) return sum;
-    return sum + (row.quantity ?? 0) * row.unit_price;
+    return sum + lineAmount(row);
   }, 0);
 
   const discountAmount = Number(Form.useWatch('discount_amount', form) ?? 0);
@@ -224,21 +231,15 @@ export const Create = () => {
       notification.warning({ message: 'Nhập số lượng cho từng dòng' });
       return Promise.resolve();
     }
+    if (hasInvalidCageWeight(validLines)) {
+      notification.warning({
+        message: 'Trọng lượng lồng không được lớn hơn khối lượng cân',
+      });
+      return Promise.resolve();
+    }
     const discount_amount = Number(v.discount_amount ?? 0);
     const status = v.status ?? 'PENDING';
-    const items = validLines.map(row => {
-      const amount = row.quantity! * row.unit_price;
-      return {
-        product_id: row.product_id!,
-        quantity: row.quantity!,
-        quantity_unit: row.quantity_unit,
-        unit_price: row.unit_price,
-        amount,
-        note: row.note ?? null,
-        cost_amount: 0,
-        profit_amount: amount,
-      };
-    });
+    const items = validLines.map(buildSaleItemPayload);
     const subtotal_amount = items.reduce((s, row) => s + row.amount, 0);
     const final_amount = Math.max(0, subtotal_amount - discount_amount);
     const paid_amount =
@@ -381,6 +382,7 @@ export const Create = () => {
 
         <VoucherLineItemsEditor
           label="Chi tiết hàng bán"
+          showCageWeight
           lines={lines}
           productOptions={productOptions}
           productsLoading={productsQuery.isFetching}

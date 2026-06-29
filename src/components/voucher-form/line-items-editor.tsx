@@ -23,6 +23,7 @@ import { useIsMobile } from '@/hooks';
 import { formatMoney } from '@/utils';
 
 import { QUANTITY_UNIT_OPTIONS, type VoucherLineItem } from './types';
+import { lineAmount, lineNetQuantity } from './utils';
 
 const { Text } = Typography;
 
@@ -40,6 +41,8 @@ type VoucherLineItemsEditorProps = {
   onAddLine: () => void;
   label?: string;
   hint?: string;
+  /** Phiếu bán: nhập khối lượng cân (gross) và trừ lồng theo dòng. */
+  showCageWeight?: boolean;
 };
 
 function FieldLabel({ children }: { children: ReactNode }) {
@@ -53,21 +56,72 @@ function FieldLabel({ children }: { children: ReactNode }) {
   );
 }
 
+function NetQuantityAndPriceFields({
+  row,
+  onUpdateLine,
+  showNetQuantity,
+}: {
+  row: VoucherLineItem;
+  onUpdateLine: VoucherLineItemsEditorProps['onUpdateLine'];
+  showNetQuantity: boolean;
+}) {
+  const showNet = showNetQuantity && row.quantity_unit === 'kg';
+
+  if (!showNet) {
+    return (
+      <InputMoney
+        value={row.unit_price}
+        onChange={v => onUpdateLine(row.key, 'unit_price', (v as number) ?? 0)}
+        style={{ width: '100%' }}
+      />
+    );
+  }
+
+  return (
+    <Row gutter={8}>
+      <Col span={12}>
+        <InputQuantity
+          value={row.quantity != null ? lineNetQuantity(row) : null}
+          readOnly
+          disabled
+        />
+      </Col>
+      <Col span={12}>
+        <InputMoney
+          value={row.unit_price}
+          onChange={v =>
+            onUpdateLine(row.key, 'unit_price', (v as number) ?? 0)
+          }
+          style={{ width: '100%' }}
+        />
+      </Col>
+    </Row>
+  );
+}
+
 function MobileLineFields({
   row,
   productOptions,
   productsLoading,
   onSearchProduct,
   onUpdateLine,
+  showCageWeight,
 }: {
   row: VoucherLineItem;
   productOptions: DefaultOptionType[];
   productsLoading?: boolean;
   onSearchProduct: (value: string) => void;
   onUpdateLine: VoucherLineItemsEditorProps['onUpdateLine'];
+  showCageWeight?: boolean;
 }) {
   const { token } = theme.useToken();
-  const lineAmount = (row.quantity ?? 0) * row.unit_price;
+  const amount = lineAmount(row);
+  const net = lineNetQuantity(row);
+
+  function setQuantityUnit(unit: VoucherLineItem['quantity_unit']) {
+    onUpdateLine(row.key, 'quantity_unit', unit);
+    if (unit !== 'kg') onUpdateLine(row.key, 'cage_weight', null);
+  }
 
   return (
     <Flex vertical gap={token.marginSM}>
@@ -89,38 +143,88 @@ function MobileLineFields({
       </div>
 
       <Row gutter={8}>
-        <Col span={14}>
-          <FieldLabel>Số lượng</FieldLabel>
+        <Col span={showCageWeight && row.quantity_unit === 'kg' ? 24 : 14}>
+          <FieldLabel>
+            {showCageWeight ? 'Khối lượng cân (kg)' : 'Số lượng'}
+          </FieldLabel>
           <InputQuantity
             value={row.quantity}
             onChange={v => onUpdateLine(row.key, 'quantity', v)}
           />
         </Col>
-        <Col span={10}>
-          <FieldLabel>Đơn vị</FieldLabel>
-          <Select
-            value={row.quantity_unit}
-            options={QUANTITY_UNIT_OPTIONS}
-            style={{ width: '100%', height: '36px' }}
-            onChange={v => onUpdateLine(row.key, 'quantity_unit', v)}
-          />
-        </Col>
+        {!(showCageWeight && row.quantity_unit === 'kg') ? (
+          <Col span={10}>
+            <FieldLabel>Đơn vị</FieldLabel>
+            <Select
+              value={row.quantity_unit}
+              options={QUANTITY_UNIT_OPTIONS}
+              style={{ width: '100%', height: '36px' }}
+              onChange={setQuantityUnit}
+            />
+          </Col>
+        ) : null}
       </Row>
 
-      <div>
-        <FieldLabel>Đơn giá</FieldLabel>
-        <InputMoney
-          value={row.unit_price}
-          onChange={v =>
-            onUpdateLine(row.key, 'unit_price', (v as number) ?? 0)
-          }
-          style={{ width: '100%' }}
-        />
-      </div>
+      {showCageWeight && row.quantity_unit === 'kg' ? (
+        <Row gutter={8}>
+          <Col span={14}>
+            <FieldLabel>Trừ lồng (kg)</FieldLabel>
+            <InputQuantity
+              value={row.cage_weight}
+              onChange={v => onUpdateLine(row.key, 'cage_weight', v)}
+              placeholder="0"
+            />
+          </Col>
+          <Col span={10}>
+            <FieldLabel>Đơn vị</FieldLabel>
+            <Select
+              value={row.quantity_unit}
+              options={QUANTITY_UNIT_OPTIONS}
+              style={{ width: '100%', height: '36px' }}
+              onChange={setQuantityUnit}
+            />
+          </Col>
+        </Row>
+      ) : null}
+
+      {showCageWeight && row.quantity_unit === 'kg' ? (
+        <Row gutter={8}>
+          <Col span={14}>
+            <FieldLabel>Khối lượng gà (kg)</FieldLabel>
+            <InputQuantity
+              value={net}
+              readOnly
+              disabled
+              style={{ width: '100%' }}
+            />
+          </Col>
+          <Col span={10}>
+            <FieldLabel>Đơn giá</FieldLabel>
+            <InputMoney
+              value={row.unit_price}
+              onChange={v =>
+                onUpdateLine(row.key, 'unit_price', (v as number) ?? 0)
+              }
+              style={{ width: '100%' }}
+            />
+          </Col>
+        </Row>
+      ) : (
+        <div>
+          <FieldLabel>Đơn giá</FieldLabel>
+          <InputMoney
+            value={row.unit_price}
+            onChange={v =>
+              onUpdateLine(row.key, 'unit_price', (v as number) ?? 0)
+            }
+            style={{ width: '100%' }}
+          />
+        </div>
+      )}
 
       <Flex justify="space-between" align="center">
         <Text type="secondary">Thành tiền</Text>
-        <Text strong>{formatMoney(lineAmount)}</Text>
+        <Text strong>{formatMoney(amount)}</Text>
       </Flex>
     </Flex>
   );
@@ -136,11 +240,16 @@ export function VoucherLineItemsEditor({
   onAddLine,
   label = 'Chi tiết hàng',
   hint = 'Thêm sản phẩm, số lượng, đơn giá. Hệ thống tự tính thành tiền.',
+  showCageWeight = false,
 }: VoucherLineItemsEditorProps) {
   const isMobile = useIsMobile();
   const lineKeys = lines.map(row => String(row.key));
   const [activeLineKeys, setActiveLineKeys] = useState(lineKeys);
   const prevLineKeysRef = useRef(lineKeys);
+
+  const defaultHint = showCageWeight
+    ? 'Nhập khối lượng cân (có lồng) và tổng kg lồng cần trừ cho lần cân đó. Hệ thống tính thành tiền trên khối lượng hàng thực.'
+    : hint;
 
   useEffect(() => {
     const prevKeys = prevLineKeysRef.current;
@@ -186,7 +295,7 @@ export function VoucherLineItemsEditor({
       ),
     },
     {
-      title: 'Số lượng',
+      title: showCageWeight ? 'Khối lượng cân' : 'Số lượng',
       width: 120,
       render: (_: unknown, row: VoucherLineItem) => (
         <InputQuantity
@@ -195,6 +304,24 @@ export function VoucherLineItemsEditor({
         />
       ),
     },
+    ...(showCageWeight
+      ? [
+          {
+            title: 'Trừ lồng (kg)',
+            width: 120,
+            render: (_: unknown, row: VoucherLineItem) =>
+              row.quantity_unit === 'kg' ? (
+                <InputQuantity
+                  value={row.cage_weight}
+                  onChange={v => onUpdateLine(row.key, 'cage_weight', v)}
+                  placeholder="0"
+                />
+              ) : (
+                <Text type="secondary">—</Text>
+              ),
+          },
+        ]
+      : []),
     {
       title: 'Đơn vị',
       width: 110,
@@ -203,27 +330,56 @@ export function VoucherLineItemsEditor({
           value={row.quantity_unit}
           options={QUANTITY_UNIT_OPTIONS}
           style={{ width: '100%' }}
-          onChange={v => onUpdateLine(row.key, 'quantity_unit', v)}
+          onChange={v => {
+            onUpdateLine(row.key, 'quantity_unit', v);
+            if (v !== 'kg') onUpdateLine(row.key, 'cage_weight', null);
+          }}
         />
       ),
     },
-    {
-      title: 'Đơn giá',
-      width: 160,
-      render: (_: unknown, row: VoucherLineItem) => (
-        <InputMoney
-          value={row.unit_price}
-          onChange={v =>
-            onUpdateLine(row.key, 'unit_price', (v as number) ?? 0)
-          }
-        />
-      ),
-    },
+    ...(showCageWeight
+      ? [
+          {
+            title: (
+              <span>
+                Khối lượng gà
+                <br />
+                <Text
+                  type="secondary"
+                  style={{ fontSize: 11, fontWeight: 400 }}
+                >
+                  Đơn giá
+                </Text>
+              </span>
+            ),
+            width: 220,
+            render: (_: unknown, row: VoucherLineItem) => (
+              <NetQuantityAndPriceFields
+                row={row}
+                onUpdateLine={onUpdateLine}
+                showNetQuantity
+              />
+            ),
+          },
+        ]
+      : [
+          {
+            title: 'Đơn giá',
+            width: 160,
+            render: (_: unknown, row: VoucherLineItem) => (
+              <NetQuantityAndPriceFields
+                row={row}
+                onUpdateLine={onUpdateLine}
+                showNetQuantity={false}
+              />
+            ),
+          },
+        ]),
     {
       title: 'Thành tiền',
       width: 160,
       render: (_: unknown, row: VoucherLineItem) => (
-        <Text strong>{formatMoney((row.quantity ?? 0) * row.unit_price)}</Text>
+        <Text strong>{formatMoney(lineAmount(row))}</Text>
       ),
     },
     {
@@ -261,7 +417,7 @@ export function VoucherLineItemsEditor({
         size="small"
         style={{ width: '100%', display: 'flex' }}
       >
-        {!isMobile ? <Text type="secondary">{hint}</Text> : null}
+        {!isMobile ? <Text type="secondary">{defaultHint}</Text> : null}
 
         {isMobile ? (
           lines.length === 0 ? (
@@ -279,15 +435,19 @@ export function VoucherLineItemsEditor({
                 const productLabel = productOptions.find(
                   o => o.value === row.product_id,
                 )?.label;
-                const lineAmount = (row.quantity ?? 0) * row.unit_price;
-
-                const titleDetail = [
-                  `#${index + 1}`,
-                  productLabel,
+                const amount = lineAmount(row);
+                const qtyLabel =
+                  showCageWeight &&
+                  row.quantity_unit === 'kg' &&
                   row.quantity != null
+                    ? (row.cage_weight ?? 0) > 0
+                      ? `${row.quantity} kg (−${row.cage_weight} kg lồng)`
+                      : `${row.quantity} kg`
+                    : row.quantity != null
                     ? `${row.quantity} ${row.quantity_unit}`
-                    : null,
-                ]
+                    : null;
+
+                const titleDetail = [`#${index + 1}`, productLabel, qtyLabel]
                   .filter(Boolean)
                   .join(' · ');
 
@@ -298,7 +458,7 @@ export function VoucherLineItemsEditor({
                       <Text ellipsis type="secondary">
                         {titleDetail}
                       </Text>
-                      <Text strong>{formatMoney(lineAmount)}</Text>
+                      <Text strong>{formatMoney(amount)}</Text>
                     </Flex>
                   ),
                   extra: (
@@ -321,6 +481,7 @@ export function VoucherLineItemsEditor({
                       productsLoading={productsLoading}
                       onSearchProduct={onSearchProduct}
                       onUpdateLine={onUpdateLine}
+                      showCageWeight={showCageWeight}
                     />
                   ),
                 };

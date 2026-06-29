@@ -27,6 +27,7 @@ import {
   formatVietnamesePhone,
   buildSaleInvoiceQrPayment,
 } from '@/utils';
+import { lineNetQuantity } from '@/components';
 
 interface IInvoice extends ISale {
   payment?: {
@@ -51,6 +52,11 @@ export const SaleInvoiceModal = ({ sale_id }: Props) => {
   const [open, setOpen] = useState(false);
   const [invoice, setInvoice] = useState<IInvoice | null>(null);
   const [fetching, setFetching] = useState(false);
+
+  const invoiceItems = invoice?.sale_items ?? [];
+  const showCageColumns = invoiceItems.some(
+    item => item.quantity_unit === 'kg' && (item.cage_weight ?? 0) > 0,
+  );
 
   async function handleOpen() {
     if (!sale_id) return;
@@ -81,20 +87,45 @@ export const SaleInvoiceModal = ({ sale_id }: Props) => {
     if (!invoice) return;
 
     const items = invoice.sale_items ?? [];
+    const showCage = items.some(
+      item => item.quantity_unit === 'kg' && (item.cage_weight ?? 0) > 0,
+    );
     const rows = items
-      .map(
-        (item: ISaleItem) => `
+      .map((item: ISaleItem) => {
+        const net =
+          item.quantity_unit === 'kg'
+            ? lineNetQuantity({
+                quantity: item.quantity,
+                cage_weight: item.cage_weight,
+                quantity_unit: 'kg',
+              })
+            : item.quantity;
+        const cageCell =
+          showCage && item.quantity_unit === 'kg'
+            ? `<td style="text-align:right">${item.cage_weight ?? 0}</td>`
+            : showCage
+              ? '<td>—</td>'
+              : '';
+        const grossCell = showCage
+          ? `<td style="text-align:right">${item.quantity}</td>${cageCell}<td style="text-align:right">${net}</td>`
+          : `<td>${item.quantity}</td>`;
+
+        return `
         <tr>
           <td>${item.product?.name ?? item.product_id}</td>
-          <td>${item.quantity}</td>
+          ${grossCell}
           <td>${item.quantity_unit}</td>
           <td style="text-align:right">${formatMoney(item.unit_price)}</td>
           <td style="text-align:right;font-weight:bold">${formatMoney(
             item.amount,
           )}</td>
-        </tr>`,
-      )
+        </tr>`;
+      })
       .join('');
+
+    const itemHeader = showCage
+      ? '<th>Sản phẩm</th><th style="text-align:right">Cân</th><th style="text-align:right">Lồng</th><th style="text-align:right">Hàng</th><th>ĐV</th><th style="text-align:right">Đơn giá</th><th style="text-align:right">Thành tiền</th>'
+      : '<th>Sản phẩm</th><th>SL</th><th>ĐV</th><th style="text-align:right">Đơn giá</th><th style="text-align:right">Thành tiền</th>';
 
     const summaryLines = `
       <div class="sum-row"><span>Tạm tính</span><span>${formatMoney(
@@ -161,7 +192,7 @@ export const SaleInvoiceModal = ({ sale_id }: Props) => {
           <tr><th>Khách hàng</th><td colspan="3">${customer}</td></tr>
         </table>
         <table>
-          <thead><tr><th>Sản phẩm</th><th>SL</th><th>ĐV</th><th style="text-align:right">Đơn giá</th><th style="text-align:right">Thành tiền</th></tr></thead>
+          <thead><tr>${itemHeader}</tr></thead>
           <tbody>${rows}</tbody>
         </table>
         <div class="layout">
@@ -238,7 +269,7 @@ export const SaleInvoiceModal = ({ sale_id }: Props) => {
         <Table
           style={{ marginTop: 12 }}
           rowKey="id"
-          dataSource={invoice?.sale_items ?? []}
+          dataSource={invoiceItems}
           pagination={false}
           size="small"
           columns={[
@@ -247,7 +278,34 @@ export const SaleInvoiceModal = ({ sale_id }: Props) => {
               render: (_, row: ISaleItem) =>
                 row.product?.name ?? row.product_id,
             },
-            { dataIndex: 'quantity', title: 'SL' },
+            ...(showCageColumns
+              ? [
+                  {
+                    dataIndex: 'quantity',
+                    title: 'Cân',
+                    align: 'right' as const,
+                  },
+                  {
+                    dataIndex: 'cage_weight',
+                    title: 'Lồng',
+                    align: 'right' as const,
+                    render: (v: number | null, row: ISaleItem) =>
+                      row.quantity_unit === 'kg' ? (v ?? 0) : '—',
+                  },
+                  {
+                    title: 'Hàng',
+                    align: 'right' as const,
+                    render: (_: unknown, row: ISaleItem) =>
+                      row.quantity_unit === 'kg'
+                        ? lineNetQuantity({
+                            quantity: row.quantity,
+                            cage_weight: row.cage_weight,
+                            quantity_unit: 'kg',
+                          })
+                        : row.quantity,
+                  },
+                ]
+              : [{ dataIndex: 'quantity', title: 'SL' }]),
             { dataIndex: 'quantity_unit', title: 'ĐV' },
             {
               dataIndex: 'unit_price',

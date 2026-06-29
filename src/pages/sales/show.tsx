@@ -14,6 +14,7 @@ import {
   MobileShowPage,
   MobileShowSection,
   MobileShowTag,
+  formatSaleLineQuantity,
 } from '@/components';
 import { RelativeTime } from '@/components/relative-time';
 import { SALE_STATUS_LABELS, type ISale, type SaleStatus } from '@/types';
@@ -110,7 +111,11 @@ export const Show = () => {
           renderDescription={row =>
             joinDetail(
               row.quantity != null &&
-                `${row.quantity} ${row.quantity_unit ?? ''}`.trim(),
+                formatSaleLineQuantity(
+                  row.quantity,
+                  row.quantity_unit ?? '',
+                  row.cage_weight,
+                ),
               showMoney(row.amount),
               row.profit_amount != null && `LN ${showMoney(row.profit_amount)}`,
               row.note,
