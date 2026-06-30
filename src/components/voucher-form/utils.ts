@@ -27,5 +27,5 @@ export function formatSaleLineQuantity(
     return `${quantity} ${unit}`.trim();
   }
   const net = Math.max(0, quantity - cage_weight);
-  return `${quantity} kg (−${cage_weight} lồng → ${net} kg)`;
+  return `${quantity} kg (−${cage_weight} kg lồng → ${net} kg)`;
 }
